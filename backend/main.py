@@ -74,17 +74,49 @@ async def analizar(file: UploadFile = File(...)):
             "Esta versión solamente procesa documentos PDF.\n\n"
             "La versión 0.3 incorporará Word, Excel y PowerPoint."
         )
+    palabras = len(texto.split())
+    caracteres = len(texto)
+
+    if extension == ".pdf":
+        paginas = len(lector.pages)
+    else:
+        paginas = 0
 
     return HTMLResponse(f"""
-    <h2>Documento procesado correctamente</h2>
+<div class="documento">
 
-    <hr>
+<div class="documento-header">
 
-    <pre style="white-space:pre-wrap;
-               font-size:15px;
-               line-height:1.5">
+<h2>{file.filename}</h2>
 
-{texto}
+<p>Documento analizado correctamente</p>
 
-    </pre>
-    """)
+</div>
+
+<div class="stats">
+
+<div class="card-stat">
+<div class="valor">{paginas}</div>
+Páginas
+</div>
+
+<div class="card-stat">
+<div class="valor">{palabras:,}</div>
+Palabras
+</div>
+
+<div class="card-stat">
+<div class="valor">{caracteres:,}</div>
+Caracteres
+</div>
+
+</div>
+
+<div class="documento-body">
+
+<pre>{texto}</pre>
+
+</div>
+
+</div>
+""")
