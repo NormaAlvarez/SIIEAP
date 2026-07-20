@@ -3,115 +3,11 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<title>SIIEAP</title>
+    <title>SIIEAP</title>
 
-<style>
-
-body{
-
-    margin:0;
-
-    font-family:Arial;
-
-    background:#f2f4f7;
-
-}
-
-header{
-
-    background:#003366;
-
-    color:white;
-
-    padding:20px;
-
-    text-align:center;
-
-}
-
-.container{
-
-    width:90%;
-
-    margin:auto;
-
-    margin-top:30px;
-
-}
-
-.card{
-
-    background:white;
-
-    padding:25px;
-
-    border-radius:10px;
-
-    box-shadow:0px 0px 12px rgba(0,0,0,.15);
-
-}
-
-h2{
-
-    color:#003366;
-
-}
-
-textarea{
-
-    width:100%;
-
-    height:120px;
-
-    padding:10px;
-
-    font-size:15px;
-
-}
-
-button{
-
-    background:#0066cc;
-
-    color:white;
-
-    border:none;
-
-    padding:12px 25px;
-
-    margin-top:20px;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
-    font-size:16px;
-
-}
-
-button:hover{
-
-    background:#004999;
-
-}
-
-#respuesta{
-
-    margin-top:30px;
-
-    border:1px solid #DDD;
-
-    padding:20px;
-
-    min-height:120px;
-
-    background:#FAFAFA;
-
-}
-
-</style>
+    <link rel="stylesheet" href="/frontend/css/style.css">
 
 </head>
 
@@ -119,81 +15,53 @@ button:hover{
 
 <header>
 
-<h1>SIIEAP</h1>
+    <h1>SIIEAP</h1>
 
-<h3>Sistema Inteligente de Investigación y Arquitectura Empresarial Pública</h3>
+    <p>Sistema Inteligente de Investigación y Arquitectura Empresarial Pública</p>
 
 </header>
 
 <div class="container">
 
-<div class="card">
+    <div class="card">
 
-<h2>Analizador Documental</h2>
+        <h2>Asistente Documental</h2>
 
-<input type="file">
+        <p>
+            Seleccione un documento PDF para analizar.
+        </p>
 
-<br><br>
+        <br>
 
-<label>
+        <input
+            type="file"
+            id="archivo"
+            accept=".pdf">
 
-Pregunta
+        <button onclick="enviarDocumento()">
 
-</label>
+            Analizar Documento
 
-<textarea
-placeholder="Escriba aquí la pregunta sobre el documento..."></textarea>
+        </button>
 
-<br>
+        <div id="respuesta">
 
-<button onclick="enviarDocumento()">
+            Aquí aparecerá el contenido del documento.
 
-Analizar Documento
+        </div>
 
-</button>
-
-<div id="respuesta">
-
-Aquí aparecerá la respuesta del sistema.
-
-</div>
+    </div>
 
 </div>
 
-</div>
-<script>
+<footer>
 
-async function enviarDocumento(){
+SIIEAP · Versión 0.2
 
-    let archivo=document.querySelector("input[type=file]").files[0];
+</footer>
 
-    if(!archivo){
+<script src="/frontend/js/app.js"></script>
 
-        alert("Seleccione primero un PDF");
-
-        return;
-
-    }
-
-    let datos=new FormData();
-
-    datos.append("file",archivo);
-
-    let respuesta=await fetch("/analizar",{
-
-        method:"POST",
-
-        body:datos
-
-    });
-
-    let html=await respuesta.text();
-
-    document.getElementById("respuesta").innerHTML=html;
-
-}
-
-</script>
 </body>
 
 </html>
