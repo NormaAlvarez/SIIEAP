@@ -8,9 +8,12 @@ reales — no una sola entidad, sino su grupo de comparación — cruzando:
   - El "Grupo par" YA calculado por Función Pública en esos mismos
     archivos (columna "Grupo par": p.ej. "ALCALDÍA GRUPO 4"), que es la
     forma oficial de no comparar entidades de tamaño/naturaleza distinta.
-  - Opcionalmente, la subregión de Antioquia (backend.base_conocimiento.
-    subregiones_antioquia), para acotar la comparación a un contexto
-    geográfico cercano además del grupo par oficial.
+  - Opcionalmente, la subregión del departamento (Antioquia o Chocó, ver
+    REGISTRO_SUBREGIONES_POR_DEPARTAMENTO más abajo), para acotar la
+    comparación a un contexto geográfico cercano además del grupo par
+    oficial. Agregar un nuevo departamento solo requiere crear su módulo
+    de subregiones (mismo patrón que subregiones_antioquia.py) y
+    registrarlo en ese diccionario.
 
 No inventa ninguna cifra: todo sale de las columnas reales del archivo.
 """
@@ -20,7 +23,56 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from backend.base_conocimiento.subregiones_antioquia import subregion_de
+from backend.base_conocimiento.subregiones_antioquia import (
+    subregion_de as _subregion_de_antioquia,
+    todas_las_subregiones as _todas_las_subregiones_antioquia,
+)
+from backend.base_conocimiento.subregiones_choco import (
+    subregion_de as _subregion_de_choco,
+    todas_las_subregiones as _todas_las_subregiones_choco,
+)
+
+# Registro de departamentos con subregionalización disponible en el sistema.
+# Para agregar un nuevo departamento: crear backend/base_conocimiento/
+# subregiones_<departamento>.py con las mismas 4 funciones (SUBREGIONES_X,
+# subregion_de, municipios_de_subregion, todas_las_subregiones) e incluirlo
+# aquí con su nombre en mayúsculas tal como aparece en la columna
+# "Departamento" del archivo oficial de Función Pública.
+REGISTRO_SUBREGIONES_POR_DEPARTAMENTO = {
+    "ANTIOQUIA": {
+        "subregion_de": _subregion_de_antioquia,
+        "todas_las_subregiones": _todas_las_subregiones_antioquia,
+    },
+    "CHOCO": {
+        "subregion_de": _subregion_de_choco,
+        "todas_las_subregiones": _todas_las_subregiones_choco,
+    },
+    "CHOCÓ": {
+        "subregion_de": _subregion_de_choco,
+        "todas_las_subregiones": _todas_las_subregiones_choco,
+    },
+}
+
+
+def subregiones_disponibles_para(departamento: str | None) -> list[str]:
+    """Lista de subregiones disponibles para un departamento dado, o lista
+    vacía si el departamento no tiene subregionalización registrada todavía."""
+    if not departamento:
+        return []
+    entrada = REGISTRO_SUBREGIONES_POR_DEPARTAMENTO.get(departamento.strip().upper())
+    return entrada["todas_las_subregiones"]() if entrada else []
+
+
+def _subregion_de_municipio(municipio: str, departamento: str | None) -> str | None:
+    """Resuelve la subregión de un municipio usando el módulo del
+    departamento correspondiente. Si el departamento no está registrado,
+    devuelve None (no se puede filtrar por subregión, pero el resto del
+    análisis 360 sigue funcionando por grupo par y por IDI)."""
+    if not departamento:
+        return None
+    entrada = REGISTRO_SUBREGIONES_POR_DEPARTAMENTO.get(departamento.strip().upper())
+    return entrada["subregion_de"](municipio) if entrada else None
+
 
 COLUMNAS_DIMENSION = [
     "D1 Talento Humano",
@@ -65,6 +117,41 @@ def cargar_resultados(ruta_o_archivo, nombre_hoja: str) -> pd.DataFrame:
     return df
 
 
+def filtrar_grupo(
+    df: pd.DataFrame,
+    departamento: str | None = None,
+    subregion: str | None = None,
+    grupo_par_contiene: str | None = None,
+) -> tuple[pd.DataFrame, str]:
+    """
+    Aplica los mismos filtros de comparación (departamento, subregión, grupo
+    par) que usa analizar_360(), y devuelve el DataFrame filtrado junto con
+    la descripción del filtro aplicado. Reutilizable por otros motores
+    (ej. motor_isvpt) que necesiten operar sobre el mismo grupo exacto.
+    """
+    filtrado = df.copy()
+    partes_filtro = []
+
+    if departamento:
+        filtrado = filtrado[filtrado["Departamento"].astype(str).str.upper() == departamento.upper()]
+        partes_filtro.append(f"Departamento={departamento}")
+
+    if subregion:
+        filtrado = filtrado[
+            filtrado["Municipio"].astype(str).map(lambda m: _subregion_de_municipio(m, departamento) == subregion)
+        ]
+        partes_filtro.append(f"Subregión={subregion}")
+
+    if grupo_par_contiene:
+        filtrado = filtrado[
+            filtrado["Grupo par"].astype(str).str.upper().str.contains(grupo_par_contiene.upper(), na=False)
+        ]
+        partes_filtro.append(f"Grupo par contiene '{grupo_par_contiene}'")
+
+    descripcion = " | ".join(partes_filtro) if partes_filtro else "Todas las entidades"
+    return filtrado, descripcion
+
+
 def analizar_360(
     df: pd.DataFrame,
     departamento: str | None = None,
@@ -84,24 +171,8 @@ def analizar_360(
       como aparece en la columna Entidad, para ubicar su percentil dentro
       del grupo filtrado.
     """
-    filtrado = df.copy()
-    partes_filtro = []
-
-    if departamento:
-        filtrado = filtrado[filtrado["Departamento"].astype(str).str.upper() == departamento.upper()]
-        partes_filtro.append(f"Departamento={departamento}")
-
-    if subregion:
-        filtrado = filtrado[
-            filtrado["Municipio"].astype(str).map(lambda m: subregion_de(m) == subregion)
-        ]
-        partes_filtro.append(f"Subregión={subregion}")
-
-    if grupo_par_contiene:
-        filtrado = filtrado[
-            filtrado["Grupo par"].astype(str).str.upper().str.contains(grupo_par_contiene.upper(), na=False)
-        ]
-        partes_filtro.append(f"Grupo par contiene '{grupo_par_contiene}'")
+    filtrado, _descripcion = filtrar_grupo(df, departamento, subregion, grupo_par_contiene)
+    partes_filtro = [_descripcion] if _descripcion != "Todas las entidades" else []
 
     filtrado_con_idi = filtrado.dropna(subset=[COLUMNA_IDI])
     n_entidades = len(filtrado_con_idi)
