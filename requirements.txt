@@ -10,3 +10,8 @@ anthropic>=0.40
 # Requeridos por generador_informe.py y estudio_de_caso.py
 python-docx>=1.1
 reportlab>=4.2
+
+# --- Gráficas embebidas en los informes (barras por dimensión y por brecha) ---
+# Requeridos por graficas_informe.py
+matplotlib>=3.8
+Pillow>=10.0
