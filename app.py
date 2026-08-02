@@ -25,6 +25,8 @@ from backend.base_conocimiento.cargar_recomendaciones import (
 )
 from backend.modelos.entidades import Entidad, ResultadoIndice
 from backend.motores.motor_diagnostico import diagnosticar
+from backend.motores.motor_analisis_360 import analizar_360
+from backend.base_conocimiento.subregiones_antioquia import todas_las_subregiones
 
 CARPETA_DATA = Path(__file__).resolve().parent / "data"
 RUTA_AUTO_NACION = CARPETA_DATA / "resultados_nacion.xlsx"
@@ -223,6 +225,71 @@ with tab_real:
 
             mostrar_diagnostico(diag, idi_oficial, grupo_par, cruce)
 
+            st.markdown("---")
+            st.markdown("### 📈 Análisis 360 (comparación contra el grupo)")
+            st.caption(
+                "Compara esta entidad contra un grupo de referencia, usando el 'Grupo par' "
+                "oficial de Función Pública (ya calculado en el Excel) y, opcionalmente, la "
+                "subregión de Antioquia. No inventa cifras: todo sale de las columnas reales "
+                "del archivo cargado arriba."
+            )
+            col_360_a, col_360_b, col_360_c = st.columns(3)
+            departamento_360 = col_360_a.text_input(
+                "Departamento (opcional)", value="ANTIOQUIA", key="departamento_360"
+            )
+            opciones_subregion = ["(ninguna)"] + todas_las_subregiones()
+            subregion_360 = col_360_b.selectbox(
+                "Subregión de Antioquia (opcional)", opciones_subregion, key="subregion_360"
+            )
+            grupo_par_360 = col_360_c.text_input(
+                "Grupo par contiene (opcional)",
+                value=grupo_par or "",
+                key="grupo_par_360",
+                help="Ej.: 'ALCALDÍA GRUPO 4'. Se deja vacío para no filtrar por grupo par.",
+            )
+            if st.button("Calcular análisis 360", key="btn_360"):
+                try:
+                    resultado_360 = analizar_360(
+                        df,
+                        departamento=departamento_360 or None,
+                        subregion=None if subregion_360 == "(ninguna)" else subregion_360,
+                        grupo_par_contiene=grupo_par_360 or None,
+                        entidad_referencia=entidad_elegida,
+                    )
+                    st.caption(f"Filtro aplicado: {resultado_360.filtro_descripcion}")
+                    col_r1, col_r2, col_r3 = st.columns(3)
+                    col_r1.metric("Entidades en el grupo", resultado_360.n_entidades)
+                    col_r2.metric("IDI promedio del grupo", resultado_360.promedio_idi)
+                    if resultado_360.percentil_entidad_referencia is not None:
+                        col_r3.metric(
+                            f"Percentil de {entidad_elegida.split()[-1] if entidad_elegida else ''}",
+                            f"{resultado_360.percentil_entidad_referencia}%",
+                            delta=round(
+                                (resultado_360.idi_entidad_referencia or 0) - (resultado_360.promedio_idi or 0), 2
+                            ),
+                        )
+
+                    if resultado_360.promedio_por_dimension:
+                        st.markdown("#### Promedio del grupo por dimensión")
+                        st.dataframe(
+                            [{"Dimensión": k, "Promedio del grupo": v} for k, v in resultado_360.promedio_por_dimension.items()],
+                            use_container_width=True,
+                        )
+
+                    col_top, col_bottom = st.columns(2)
+                    with col_top:
+                        st.markdown("#### Top 5 del grupo")
+                        for nombre_e, idi_e in resultado_360.top5:
+                            st.markdown(f"- {nombre_e}: **{idi_e}**")
+                    with col_bottom:
+                        st.markdown("#### Últimos 5 del grupo")
+                        for nombre_e, idi_e in resultado_360.bottom5:
+                            st.markdown(f"- {nombre_e}: **{idi_e}**")
+
+                    st.session_state.ultimo_analisis_360 = resultado_360
+                except Exception as e:
+                    st.error(f"No se pudo calcular el análisis 360: {e}")
+
             texto_recos = ""
             if cruce:
                 for lista in cruce.values():
@@ -252,12 +319,51 @@ with tab_real:
                             datos["nombre"], datos["diag"], datos["texto_recos"]
                         )
                     st.markdown(resultado)
+                    st.session_state.ultimo_diagnostico_real["analisis_ia"] = resultado
                 except Exception as e:
                     st.error(
                         f"No se pudo generar el análisis: {e}\n\n"
                         "Verifique que ANTHROPIC_API_KEY esté configurada en st.secrets "
                         "(Streamlit Community Cloud → Settings → Secrets)."
                     )
+
+            if st.session_state.ultimo_diagnostico_real.get("analisis_ia"):
+                st.markdown("---")
+                st.markdown("### 📄 Informe técnico descargable")
+                st.caption(
+                    "Empaqueta el diagnóstico real, la contextualización académica fija "
+                    "(desde los griegos hasta la Administración Pública contemporánea) y "
+                    "el análisis integral con IA ya generado arriba, en un solo archivo "
+                    "descargable para entregar como evidencia de ejecución del sistema."
+                )
+                datos_informe = st.session_state.ultimo_diagnostico_real
+                col_docx, col_pdf = st.columns(2)
+                try:
+                    from backend.motores.generador_informe import generar_reporte_docx, generar_reporte_pdf
+
+                    docx_buffer = generar_reporte_docx(
+                        datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"]
+                    )
+                    col_docx.download_button(
+                        "⬇️ Descargar informe en Word (.docx)",
+                        data=docx_buffer,
+                        file_name=f"informe_{datos_informe['nombre'].replace(' ', '_')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key="descarga_docx",
+                    )
+
+                    pdf_buffer = generar_reporte_pdf(
+                        datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"]
+                    )
+                    col_pdf.download_button(
+                        "⬇️ Descargar informe en PDF",
+                        data=pdf_buffer,
+                        file_name=f"informe_{datos_informe['nombre'].replace(' ', '_')}.pdf",
+                        mime="application/pdf",
+                        key="descarga_pdf",
+                    )
+                except Exception as e:
+                    st.error(f"No se pudo generar el informe descargable: {e}")
     else:
         st.info("Suba un archivo para habilitar el selector de entidades.")
 
