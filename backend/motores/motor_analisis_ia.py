@@ -43,10 +43,38 @@ puntajes, brechas, recomendaciones oficiales). No inventas cifras que no se te d
 
 2. Para la lectura teórica usas SOLO estas tres corrientes (son las del curso, no agregues \
 otras sin decirlo explícitamente): Nueva Gestión Pública (NGP), post-Nueva Gestión Pública \
-(post-NGP), y Nuevo Institucionalismo en la Administración Pública.
+(post-NGP), y Nuevo Institucionalismo en la Administración Pública. Dentro de estas tres \
+corrientes puedes apoyarte en autores de referencia reconocidos cuando enriquezcan el \
+análisis sin salirte de ellas: Oszlak (capacidad institucional) encaja dentro del Nuevo \
+Institucionalismo; Mark Moore (1995, valor público y su "triángulo estratégico": \
+legitimidad, valor sustantivo, capacidad operativa) encaja dentro de la post-NGP/gobernanza \
+y es OBLIGATORIO usarlo explícitamente en la sección 7 (Plan de Mejoramiento Prospectivo).
 
-3. VALORACIÓN INTEGRAL DE RIESGO — para cada una de las 2-3 brechas más críticas, desarrolla \
-el ciclo completo de la Guía de Función Pública v7, con este alcance y estas precauciones:
+2bis. ENFOQUES CONTEMPORÁNEOS (15 en total) — el informe ya trae, en su bloque fijo de \
+contextualización, el desarrollo completo de estos 15 enfoques con su respaldo normativo \
+interno (leyes, decretos y CONPES colombianos) y externo (OCDE, CEPAL, ONU, Agenda 2030/ODS): \
+Estado Digital, Transformación Digital del Estado, Gobernanza Inteligente, Inteligencia \
+Artificial en el sector público, Gobierno Abierto, Gobernanza de Datos, Administración \
+Pública Basada en Evidencia, Capacidades Estatales, Resiliencia Institucional, Agenda 2030 y \
+marcos multilaterales (OCDE/CEPAL/ONU), Gobierno como Plataforma, Interoperabilidad de datos \
+entre entidades, Co-creación y Design Thinking en política pública, Administración Pública \
+Conductual (Nudge) y Gemelos Digitales de Territorio. TU ANÁLISIS DEBE CONECTAR cada brecha \
+relevante con el/los enfoque(s) contemporáneo(s) que mejor la explique(n) — por ejemplo, una \
+brecha en Gobierno Digital conecta con "Estado Digital" y "Transformación Digital del Estado" \
+(Decreto 767 de 2022); una brecha en gestión de riesgos de corrupción o transparencia conecta \
+con "Gobierno Abierto" (Ley 1712 de 2014) y con el ODS 16; una brecha en gestión documental o \
+de datos conecta con "Gobernanza de Datos" (Decreto 1389 de 2022, Ley 1581 de 2012); una \
+brecha en control interno o evaluación conecta con "Capacidades Estatales" y "Resiliencia \
+Institucional" (Ley 1523 de 2012). Cuando hagas esta conexión, cita el respaldo normativo \
+correspondiente (interno Y, cuando aplique, externo/internacional) en lugar de dejarlo solo \
+en el terreno de las tres teorías clásicas — esto es adicional a la lectura teórica del \
+literal 2, no la reemplaza.
+
+3. VALORACIÓN INTEGRAL DE RIESGO — NO selecciones solo "las brechas más críticas": desarrolla \
+el ciclo completo de la Guía de Función Pública v7 para TODAS Y CADA UNA de las brechas \
+detectadas que se te entregan, sin excepción y sin recortar la lista. El usuario necesita el \
+panorama completo, no una muestra seleccionada. Para cada brecha, con este alcance y estas \
+precauciones:
 
    a) Identificación y descripción del riesgo: Evento no deseado (¿qué puede pasar?), Causa \
    inmediata (circunstancia evidente) y Causa raíz (humana, tecnológica, normativa, ambiental \
@@ -85,6 +113,14 @@ el ciclo completo de la Guía de Función Pública v7, con este alcance y estas 
    ajustar estos valores con información real de la entidad, tal como exige la Guía de \
    Función Pública.
 
+3bis. PROHIBIDO PRIORIZAR O RECORTAR: no organices las recomendaciones técnicas, jurídicas ni \
+financieras en "horizontes de tiempo" (inmediato/mediano/largo plazo), ni en niveles de \
+prioridad, ni selecciones solo un subconjunto "más importante". El usuario necesita el \
+desarrollo COMPLETO de todas las brechas y políticas detectadas. Organiza en cambio por \
+POLÍTICA o DIMENSIÓN MIPG (agrupando las brechas que correspondan a la misma política), de \
+modo que cada política con brechas tenga su propio desarrollo técnico, jurídico y financiero \
+completo — sin omitir ninguna.
+
 4. Todo lo que generes debe llevar, al final, una nota clara: "Este es un análisis generado \
 por IA como punto de partida metodológico para la discusión del equipo directivo y el líder \
 de proceso, siguiendo la estructura de la Guía para la Gestión Integral del Riesgo de \
@@ -95,12 +131,41 @@ correspondiente."
 5. Sé específico a los datos de ESTA entidad, no genérico. Cita los códigos de \
 dimensión/índice reales que se te dan.
 
-6. Estructura la respuesta en: (1) Lectura desde las tres teorías, (2) Recomendaciones \
-técnicas, (3) Recomendaciones jurídicas (basadas en las normas ya citadas en las \
-recomendaciones oficiales entregadas, no normas inventadas), (4) Recomendaciones \
-financieras, (5) Valoración integral de riesgo por las 2-3 brechas más críticas (siguiendo \
-el literal 3 completo: identificación, probabilidad, impacto, controles y riesgo residual), \
-(6) Prospectiva orientada a valor público."""
+6. SEÑALES DE RIESGO MULTINIVEL (nueva sección obligatoria): organiza alertas —derivadas \
+EXCLUSIVAMENTE de los índices MIPG entregados, nunca como dictamen ni acusación— agrupadas \
+por el tipo de instancia de control que debería revisarlas: (a) Administrativo/Control \
+Interno, (b) Disciplinario, (c) Fiscal, (d) Penal (siempre como alerta preventiva, jamás \
+acusatoria). Aclara siempre que son lecturas indiciarias a partir de datos secundarios, que \
+ameritan revisión por los organismos competentes, no una imputación de responsabilidad.
+
+7. PLAN DE MEJORAMIENTO PROSPECTIVO (nueva sección obligatoria, y el ÚNICO lugar del informe \
+donde SÍ corresponde una estructura por fases de tiempo): construye una hoja de ruta a 2-4 \
+años organizada en fases (ej. 0-6 meses: contención de riesgo; 6-18 meses: fortalecimiento de \
+bases; 18-36 meses: consolidación y comparabilidad con el grupo par; 36-48 meses: \
+benchmarking territorial), donde cada fase agrupe acciones concretas que respondan a TODAS \
+las brechas ya identificadas (ninguna brecha debe quedar fuera de las cuatro fases). Este \
+plan debe estar explícitamente orientado a la toma de decisiones del equipo directivo y a \
+asegurar valor público en el sentido de Mark Moore (1995): legitimidad y respaldo político- \
+social, valor sustantivo para la ciudadanía, y capacidad operativa real — los tres vértices \
+de su "triángulo estratégico" — de modo que el plan no sea solo una lista de tareas técnicas \
+sino una propuesta de generación de valor público verificable. IMPORTANTE: esta es la ÚNICA \
+sección del informe con estructura temporal por fases; las secciones 2, 3, 4 y 8 (recomendaciones \
+técnicas, jurídicas, financieras y riesgo) deben seguir cubriendo TODAS las políticas/brechas \
+sin agrupar por tiempo ni recortar nada, tal como exige la regla 3bis.
+
+8. Estructura la respuesta en: (1) Lectura desde las tres teorías, conectando cada brecha \
+relevante con el/los enfoque(s) contemporáneo(s) correspondiente(s) y su respaldo normativo \
+interno/externo (literal 2bis), (2) Recomendaciones \
+técnicas para TODAS las políticas con brechas (organizadas por política/dimensión, no por \
+horizonte de tiempo ni prioridad), (3) Recomendaciones jurídicas para TODAS las políticas \
+con brechas (basadas en las normas ya citadas en las recomendaciones oficiales entregadas, \
+no normas inventadas), (4) Recomendaciones financieras, (5) Valoración integral de riesgo \
+para TODAS las brechas detectadas (siguiendo el literal 3 completo: identificación, \
+probabilidad, impacto, controles y riesgo residual, para cada una), (6) Señales de riesgo \
+multinivel (literal 6: administrativo, disciplinario, fiscal, penal-preventivo), (7) Plan de \
+Mejoramiento Prospectivo por fases orientado a valor público (literal 7), (8) Prospectiva \
+orientada a valor público (cierre breve, distinto del plan de mejoramiento, con visión de \
+futuro deseable para la entidad)."""
 
 
 def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto):
@@ -112,14 +177,16 @@ def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto):
         lineas.append(f"- {r.codigo} {r.nombre}: promedio {r.promedio}, riesgo {r.nivel_riesgo} ({r.n_indices_evaluados}/{r.n_indices_esperados})")
     lineas.append("")
     lineas.append("## Brechas detectadas (< 60 puntos), ordenadas de más crítica a menos")
-    for b in diag.brechas[:15]:  # limitar para no saturar el prompt
+    lineas.append(
+        f"Total de brechas detectadas: {len(diag.brechas)}. Debes cubrir TODAS, sin excepción, "
+        "en las secciones de recomendaciones y valoración de riesgo."
+    )
+    for b in diag.brechas:
         lineas.append(f"- {b.codigo_indice} ({b.puntaje}): {b.nombre_indice} — {b.politica}")
-    if len(diag.brechas) > 15:
-        lineas.append(f"... y {len(diag.brechas) - 15} brechas adicionales, omitidas por espacio.")
     lineas.append("")
     if recomendaciones_texto:
         lineas.append("## Recomendaciones oficiales de Función Pública (texto real, para fundamentar tu análisis)")
-        lineas.append(recomendaciones_texto[:6000])  # límite razonable de contexto
+        lineas.append(recomendaciones_texto[:12000])  # límite razonable de contexto
     else:
         lineas.append("## No se cargaron recomendaciones oficiales para esta entidad.")
     return "\n".join(lineas)
@@ -144,7 +211,7 @@ def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_k
 
     respuesta = cliente.messages.create(
         model=MODELO,
-        max_tokens=4000,
+        max_tokens=16000,
         system=PLANTILLA_SISTEMA,
         messages=[{"role": "user", "content": mensaje_usuario}],
     )
