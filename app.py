@@ -25,7 +25,9 @@ from backend.base_conocimiento.cargar_recomendaciones import (
 )
 from backend.modelos.entidades import Entidad, ResultadoIndice
 from backend.motores.motor_diagnostico import diagnosticar
-from backend.motores.motor_analisis_360 import analizar_360
+from backend.motores.motor_analisis_360 import analizar_360, filtrar_grupo, subregiones_disponibles_para
+from backend.motores.motor_isvpt import calcular_isvpt
+from backend.motores.estudio_de_caso import generar_estudio_de_caso_docx, generar_estudio_de_caso_pdf
 from backend.base_conocimiento.subregiones_antioquia import todas_las_subregiones
 
 CARPETA_DATA = Path(__file__).resolve().parent / "data"
@@ -61,7 +63,11 @@ def verificar_acceso():
 if not verificar_acceso():
     st.stop()
 
-st.title("SIIEAP — Sistema de Diagnóstico del Desempeño Institucional (IDI-MIPG)")
+st.title("Modelo de Conocimiento Institucional del Sistema de Inteligencia Artificial para la Evaluación Integral del Desempeño Institucional en Entidades Públicas (SIIEAP)")
+st.caption(
+    "Docente: Norma Elizabeth Álvarez Grajales · Área de conocimiento: Entidades "
+    "Públicas y del Desarrollo · Escuela Superior de Administración Pública (ESAP)"
+)
 st.caption(
     "Catálogo oficial: "
     f"{len(dimensiones())} dimensiones, 19 políticas, {len(todos_los_indices())} índices."
@@ -230,16 +236,31 @@ with tab_real:
             st.caption(
                 "Compara esta entidad contra un grupo de referencia, usando el 'Grupo par' "
                 "oficial de Función Pública (ya calculado en el Excel) y, opcionalmente, la "
-                "subregión de Antioquia. No inventa cifras: todo sale de las columnas reales "
-                "del archivo cargado arriba."
+                "subregión del departamento (disponible para Antioquia y Chocó). No inventa "
+                "cifras: todo sale de las columnas reales del archivo cargado arriba."
             )
             col_360_a, col_360_b, col_360_c = st.columns(3)
-            departamento_360 = col_360_a.text_input(
-                "Departamento (opcional)", value="ANTIOQUIA", key="departamento_360"
+            opciones_departamento = ["ANTIOQUIA", "CHOCÓ", "Otro (escribir abajo)"]
+            departamento_elegido = col_360_a.selectbox(
+                "Departamento", opciones_departamento, key="departamento_360_select"
             )
-            opciones_subregion = ["(ninguna)"] + todas_las_subregiones()
+            if departamento_elegido == "Otro (escribir abajo)":
+                departamento_360 = col_360_a.text_input(
+                    "Escriba el departamento", value="", key="departamento_360_manual"
+                )
+                st.caption(
+                    "ℹ️ Este departamento no tiene subregiones registradas todavía en el "
+                    "sistema — el análisis seguirá funcionando por Departamento y Grupo par, "
+                    "solo sin el filtro adicional de subregión. Para agregar la "
+                    "subregionalización de un nuevo departamento, avísele a quien administra "
+                    "el sistema."
+                )
+            else:
+                departamento_360 = departamento_elegido
+
+            opciones_subregion = ["(ninguna)"] + subregiones_disponibles_para(departamento_360)
             subregion_360 = col_360_b.selectbox(
-                "Subregión de Antioquia (opcional)", opciones_subregion, key="subregion_360"
+                f"Subregión de {departamento_360 or '—'} (opcional)", opciones_subregion, key="subregion_360"
             )
             grupo_par_360 = col_360_c.text_input(
                 "Grupo par contiene (opcional)",
@@ -287,6 +308,38 @@ with tab_real:
                             st.markdown(f"- {nombre_e}: **{idi_e}**")
 
                     st.session_state.ultimo_analisis_360 = resultado_360
+
+                    # Índice Sintético de Valor Público Territorial (ISVPT) — novedad metodológica
+                    df_grupo_isvpt, _desc_isvpt = filtrar_grupo(
+                        df,
+                        departamento=departamento_360 or None,
+                        subregion=None if subregion_360 == "(ninguna)" else subregion_360,
+                        grupo_par_contiene=grupo_par_360 or None,
+                    )
+                    resultado_isvpt = calcular_isvpt(df_grupo_isvpt, entidad_referencia=entidad_elegida)
+                    st.markdown("---")
+                    st.markdown("#### 🧮 Índice Sintético de Valor Público Territorial (ISVPT) — novedad")
+                    st.caption(
+                        "Normaliza (min-max) las 7 dimensiones del IDI-MIPG dentro de ESTE grupo de "
+                        "comparación y las agrega en un solo valor relativo (0 a 1), siguiendo la "
+                        "metodología académica del ISDEL (Vélez Tamayo et al., 2026) y las directrices "
+                        "de la OCDE (2008) para indicadores compuestos."
+                    )
+                    if resultado_isvpt.isvpt_entidad_referencia is not None:
+                        col_isvpt_a, col_isvpt_b = st.columns(2)
+                        col_isvpt_a.metric("ISVPT de la entidad (0 a 1)", resultado_isvpt.isvpt_entidad_referencia)
+                        col_isvpt_b.metric(
+                            "Posición en el grupo",
+                            f"{resultado_isvpt.posicion_entidad_referencia} de {resultado_isvpt.n_entidades}",
+                        )
+                        if resultado_isvpt.subindices_por_dimension_entidad:
+                            st.dataframe(
+                                [{"Dimensión": k, "Subíndice normalizado": v} for k, v in resultado_isvpt.subindices_por_dimension_entidad.items()],
+                                use_container_width=True,
+                            )
+                        st.session_state.ultimo_diagnostico_real["isvpt"] = resultado_isvpt
+                    else:
+                        st.caption("No se pudo ubicar la entidad dentro del grupo filtrado para calcular su ISVPT.")
                 except Exception as e:
                     st.error(f"No se pudo calcular el análisis 360: {e}")
 
@@ -298,6 +351,9 @@ with tab_real:
                 "nombre": entidad.nombre,
                 "diag": diag,
                 "texto_recos": texto_recos,
+                "cruce": cruce,
+                "idi_oficial": idi_oficial,
+                "grupo_par": grupo_par,
             }
 
         if "ultimo_diagnostico_real" in st.session_state:
@@ -342,7 +398,10 @@ with tab_real:
                     from backend.motores.generador_informe import generar_reporte_docx, generar_reporte_pdf
 
                     docx_buffer = generar_reporte_docx(
-                        datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"]
+                        datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"],
+                        resultado_isvpt=datos_informe.get("isvpt"),
+                        resultado_360=st.session_state.get("ultimo_analisis_360"),
+                        idi_oficial=datos_informe.get("idi_oficial"),
                     )
                     col_docx.download_button(
                         "⬇️ Descargar informe en Word (.docx)",
@@ -353,7 +412,10 @@ with tab_real:
                     )
 
                     pdf_buffer = generar_reporte_pdf(
-                        datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"]
+                        datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"],
+                        resultado_isvpt=datos_informe.get("isvpt"),
+                        resultado_360=st.session_state.get("ultimo_analisis_360"),
+                        idi_oficial=datos_informe.get("idi_oficial"),
                     )
                     col_pdf.download_button(
                         "⬇️ Descargar informe en PDF",
@@ -364,6 +426,58 @@ with tab_real:
                     )
                 except Exception as e:
                     st.error(f"No se pudo generar el informe descargable: {e}")
+
+                st.markdown("---")
+                st.markdown("### 🎓 Estudio de Caso Académico (Unidad 2 — 35% de la nota)")
+                st.caption(
+                    "Genera el 'Informe técnico de análisis del caso' que exige el "
+                    "microcurrículo de Enfoques y Teorías de la Administración Pública II: "
+                    "descripción del problema público, contexto local/regional/global, "
+                    "análisis desde la NGP/post-NGP/Nuevo Institucionalismo, fuentes de "
+                    "datos abiertos, fundamento jurídico-fiscal-disciplinario-contable-"
+                    "control interno, fortalezas, debilidades y recomendaciones."
+                )
+                col_ec_docx, col_ec_pdf = st.columns(2)
+                try:
+                    docx_buffer_ec = generar_estudio_de_caso_docx(
+                        datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"],
+                        cruce_recomendaciones=datos_informe.get("cruce"),
+                        resultado_360=st.session_state.get("ultimo_analisis_360"),
+                        resultado_isvpt=datos_informe.get("isvpt"),
+                        idi_oficial=datos_informe.get("idi_oficial"),
+                        departamento=departamento_360,
+                    )
+                    col_ec_docx.download_button(
+                        "⬇️ Descargar Estudio de Caso (.docx)",
+                        data=docx_buffer_ec,
+                        file_name=f"estudio_de_caso_{datos_informe['nombre'].replace(' ', '_')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key="descarga_ec_docx",
+                    )
+
+                    pdf_buffer_ec = generar_estudio_de_caso_pdf(
+                        datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"],
+                        cruce_recomendaciones=datos_informe.get("cruce"),
+                        resultado_360=st.session_state.get("ultimo_analisis_360"),
+                        resultado_isvpt=datos_informe.get("isvpt"),
+                        idi_oficial=datos_informe.get("idi_oficial"),
+                        departamento=departamento_360,
+                    )
+                    col_ec_pdf.download_button(
+                        "⬇️ Descargar Estudio de Caso (PDF)",
+                        data=pdf_buffer_ec,
+                        file_name=f"estudio_de_caso_{datos_informe['nombre'].replace(' ', '_')}.pdf",
+                        mime="application/pdf",
+                        key="descarga_ec_pdf",
+                    )
+                    if not st.session_state.get("ultimo_analisis_360"):
+                        st.caption(
+                            "💡 Sugerencia: calcule primero el 'Análisis 360' más arriba para "
+                            "que el Estudio de Caso incluya el contexto regional (percentil, "
+                            "grupo de comparación) con datos reales."
+                        )
+                except Exception as e:
+                    st.error(f"No se pudo generar el Estudio de Caso: {e}")
     else:
         st.info("Suba un archivo para habilitar el selector de entidades.")
 
