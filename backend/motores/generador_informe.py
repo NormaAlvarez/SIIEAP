@@ -352,7 +352,7 @@ DESCARGO_RESPONSABILIDAD_AMPLIADO = (
 # ---------------------------------------------------------------------------
 # Régimen especial MIPG/MECI: algunas entidades NO están obligadas a
 # implementar el MIPG en su integralidad (7 dimensiones, 19 políticas) sino
-# únicamente la política de Control Interno (Ley 87 de 1993 → política 15 →
+# únicamente la política de Control Interno (Ley 87 de 1993 → política 19 →
 # dimensión 7 → MECI), en virtud del artículo 40 de la Ley 489 de 1998 y del
 # artículo 2.2.22.3.4 del Decreto 1499 de 2017. Esto es distinto de una
 # entidad de la Rama Ejecutiva territorial (alcaldías, gobernaciones,
@@ -369,6 +369,8 @@ REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA = "universidad_autonoma"
 REGIMEN_ESPECIAL_ORGANO_CONTROL = "organo_control"
 REGIMEN_ESPECIAL_BANCO_REPUBLICA = "banco_republica"
 REGIMEN_ESPECIAL_CORPORACION_AUTONOMA = "corporacion_autonoma_regional"
+REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA = "concejo_asamblea"
+REGIMEN_ESPECIAL_PERSONERIA = "personeria"
 
 _CATALOGO_REGIMEN_ESPECIAL = {
     REGIMEN_ESPECIAL_NINGUNO: {
@@ -384,7 +386,7 @@ _CATALOGO_REGIMEN_ESPECIAL = {
             "conforme al artículo 40 de la Ley 489 de 1998. Por esa razón, el Modelo "
             "Integrado de Planeación y Gestión (MIPG) no le aplica en su integralidad: "
             "solo está obligada a implementar la política de Control Interno (Ley 87 de "
-            "1993 — política 15, dimensión 7 del MIPG, desarrollada a través del MECI), "
+            "1993 — política 19, dimensión 7 del MIPG, desarrollada a través del MECI), "
             "conforme lo confirmó el Departamento Administrativo de la Función Pública "
             "(concepto con radicado 20265000162111 de 2026). Las demás 18 políticas se "
             "implementan solo en la medida en que le sean aplicables por su propia "
@@ -396,20 +398,53 @@ _CATALOGO_REGIMEN_ESPECIAL = {
         ),
     },
     REGIMEN_ESPECIAL_ORGANO_CONTROL: {
-        "nombre": "Órgano de control (Contraloría/Personería territorial)",
+        "nombre": "Órgano de control (Contraloría territorial)",
         "aplica_mipg_integral": False,
         "nota": (
-            "Esta entidad es un órgano de control territorial (Contraloría departamental, "
-            "municipal o distrital) y, por tanto, no hace parte de la Rama Ejecutiva del "
-            "Poder Público (arts. 117 y 119 de la Constitución Política). En consecuencia, "
-            "no está sujeta al Modelo Integrado de Planeación y Gestión (MIPG) en su "
-            "integralidad: únicamente debe implementar la política de Control Interno "
-            "(Ley 87 de 1993 — política 15, dimensión 7, desarrollada a través del MECI), "
-            "conforme lo confirmó el Departamento Administrativo de la Función Pública "
-            "(concepto con radicado 20265000131771 de 2026). Las demás 18 políticas se "
-            "implementan solo en la medida en que le sean aplicables por su propia "
-            "normativa — no por obligatoriedad del MIPG. El resultado oficial publicado "
-            "para esta entidad corresponde únicamente a la Dimensión 7."
+            "Esta entidad es una Contraloría departamental, municipal o distrital y, por "
+            "tanto, no hace parte de la Rama Ejecutiva del Poder Público (arts. 117 y 119 "
+            "de la Constitución Política). En consecuencia, no está sujeta al Modelo "
+            "Integrado de Planeación y Gestión (MIPG) en su integralidad: únicamente debe "
+            "implementar la política de Control Interno (Ley 87 de 1993 — política 19, "
+            "dimensión 7, desarrollada a través del MECI), conforme lo confirmó el "
+            "Departamento Administrativo de la Función Pública (concepto con radicado "
+            "20265000131771 de 2026). Las demás 18 políticas se implementan solo en la "
+            "medida en que le sean aplicables por su propia normativa — no por "
+            "obligatoriedad del MIPG. El resultado oficial publicado para esta entidad "
+            "corresponde únicamente a la Dimensión 7."
+        ),
+    },
+    REGIMEN_ESPECIAL_PERSONERIA: {
+        "nombre": "Personería municipal o distrital",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad es una Personería municipal o distrital — un órgano del "
+            "Ministerio Público en el nivel territorial (arts. 118 y 313 de la "
+            "Constitución Política), distinto del alcalde y de la Rama Ejecutiva. El "
+            "Manual Operativo del MIPG (Función Pública, versión 6.1, febrero de 2026) la "
+            "agrupa junto con los Concejos municipales, dentro de un esquema de "
+            "implementación del Sistema de Control Interno (MECI) diferenciado y "
+            "simplificado — documentado explícitamente para municipios de quinta y sexta "
+            "categoría —, en vez del MIPG en su integralidad de 7 dimensiones y 19 "
+            "políticas. Cualquier lectura de brecha en las demás dimensiones que aparezca "
+            "en este informe debe leerse con esa salvedad."
+        ),
+    },
+    REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA: {
+        "nombre": "Concejo municipal o Asamblea departamental",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad es un Concejo municipal o una Asamblea departamental — una "
+            "corporación público-administrativa de elección popular (arts. 312 y 313 de "
+            "la Constitución Política), NO un organismo de la Rama Ejecutiva (el "
+            "alcalde/gobernador es quien ejerce esa función, no el Concejo/Asamblea). El "
+            "Manual Operativo del MIPG (Función Pública, versión 6.1, febrero de 2026) la "
+            "agrupa junto con las Personerías, dentro de un esquema de implementación del "
+            "Sistema de Control Interno (MECI) diferenciado y simplificado — documentado "
+            "explícitamente para municipios de quinta y sexta categoría —, en vez del "
+            "MIPG en su integralidad de 7 dimensiones y 19 políticas. Cualquier lectura "
+            "de brecha en las demás dimensiones que aparezca en este informe debe leerse "
+            "con esa salvedad."
         ),
     },
     REGIMEN_ESPECIAL_BANCO_REPUBLICA: {
@@ -428,7 +463,7 @@ _CATALOGO_REGIMEN_ESPECIAL = {
             "Esta entidad es una Corporación Autónoma Regional, sujeta a régimen especial "
             "conforme al artículo 40 de la Ley 489 de 1998. El MIPG no le aplica en su "
             "integralidad — únicamente la política de Control Interno (Ley 87 de 1993 — "
-            "política 15, dimensión 7, desarrollada a través del MECI). Las demás 18 "
+            "política 19, dimensión 7, desarrollada a través del MECI). Las demás 18 "
             "políticas se implementan solo en la medida en que le sean aplicables por su "
             "propia normativa sectorial."
         ),
