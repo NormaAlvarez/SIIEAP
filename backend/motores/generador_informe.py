@@ -495,6 +495,192 @@ DISCLAIMER_INFORME = (
     "asignatura."
 )
 
+# ---------------------------------------------------------------------------
+# Glosario y convenciones del informe
+#
+# Fuente de los términos OFICIALES: Glosario MIPG v7 (octubre de 2021),
+# Departamento Administrativo de la Función Pública — definiciones
+# parafraseadas aquí, no citadas textualmente. Se listan aparte los términos
+# de CONVENCIÓN PROPIA de SIIEAP, que NO existen en el glosario oficial y son
+# exclusivos de este sistema, para que el lector nunca confunda unos con
+# otros.
+# ---------------------------------------------------------------------------
+
+GLOSARIO_OFICIAL_MIPG = [
+    (
+        "MIPG (Modelo Integrado de Planeación y Gestión)",
+        "Marco de referencia oficial del Estado colombiano (Decreto 1499 de "
+        "2017) para dirigir, planear, ejecutar, hacer seguimiento, evaluar y "
+        "controlar la gestión de las entidades públicas, con el fin de generar "
+        "resultados que atiendan los planes de desarrollo y las necesidades de "
+        "la ciudadanía.",
+    ),
+    (
+        "Índice de Desempeño Institucional (IDI)",
+        "Cifra oficial, publicada por Función Pública, que resume qué tan "
+        "orientada está una entidad hacia la eficacia, la eficiencia y la "
+        "calidad de su gestión. Es siempre la cifra de referencia principal en "
+        "este informe.",
+    ),
+    (
+        "FURAG (Formulario Único de Reporte y Avance de Gestión)",
+        "Cuestionario oficial en línea, aplicado anualmente por Función "
+        "Pública, con el que se recolecta la información que luego produce el "
+        "IDI y mide el avance de las políticas de MIPG y del Modelo Estándar "
+        "de Control Interno (MECI).",
+    ),
+    (
+        "MECI (Modelo Estándar de Control Interno)",
+        "Estructura oficial para evaluar la estrategia, la gestión y los "
+        "mecanismos de autoevaluación de una entidad, adaptable a las "
+        "necesidades propias de cada una.",
+    ),
+    (
+        "Dimensión",
+        "Cada uno de los grandes bloques de políticas y prácticas de gestión "
+        "en que se organiza MIPG (por ejemplo, Talento Humano, Direccionamiento "
+        "Estratégico, Evaluación de Resultados). El IDI se calcula agregando "
+        "el desempeño de la entidad en estas dimensiones.",
+    ),
+    (
+        "Grupo par",
+        "Agrupación oficial de entidades con características homogéneas (por "
+        "ejemplo, mismo tipo y tamaño de alcaldía) que Función Pública usa para "
+        "que los resultados del FURAG sean comparables entre entidades "
+        "similares.",
+    ),
+    (
+        "Valor público",
+        "Los cambios sociales reales y medibles que una entidad pública "
+        "produce para responder a las necesidades de la ciudadanía; es el "
+        "criterio último con el que se juzga si la gestión institucional tuvo "
+        "sentido, más allá del cumplimiento formal de indicadores.",
+    ),
+    (
+        "ODS (Objetivos de Desarrollo Sostenible)",
+        "Los 17 objetivos globales adoptados por la ONU en 2015 para poner fin "
+        "a la pobreza, proteger el planeta y garantizar la prosperidad para "
+        "2030; se usan aquí como marco de referencia para la prospectiva.",
+    ),
+]
+
+GLOSARIO_CONVENCIONES_SIIEAP = [
+    (
+        "IDI-MIPG (como se usa en este informe)",
+        "Forma abreviada, propia de este sistema, para referirse al Índice de "
+        "Desempeño Institucional dentro del marco de MIPG. No es una sigla "
+        "oficial de Función Pública, aunque el IDI que reporta sí lo es.",
+    ),
+    (
+        "Brecha (detectada por SIIEAP)",
+        "Convención EXCLUSIVA de este sistema: un índice MIPG de la entidad "
+        "con puntaje por debajo de 60 puntos, umbral de alerta metodológico "
+        "interno que SIIEAP usa para priorizar qué revisar primero. NO es una "
+        "cifra que publique Función Pública, y no debe confundirse con el IDI "
+        "oficial ni con las recomendaciones oficiales del banco consolidado.",
+    ),
+    (
+        "ISVPT (Índice Sintético de Valor Público Territorial)",
+        "Indicador propio de este informe, construido con metodología "
+        "académica (normalización min-max y agregación simple, siguiendo "
+        "directrices de la OCDE de 2008 para indicadores compuestos), que "
+        "compara las 7 dimensiones del IDI-MIPG de la entidad dentro de su "
+        "grupo par. No es un índice oficial de Función Pública; es un "
+        "ejercicio complementario de este sistema.",
+    ),
+    (
+        "Umbral de alerta metodológico interno (60 puntos)",
+        "El punto de corte que SIIEAP usa internamente para marcar un índice "
+        "como brecha. Se insiste en todo el informe en que la meta real y "
+        "oficial de la gestión pública es siempre el 100%, nunca el 60%.",
+    ),
+    (
+        "Recomendaciones oficiales FP",
+        "A diferencia de las brechas, este dato SÍ es oficial: es el total de "
+        "recomendaciones del banco consolidado del Departamento Administrativo "
+        "de la Función Pública, emitidas específicamente para la entidad "
+        "analizada.",
+    ),
+]
+
+
+def _agregar_glosario_docx(doc, estilo_normal=None):
+    """Inserta la sección 'Glosario y convenciones' en el documento Word,
+    separando siempre los términos OFICIALES (Glosario MIPG v7, Función
+    Pública) de las CONVENCIONES PROPIAS de SIIEAP, para que el lector nunca
+    confunda un dato exclusivo de este informe con un dato oficial.
+    """
+    doc.add_heading("Glosario y convenciones de este informe", level=1)
+    doc.add_paragraph(
+        "Los términos técnicos usados a lo largo de este informe se explican "
+        "aquí en dos grupos: primero los términos OFICIALES del Modelo "
+        "Integrado de Planeación y Gestión, tal como los define el Glosario "
+        "MIPG versión 7 (octubre de 2021) del Departamento Administrativo de "
+        "la Función Pública; y luego las CONVENCIONES PROPIAS de este sistema "
+        "(SIIEAP), que no existen en el glosario oficial y no deben "
+        "confundirse con cifras que publique Función Pública."
+    )
+    doc.add_heading("Términos oficiales (Glosario MIPG v7, Función Pública)", level=2)
+    for termino, definicion in GLOSARIO_OFICIAL_MIPG:
+        p = doc.add_paragraph()
+        run_t = p.add_run(f"{termino}: ")
+        run_t.bold = True
+        p.add_run(definicion)
+    doc.add_heading("Convenciones propias de SIIEAP (NO oficiales)", level=2)
+    for termino, definicion in GLOSARIO_CONVENCIONES_SIIEAP:
+        p = doc.add_paragraph()
+        run_t = p.add_run(f"{termino}: ")
+        run_t.bold = True
+        run_t.font.color.rgb = RGBColor(0xB8, 0x5C, 0x00)
+        p.add_run(definicion)
+    doc.add_page_break()
+
+
+def _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2):
+    """Versión PDF (reportlab) de _agregar_glosario_docx: misma separación
+    estricta entre términos oficiales (Glosario MIPG v7, Función Pública) y
+    convenciones propias de SIIEAP."""
+    elementos.append(Paragraph("Glosario y convenciones de este informe", estilos["Heading1"]))
+    elementos.append(Paragraph(
+        "Los términos técnicos usados a lo largo de este informe se explican aquí en dos "
+        "grupos: primero los términos OFICIALES del Modelo Integrado de Planeación y "
+        "Gestión, tal como los define el Glosario MIPG versión 7 (octubre de 2021) del "
+        "Departamento Administrativo de la Función Pública; y luego las CONVENCIONES "
+        "PROPIAS de este sistema (SIIEAP), que no existen en el glosario oficial y no deben "
+        "confundirse con cifras que publique Función Pública.",
+        estilo_normal,
+    ))
+    elementos.append(Spacer(1, 8))
+    elementos.append(Paragraph("Términos oficiales (Glosario MIPG v7, Función Pública)", estilo_h2))
+    for termino, definicion in GLOSARIO_OFICIAL_MIPG:
+        elementos.append(Paragraph(f"<b>{termino}:</b> {definicion}", estilo_normal))
+        elementos.append(Spacer(1, 4))
+    elementos.append(Spacer(1, 6))
+    elementos.append(Paragraph("Convenciones propias de SIIEAP (NO oficiales)", estilo_h2))
+    for termino, definicion in GLOSARIO_CONVENCIONES_SIIEAP:
+        elementos.append(Paragraph(
+            f'<font color="#B85C00"><b>{termino}:</b></font> {definicion}',
+            estilo_normal,
+        ))
+        elementos.append(Spacer(1, 4))
+    elementos.append(PageBreak())
+
+
+def _ajustar_tabla_docx(tabla, anchos_cm, tamano_fuente_pt=9.5):
+    """Fija anchos de columna reales (no solo sugeridos) y un tamaño de letra
+    más pequeño para toda la tabla, evitando que el texto se desborde de las
+    celdas — python-docx requiere fijar el ancho en CADA celda de CADA fila,
+    no solo en la tabla, para que Word lo respete de forma consistente."""
+    tabla.autofit = False
+    tabla.allow_autofit = False
+    for fila in tabla.rows:
+        for celda, ancho in zip(fila.cells, anchos_cm):
+            celda.width = Cm(ancho)
+            for parrafo in celda.paragraphs:
+                parrafo.paragraph_format.space_after = Pt(2)
+                for run in parrafo.runs:
+                    run.font.size = Pt(tamano_fuente_pt)
+
 
 def _fecha_hoy_es():
     meses = [
@@ -574,7 +760,7 @@ def _sombrear_celda(celda, color_hex: str) -> None:
 # Generación del .docx
 # ---------------------------------------------------------------------------
 
-def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None):
+def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None, cruce_recomendaciones=None, total_recomendaciones_entidad=None):
     """Devuelve un BytesIO con el informe técnico en formato Word (.docx).
 
     resultado_isvpt (opcional): un motor_isvpt.ResultadoISVPT ya calculado
@@ -639,19 +825,59 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     run_autoria.italic = True
     run_autoria.font.size = Pt(9)
 
+    # Total de recomendaciones OFICIALES de Función Pública para esta entidad.
+    # Prioridad: el total real de recomendaciones cargadas para la entidad
+    # (todas las que trae el consolidado/archivo, sin filtrar por brecha).
+    # Solo si no se recibió ese dato, se cae al conteo derivado del cruce
+    # (que subestima el total real, porque solo cuenta recomendaciones
+    # vinculadas a brechas detectadas).
+    total_recomendaciones = (
+        total_recomendaciones_entidad
+        if total_recomendaciones_entidad is not None
+        else (sum(len(lista) for lista in cruce_recomendaciones.values()) if cruce_recomendaciones else None)
+    )
+
     doc.add_paragraph()
-    tabla_portada = doc.add_table(rows=1, cols=3)
+    n_columnas_portada = 4 if total_recomendaciones is not None else 3
+    tabla_portada = doc.add_table(rows=1, cols=n_columnas_portada)
     tabla_portada.style = "Light Grid Accent 1"
+    tabla_portada.autofit = False
+    tabla_portada.allow_autofit = False
     celdas_portada = tabla_portada.rows[0].cells
     celdas_portada[0].text = f"IDI oficial (Función Pública)\n{idi_protagonista}"
     celdas_portada[1].text = f"Nivel de riesgo global\n{nivel_riesgo_global}"
-    celdas_portada[2].text = f"Brechas detectadas\n{len(diag.brechas)}"
+    celdas_portada[2].text = f"Brechas detectadas (dato exclusivo de este informe)\n{len(diag.brechas)}"
+    ancho_celda = Cm(4.2) if n_columnas_portada == 4 else Cm(5.5)
+    if total_recomendaciones is not None:
+        celdas_portada[3].text = f"Recomendaciones oficiales FP\n{total_recomendaciones}"
     for celda in celdas_portada:
+        celda.width = ancho_celda
         for parrafo in celda.paragraphs:
             parrafo.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for run_c in parrafo.runs:
                 run_c.bold = True
                 run_c.font.size = Pt(13)
+
+    doc.add_paragraph()
+    p_explica = doc.add_paragraph()
+    run_explica = p_explica.add_run(
+        "⚠ Brechas detectadas: esta cifra es un cálculo EXCLUSIVO de este informe (SIIEAP) — "
+        "NO es un dato que publique el Departamento Administrativo de la Función Pública. "
+        "Corresponde al número de índices MIPG de esta entidad con puntaje por debajo de 60 "
+        "puntos, umbral de alerta metodológico interno del sistema (la meta plena de la gestión "
+        "pública es siempre el 100%, no 60)."
+        + (
+            f" ✔ Recomendaciones oficiales FP: este dato SÍ es oficial — corresponde al total de "
+            f"recomendaciones del banco consolidado del Departamento Administrativo de la Función "
+            f"Pública emitidas para esta entidad (no se limita a las brechas detectadas por este "
+            f"informe)."
+            if total_recomendaciones is not None else ""
+        )
+    )
+    run_explica.italic = True
+    run_explica.font.size = Pt(9)
+    run_explica.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
+
     if resultado_360 is not None and resultado_360.promedio_idi is not None:
         p_grupo = doc.add_paragraph()
         p_grupo.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -673,6 +899,8 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         run_nota_idi.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
     doc.add_page_break()
+
+    _agregar_glosario_docx(doc)
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
     doc.add_heading("1. Resumen ejecutivo", level=1)
@@ -716,8 +944,12 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
             f"contradice la cifra oficial de Función Pública."
         )
     parrafos_resumen.append(
-        f"Se detectaron {len(diag.brechas)} brechas de implementación por debajo del umbral esperado "
-        "(< 60 puntos), todas desarrolladas en detalle en este informe — sin selección ni recorte."
+        f"Este informe (SIIEAP) detectó, con metodología propia y exclusiva del sistema — no con "
+        f"una cifra publicada por la Función Pública —, {len(diag.brechas)} brechas de "
+        "implementación por debajo de 60 puntos (el umbral de alerta metodológico interno que usa "
+        "este sistema para priorizar el análisis; la meta plena de la gestión pública, se insiste, "
+        "es el 100% de cumplimiento, no 60 puntos), todas desarrolladas en detalle en este informe "
+        "— sin selección ni recorte."
     )
     for parrafo_r in parrafos_resumen:
         doc.add_paragraph(parrafo_r)
@@ -786,6 +1018,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         color_fondo = _color_hex_riesgo(r.nivel_riesgo)
         if color_fondo:
             _sombrear_celda(fila[2], color_fondo)
+    _ajustar_tabla_docx(tabla, anchos_cm=[9.5, 2.3, 2.3, 2.0])
 
     doc.add_paragraph()
     try:
@@ -843,6 +1076,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
             fila[0].text = politica
             fila[1].text = enfoque
             fila[2].text = norma
+        _ajustar_tabla_docx(tabla_enfoques, anchos_cm=[5.0, 4.5, 6.0], tamano_fuente_pt=8.5)
 
     if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None:
         doc.add_page_break()
@@ -912,7 +1146,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
 # Generación del PDF (reportlab)
 # ---------------------------------------------------------------------------
 
-def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None):
+def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None, cruce_recomendaciones=None, total_recomendaciones_entidad=None):
     """Devuelve un BytesIO con el informe técnico en formato PDF.
 
     resultado_isvpt (opcional): ver docstring de generar_reporte_docx.
@@ -953,22 +1187,55 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     ))
     elementos.append(Spacer(1, 14))
 
-    datos_tabla_portada = [
-        ["IDI oficial (Función Pública)", "Nivel de riesgo global", "Brechas detectadas"],
-        [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas))],
-    ]
-    tabla_portada = Table(datos_tabla_portada, hAlign="CENTER", colWidths=[5 * cm, 5 * cm, 5 * cm])
+    # Igual que en la versión docx: se prioriza el total real de recomendaciones
+    # de la entidad (todas las cargadas, sin filtrar por brecha) sobre el conteo
+    # derivado del cruce, que subestima el total oficial.
+    total_recomendaciones = (
+        total_recomendaciones_entidad
+        if total_recomendaciones_entidad is not None
+        else (sum(len(lista) for lista in cruce_recomendaciones.values()) if cruce_recomendaciones else None)
+    )
+
+    if total_recomendaciones is not None:
+        datos_tabla_portada = [
+            ["IDI oficial (Función Pública)", "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)", "Recomendaciones oficiales FP"],
+            [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas)), str(total_recomendaciones)],
+        ]
+        anchos_portada = [4 * cm, 4 * cm, 4 * cm, 4.5 * cm]
+    else:
+        datos_tabla_portada = [
+            ["IDI oficial (Función Pública)", "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)"],
+            [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas))],
+        ]
+        anchos_portada = [5 * cm, 5 * cm, 5 * cm]
+    tabla_portada = Table(datos_tabla_portada, hAlign="CENTER", colWidths=anchos_portada)
     tabla_portada.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTSIZE", (0, 0), (-1, -1), 11),
-        ("FONTSIZE", (0, 1), (-1, 1), 15),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("FONTSIZE", (0, 1), (-1, 1), 14),
         ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
     ]))
     elementos.append(tabla_portada)
+    elementos.append(Spacer(1, 6))
+    texto_explica_portada = (
+        "⚠ Brechas detectadas: cifra EXCLUSIVA de este informe (SIIEAP) — NO es un dato que "
+        "publique el Departamento Administrativo de la Función Pública. Corresponde al número de "
+        "índices MIPG de esta entidad con puntaje por debajo de 60 puntos, umbral de alerta "
+        "metodológico interno del sistema (la meta plena de la gestión pública es siempre el "
+        "100%, no 60)."
+    )
+    if total_recomendaciones is not None:
+        texto_explica_portada += (
+            " ✔ Recomendaciones oficiales FP: este dato SÍ es oficial — corresponde al total de "
+            "recomendaciones del banco consolidado del Departamento Administrativo de la Función "
+            "Pública emitidas para esta entidad (no se limita a las brechas detectadas por este "
+            "informe)."
+        )
+    elementos.append(Paragraph(texto_explica_portada, estilo_cursiva))
     if resultado_360 is not None and resultado_360.promedio_idi is not None:
         elementos.append(Spacer(1, 10))
         elementos.append(Paragraph(
@@ -986,6 +1253,8 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
             ParagraphStyle("NotaIDI", parent=estilo_cursiva, fontSize=8),
         ))
     elementos.append(PageBreak())
+
+    _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2)
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
     elementos.append(Paragraph("1. Resumen ejecutivo", estilos["Heading1"]))
@@ -1027,8 +1296,12 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
             f"contradice la cifra oficial de Función Pública."
         )
     parrafos_resumen.append(
-        f"Se detectaron {len(diag.brechas)} brechas de implementación por debajo del umbral esperado "
-        "(< 60 puntos), todas desarrolladas en detalle en este informe — sin selección ni recorte."
+        f"Este informe (SIIEAP) detectó, con metodología propia y exclusiva del sistema — no con "
+        f"una cifra publicada por la Función Pública —, {len(diag.brechas)} brechas de "
+        "implementación por debajo de 60 puntos (el umbral de alerta metodológico interno que usa "
+        "este sistema para priorizar el análisis; la meta plena de la gestión pública, se insiste, "
+        "es el 100% de cumplimiento, no 60 puntos), todas desarrolladas en detalle en este informe "
+        "— sin selección ni recorte."
     )
     for parrafo_r in parrafos_resumen:
         elementos.append(Paragraph(parrafo_r, estilo_normal))
