@@ -50,6 +50,34 @@ from reportlab.platypus import (
 from backend.motores.graficas_informe import generar_grafica_dimensiones, generar_grafica_brechas
 
 
+_ESTILO_CELDA_TABLA_PDF = ParagraphStyle(
+    "CeldaTablaPDF", fontName="Helvetica", fontSize=8, leading=10, wordWrap="CJK",
+)
+_ESTILO_CELDA_TABLA_PDF_ENCABEZADO = ParagraphStyle(
+    "CeldaTablaPDFEncabezado", fontName="Helvetica-Bold", fontSize=8, leading=10,
+    textColor=colors.white, wordWrap="CJK",
+)
+
+
+def _celda_pdf(texto, encabezado: bool = False, tamano_fuente: int | None = None):
+    """Envuelve el texto de una celda de tabla reportlab en un Paragraph con
+    ajuste de línea (wordWrap) explícito. Reportlab NO ajusta de forma
+    confiable strings planos dentro de una Table — cuando el texto es más
+    largo que el ancho de columna, se desborda visualmente sobre las
+    celdas vecinas en vez de partirse en varias líneas. Usar esta función
+    en cualquier columna de texto largo/variable (política, norma,
+    consecuencia, enfoque, recomendación, etc.) es la forma correcta y
+    estable de evitarlo — las columnas puramente numéricas o de 1-2
+    palabras cortas (puntaje, código, sí/no) pueden seguir como string."""
+    estilo = _ESTILO_CELDA_TABLA_PDF_ENCABEZADO if encabezado else _ESTILO_CELDA_TABLA_PDF
+    if tamano_fuente is not None:
+        estilo = ParagraphStyle(
+            "CeldaTablaPDFAd hoc", parent=estilo, fontSize=tamano_fuente, leading=tamano_fuente + 2,
+        )
+    texto_escapado = str(texto).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return Paragraph(texto_escapado, estilo)
+
+
 # ---------------------------------------------------------------------------
 # Identidad visual institucional compartida por los 3 informes (Técnico,
 # Estudio de Caso, Alcaldes/Gobernadores): logos, banner de portada,
@@ -248,6 +276,19 @@ _QUINTILES_MIPG = [
     (80, "8CC152"),   # 61-80  satisfactorio
     (100, "2E8B57"),  # 81-100 sobresaliente
 ]
+
+
+def _color_hex_quintil_mipg(puntaje) -> str | None:
+    """Devuelve el color hex del quintil oficial MIPG correspondiente a un
+    puntaje de 0 a 100, o None si el puntaje no es un número válido."""
+    try:
+        puntaje = float(puntaje)
+    except (TypeError, ValueError):
+        return None
+    for limite, color_hex in _QUINTILES_MIPG:
+        if puntaje <= limite:
+            return color_hex
+    return _QUINTILES_MIPG[-1][1]
 
 
 def _color_hex_quintil_mipg(puntaje) -> str | None:
@@ -1765,10 +1806,10 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     elementos.append(Paragraph(f"<b>IDI estimado: {diag.idi_estimado}</b>", ParagraphStyle("IDIGrande", parent=estilo_normal, fontSize=15)))
     elementos.append(Spacer(1, 8))
 
-    datos_tabla = [["Dimensión", "Promedio", "Riesgo", "Índices"]]
+    datos_tabla = [[_celda_pdf("Dimensión", encabezado=True, tamano_fuente=9), "Promedio", "Riesgo", "Índices"]]
     for r in diag.resultados_por_dimension:
         datos_tabla.append([
-            f"{r.codigo} {r.nombre}", str(r.promedio), str(r.nivel_riesgo),
+            _celda_pdf(f"{r.codigo} {r.nombre}", tamano_fuente=9), str(r.promedio), str(r.nivel_riesgo),
             f"{r.n_indices_evaluados}/{r.n_indices_esperados}",
         ])
     tabla = Table(datos_tabla, hAlign="LEFT", colWidths=[7 * cm, 2.5 * cm, 2.5 * cm, 2.5 * cm])
@@ -1834,10 +1875,10 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
             if b.politica not in vistas:
                 vistas.add(b.politica)
                 politicas_con_brecha.append(b.politica)
-        datos_tabla_enfoques = [["Política con brecha", "Enfoque contemporáneo", "Norma"]]
+        datos_tabla_enfoques = [[_celda_pdf("Política con brecha", encabezado=True), _celda_pdf("Enfoque contemporáneo", encabezado=True), _celda_pdf("Norma", encabezado=True)]]
         for politica in politicas_con_brecha:
             enfoque, norma = _enfoque_y_norma_de_politica(politica)
-            datos_tabla_enfoques.append([politica, enfoque, norma])
+            datos_tabla_enfoques.append([_celda_pdf(politica), _celda_pdf(enfoque), _celda_pdf(norma)])
         tabla_enfoques = Table(datos_tabla_enfoques, hAlign="LEFT", colWidths=[5 * cm, 5 * cm, 6 * cm])
         tabla_enfoques.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),

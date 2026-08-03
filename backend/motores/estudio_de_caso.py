@@ -55,6 +55,7 @@ from backend.motores.generador_informe import (
     _color_hex_quintil_mipg,
     _ajustar_tabla_docx,
     _sombrear_celda,
+    _celda_pdf,
 )
 
 
@@ -1289,10 +1290,10 @@ def generar_estudio_de_caso_pdf(
             if b.politica not in vistas_ec:
                 vistas_ec.add(b.politica)
                 politicas_con_brecha_ec.append(b.politica)
-        datos_tabla_enfoques_ec = [["Política con brecha", "Enfoque contemporáneo", "Norma"]]
+        datos_tabla_enfoques_ec = [[_celda_pdf("Política con brecha", encabezado=True), _celda_pdf("Enfoque contemporáneo", encabezado=True), _celda_pdf("Norma", encabezado=True)]]
         for politica in politicas_con_brecha_ec:
             enfoque, norma = _enfoque_y_norma_de_politica(politica)
-            datos_tabla_enfoques_ec.append([politica, enfoque, norma])
+            datos_tabla_enfoques_ec.append([_celda_pdf(politica), _celda_pdf(enfoque), _celda_pdf(norma)])
         tabla_enfoques_ec = Table(datos_tabla_enfoques_ec, hAlign="LEFT", colWidths=[5 * cm, 5 * cm, 6 * cm])
         tabla_enfoques_ec.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
@@ -1505,11 +1506,11 @@ def generar_estudio_de_caso_pdf(
     elementos.extend(_divisor_seccion_pdf("7. Fortalezas y debilidades identificadas", icono="💪"))
     fortalezas = [r for r in diag.resultados_por_dimension if (r.promedio or 0) >= 60]
     debilidades = [r for r in diag.resultados_por_dimension if (r.promedio or 0) < 60]
-    datos_tabla = [["Dimensión", "Promedio", "Clasificación"]]
+    datos_tabla = [[_celda_pdf("Dimensión", encabezado=True), "Promedio", "Clasificación"]]
     for r in fortalezas:
-        datos_tabla.append([f"{r.codigo} {r.nombre}", str(r.promedio), "Fortaleza"])
+        datos_tabla.append([_celda_pdf(f"{r.codigo} {r.nombre}"), str(r.promedio), "Fortaleza"])
     for r in debilidades:
-        datos_tabla.append([f"{r.codigo} {r.nombre}", str(r.promedio), "Debilidad"])
+        datos_tabla.append([_celda_pdf(f"{r.codigo} {r.nombre}"), str(r.promedio), "Debilidad"])
     if len(datos_tabla) > 1:
         tabla = Table(datos_tabla, hAlign="LEFT", colWidths=[8 * cm, 3 * cm, 4 * cm])
         estilo_tabla_fd = [

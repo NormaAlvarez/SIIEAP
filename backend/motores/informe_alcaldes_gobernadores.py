@@ -60,6 +60,7 @@ from backend.motores.generador_informe import (
     ARTICULO_6_CONSTITUCION_TEXTO,
     ARTICULO_6_CONSTITUCION_EXPLICACION,
     _riesgo_alta_direccion_de_politica,
+    _celda_pdf,
 )
 
 
@@ -789,14 +790,14 @@ def generar_informe_alcaldes_pdf(
             estilo_normal,
         ))
         elementos.append(Spacer(1, 6))
-        datos_riesgo_alc = [["Política con brecha", "Tipo de riesgo", "Norma principal", "Consecuencia posible"]]
+        datos_riesgo_alc = [[_celda_pdf("Política con brecha", encabezado=True), _celda_pdf("Tipo de riesgo", encabezado=True), _celda_pdf("Norma principal", encabezado=True), _celda_pdf("Consecuencia posible", encabezado=True)]]
         politicas_ya_vistas_pdf = set()
         for b in diag.brechas:
             if b.politica in politicas_ya_vistas_pdf:
                 continue
             politicas_ya_vistas_pdf.add(b.politica)
             tipo_riesgo, norma_riesgo, consecuencia_riesgo = _riesgo_alta_direccion_de_politica(b.politica)
-            datos_riesgo_alc.append([b.politica, tipo_riesgo, norma_riesgo, consecuencia_riesgo])
+            datos_riesgo_alc.append([_celda_pdf(b.politica), _celda_pdf(tipo_riesgo), _celda_pdf(norma_riesgo), _celda_pdf(consecuencia_riesgo)])
         tabla_riesgo_alc_pdf = Table(datos_riesgo_alc, hAlign="LEFT", colWidths=[3.8 * cm, 2.6 * cm, 4.6 * cm, 6 * cm])
         tabla_riesgo_alc_pdf.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(f"#{COLOR_INSTITUCIONAL}")),
