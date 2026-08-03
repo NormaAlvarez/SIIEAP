@@ -214,10 +214,12 @@ with tab_real:
             diag = diagnosticar(entidad)
 
             cruce = None
+            total_recos_entidad = None
             if "consolidado_cargado" in st.session_state:
                 recos = recomendaciones_de_entidad(st.session_state.consolidado_cargado, entidad_elegida)
                 if recos:
                     cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
+                    total_recos_entidad = len(recos)
                     st.caption(f"{len(recos)} recomendaciones encontradas en el consolidado para esta entidad.")
                 else:
                     st.caption("Esta entidad no aparece en el consolidado de recomendaciones cargado.")
@@ -225,6 +227,7 @@ with tab_real:
                 try:
                     recos = cargar_recomendaciones(archivo_recos)
                     cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
+                    total_recos_entidad = len(recos)
                     st.caption(f"{len(recos)} recomendaciones cargadas, {len(cruce)} brechas con recomendación vinculada.")
                 except Exception as e:
                     st.warning(f"No se pudieron leer las recomendaciones: {e}")
@@ -354,6 +357,7 @@ with tab_real:
                 "diag": diag,
                 "texto_recos": texto_recos,
                 "cruce": cruce,
+                "total_recos_entidad": total_recos_entidad,
                 "idi_oficial": idi_oficial,
                 "grupo_par": grupo_par,
             }
@@ -405,6 +409,7 @@ with tab_real:
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
                         idi_oficial=datos_informe.get("idi_oficial"),
                         cruce_recomendaciones=datos_informe.get("cruce"),
+                        total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
                     )
                     col_docx.download_button(
                         "⬇️ Descargar informe en Word (.docx)",
@@ -420,6 +425,7 @@ with tab_real:
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
                         idi_oficial=datos_informe.get("idi_oficial"),
                         cruce_recomendaciones=datos_informe.get("cruce"),
+                        total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
                     )
                     col_pdf.download_button(
                         "⬇️ Descargar informe en PDF",
