@@ -43,7 +43,19 @@ from reportlab.platypus import (
 )
 
 from backend.motores.graficas_informe import generar_grafica_dimensiones, generar_grafica_brechas, generar_matriz_riesgo_probabilidad_impacto
-from backend.motores.generador_informe import _enfoque_y_norma_de_politica
+from backend.motores.generador_informe import (
+    _enfoque_y_norma_de_politica,
+    _agregar_logos_docx,
+    _logos_pdf_flowables,
+    _agregar_banner_docx,
+    _banner_portada_pdf_flowables,
+    _agregar_divisor_seccion_docx,
+    _divisor_seccion_pdf,
+    _franjas_alternas_docx,
+    _color_hex_quintil_mipg,
+    _ajustar_tabla_docx,
+    _sombrear_celda,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -825,10 +837,12 @@ def generar_estudio_de_caso_docx(
         and round(idi_oficial, 2) != round(diag.idi_estimado, 2)
     )
 
-    titulo = doc.add_heading(
-        "Informe Académico y de Investigación — Estudio de Caso Institucional (Enfoques y Teorías de la Administración Pública II)", level=0
+    _agregar_logos_docx(doc)
+    _agregar_banner_docx(
+        doc,
+        "Informe Académico y de Investigación — Estudio de Caso Institucional "
+        "(Enfoques y Teorías de la Administración Pública II)",
     )
-    titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = p.add_run(nombre_entidad)
@@ -851,7 +865,7 @@ def generar_estudio_de_caso_docx(
     doc.add_page_break()
 
     # 1. Descripción del problema público
-    doc.add_heading("1. Descripción del problema público", level=1)
+    _agregar_divisor_seccion_docx(doc, "1. Descripción del problema público", icono="📝")
     try:
         buffer_grafica_dim_ec = generar_grafica_dimensiones(diag)
         doc.add_picture(buffer_grafica_dim_ec, width=Inches(6.2))
@@ -906,7 +920,7 @@ def generar_estudio_de_caso_docx(
             fila[0].text = politica
             fila[1].text = enfoque
             fila[2].text = norma
-    else:
+        _franjas_alternas_docx(tabla_enfoques_ec)
         doc.add_paragraph(
             f"El diagnóstico IDI-MIPG de {nombre_entidad} no registra brechas "
             "por debajo del umbral con los datos disponibles; el problema "
@@ -927,7 +941,7 @@ def generar_estudio_de_caso_docx(
         run_nota_idi_ec.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
     # 2. Contexto institucional (local, regional, global)
-    doc.add_heading("2. Contexto institucional — enfoque local, regional y global", level=1)
+    _agregar_divisor_seccion_docx(doc, "2. Contexto institucional — enfoque local, regional y global", icono="🌍")
     for linea in _construir_contexto_local_regional_global(nombre_entidad, resultado_360, resultado_isvpt):
         doc.add_paragraph(linea)
 
@@ -994,7 +1008,7 @@ def generar_estudio_de_caso_docx(
         p_r.add_run(texto_r)
 
     # 3. Fuentes de datos abiertos
-    doc.add_heading("3. Fuentes de datos abiertos utilizadas y recomendadas", level=1)
+    _agregar_divisor_seccion_docx(doc, "3. Fuentes de datos abiertos utilizadas y recomendadas", icono="🗂️")
     doc.add_paragraph(
         "Este estudio de caso se fundamenta en la fuente oficial IDI-MIPG "
         "cargada en el sistema; se listan además las plataformas oficiales "
@@ -1025,12 +1039,25 @@ def generar_estudio_de_caso_docx(
     doc.add_page_break()
 
     # 4. Análisis desde las tres teorías + gobernanza + riesgo + plan de mejoramiento (contenido de motor_analisis_ia)
-    doc.add_heading(
+    _agregar_divisor_seccion_docx(
+        doc,
         "4. Análisis desde la Nueva Gestión Pública, la Post-Nueva Gestión "
         "Pública y el Nuevo Institucionalismo, señales de riesgo multinivel "
         "y Plan de Mejoramiento Prospectivo orientado a valor público",
-        level=1,
+        icono="🧭",
     )
+    p_fundamentacion_ec = doc.add_paragraph()
+    run_fundamentacion_ec = p_fundamentacion_ec.add_run(
+        "Fundamentación teórica de referencia para esta sección: desde la ESAP, "
+        "Chica-Vélez y Salazar-Ortiz (2021) documentan el tránsito de la Nueva "
+        "Gestión Pública hacia la Post-Nueva Gestión Pública y la gobernanza como "
+        "forma de organización de lo público; y Jurado-Zambrano y Villanueva (2021) "
+        "aportan la metodología de gestión integrada de riesgos (ISO 31000) aplicada "
+        "al sector público colombiano que orienta la lectura de riesgo institucional "
+        "que sigue."
+    )
+    run_fundamentacion_ec.italic = True
+    run_fundamentacion_ec.font.size = Pt(9.5)
     doc.add_paragraph(
         "El siguiente análisis fue generado con apoyo de inteligencia "
         "artificial (Claude, Anthropic), a partir EXCLUSIVAMENTE de los "
@@ -1046,7 +1073,7 @@ def generar_estudio_de_caso_docx(
     doc.add_page_break()
 
     # 5. Fundamento jurídico, fiscal, disciplinario, contable y de control interno
-    doc.add_heading("5. " + FUNDAMENTO_JURIDICO_AMPLIADO_TITULO, level=1)
+    _agregar_divisor_seccion_docx(doc, "5. " + FUNDAMENTO_JURIDICO_AMPLIADO_TITULO, icono="⚖️")
     doc.add_paragraph(FUNDAMENTO_JURIDICO_AMPLIADO_INTRO)
     for titulo_f, texto_f in FUNDAMENTO_JURIDICO_AMPLIADO:
         p_f = doc.add_paragraph()
@@ -1072,7 +1099,7 @@ def generar_estudio_de_caso_docx(
     doc.add_paragraph(ANALISIS_FINANZAS_PUBLICAS_CIERRE)
 
     # 6. Recomendaciones oficiales de Función Pública vinculadas a las brechas
-    doc.add_heading("6. Recomendaciones oficiales de Función Pública", level=1)
+    _agregar_divisor_seccion_docx(doc, "6. Recomendaciones oficiales de Función Pública", icono="📋")
     if cruce_recomendaciones:
         for codigo, lista_recos in cruce_recomendaciones.items():
             doc.add_paragraph(f"Brecha {codigo}:", style="List Bullet")
@@ -1135,7 +1162,7 @@ def generar_estudio_de_caso_docx(
     doc.add_page_break()
 
     # 7. Fortalezas y debilidades
-    doc.add_heading("7. Fortalezas y debilidades identificadas", level=1)
+    _agregar_divisor_seccion_docx(doc, "7. Fortalezas y debilidades identificadas", icono="💪")
     fortalezas = [r for r in diag.resultados_por_dimension if (r.promedio or 0) >= 60]
     debilidades = [r for r in diag.resultados_por_dimension if (r.promedio or 0) < 60]
     doc.add_heading("Fortalezas", level=2)
@@ -1154,7 +1181,7 @@ def generar_estudio_de_caso_docx(
     doc.add_page_break()
 
     # 8. Prospectiva: 5 escenarios de desarrollo territorial
-    doc.add_heading("8. " + ESCENARIOS_PROSPECTIVOS_TITULO, level=1)
+    _agregar_divisor_seccion_docx(doc, "8. " + ESCENARIOS_PROSPECTIVOS_TITULO, icono="🔮")
     doc.add_paragraph(ESCENARIOS_PROSPECTIVOS_INTRO)
     for titulo_esc, texto_esc in _construir_escenarios_prospectivos(nombre_entidad, diag, resultado_360):
         p_esc = doc.add_paragraph()
@@ -1163,7 +1190,7 @@ def generar_estudio_de_caso_docx(
         p_esc.add_run(texto_esc)
 
     # 9. Nota de uso responsable de IA
-    doc.add_heading("9. Nota de uso responsable de inteligencia artificial", level=1)
+    _agregar_divisor_seccion_docx(doc, "9. Nota de uso responsable de inteligencia artificial", icono="🤖")
     p_ia = doc.add_paragraph()
     run_ia = p_ia.add_run(
         "Este estudio de caso usó inteligencia artificial (Claude, Anthropic) "
@@ -1217,8 +1244,11 @@ def generar_estudio_de_caso_pdf(
     )
 
     elementos = []
-    elementos.append(Paragraph("Informe Académico y de Investigación — Estudio de Caso Institucional (Enfoques y Teorías de la Administración Pública II)", estilo_titulo))
-    elementos.append(Spacer(1, 10))
+    elementos.extend(_logos_pdf_flowables())
+    elementos.extend(_banner_portada_pdf_flowables(
+        "Informe Académico y de Investigación — Estudio de Caso Institucional "
+        "(Enfoques y Teorías de la Administración Pública II)",
+    ))
     elementos.append(Paragraph(f"<b>{nombre_entidad}</b>", estilos["Heading2"]))
     elementos.append(Paragraph(f"Maestría en Administración Pública · ESAP Territorial Antioquia · Generado el {_fecha_hoy_es()}", estilo_normal))
     elementos.append(Paragraph(
@@ -1228,7 +1258,7 @@ def generar_estudio_de_caso_pdf(
     ))
     elementos.append(PageBreak())
 
-    elementos.append(Paragraph("1. Descripción del problema público", estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf("1. Descripción del problema público", icono="📝"))
     try:
         buffer_grafica_dim_ec = generar_grafica_dimensiones(diag)
         elementos.append(Image(buffer_grafica_dim_ec, width=16 * cm, height=16 * cm * 0.5))
@@ -1288,7 +1318,7 @@ def generar_estudio_de_caso_pdf(
         ))
     elementos.append(Spacer(1, 8))
 
-    elementos.append(Paragraph("2. Contexto institucional — enfoque local, regional y global", estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf("2. Contexto institucional — enfoque local, regional y global", icono="🌍"))
     for linea in _construir_contexto_local_regional_global(nombre_entidad, resultado_360, resultado_isvpt):
         elementos.append(Paragraph(linea, estilo_normal))
         elementos.append(Spacer(1, 4))
@@ -1364,12 +1394,23 @@ def generar_estudio_de_caso_pdf(
     ))
     elementos.append(PageBreak())
 
-    elementos.append(Paragraph(
+    elementos.extend(_divisor_seccion_pdf(
         "4. Análisis desde la Nueva Gestión Pública, la Post-Nueva Gestión Pública "
         "y el Nuevo Institucionalismo, señales de riesgo multinivel y Plan de "
         "Mejoramiento Prospectivo orientado a valor público",
-        estilos["Heading1"],
+        icono="🧭",
     ))
+    elementos.append(Paragraph(
+        "Fundamentación teórica de referencia para esta sección: desde la ESAP, "
+        "Chica-Vélez y Salazar-Ortiz (2021) documentan el tránsito de la Nueva "
+        "Gestión Pública hacia la Post-Nueva Gestión Pública y la gobernanza como "
+        "forma de organización de lo público; y Jurado-Zambrano y Villanueva (2021) "
+        "aportan la metodología de gestión integrada de riesgos (ISO 31000) aplicada "
+        "al sector público colombiano que orienta la lectura de riesgo institucional "
+        "que sigue.",
+        estilo_cursiva,
+    ))
+    elementos.append(Spacer(1, 6))
     elementos.append(Paragraph(
         "Análisis generado con apoyo de IA a partir de datos reales del diagnóstico "
         "y las recomendaciones oficiales de Función Pública. Punto de partida "
@@ -1383,7 +1424,7 @@ def generar_estudio_de_caso_pdf(
             elementos.append(Spacer(1, 4))
     elementos.append(PageBreak())
 
-    elementos.append(Paragraph("5. " + FUNDAMENTO_JURIDICO_AMPLIADO_TITULO, estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf("5. " + FUNDAMENTO_JURIDICO_AMPLIADO_TITULO, icono="⚖️"))
     elementos.append(Paragraph(FUNDAMENTO_JURIDICO_AMPLIADO_INTRO, estilo_normal))
     elementos.append(Spacer(1, 6))
     for titulo_f, texto_f in FUNDAMENTO_JURIDICO_AMPLIADO:
@@ -1461,7 +1502,7 @@ def generar_estudio_de_caso_pdf(
         elementos.append(Paragraph(f"• {texto_ind}", estilo_normal))
     elementos.append(PageBreak())
 
-    elementos.append(Paragraph("7. Fortalezas y debilidades identificadas", estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf("7. Fortalezas y debilidades identificadas", icono="💪"))
     fortalezas = [r for r in diag.resultados_por_dimension if (r.promedio or 0) >= 60]
     debilidades = [r for r in diag.resultados_por_dimension if (r.promedio or 0) < 60]
     datos_tabla = [["Dimensión", "Promedio", "Clasificación"]]
@@ -1471,20 +1512,26 @@ def generar_estudio_de_caso_pdf(
         datos_tabla.append([f"{r.codigo} {r.nombre}", str(r.promedio), "Debilidad"])
     if len(datos_tabla) > 1:
         tabla = Table(datos_tabla, hAlign="LEFT", colWidths=[8 * cm, 3 * cm, 4 * cm])
-        tabla.setStyle(TableStyle([
+        estilo_tabla_fd = [
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
             ("FONTSIZE", (0, 0), (-1, -1), 8),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ]))
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2F4F8")]),
+        ]
+        for indice_fila_fd, r in enumerate(fortalezas + debilidades, start=1):
+            color_quintil_fd = _color_hex_quintil_mipg(r.promedio)
+            if color_quintil_fd:
+                estilo_tabla_fd.append(("BACKGROUND", (1, indice_fila_fd), (1, indice_fila_fd), colors.HexColor(f"#{color_quintil_fd}")))
+        tabla.setStyle(TableStyle(estilo_tabla_fd))
         elementos.append(tabla)
     else:
         elementos.append(Paragraph("No hay dimensiones evaluadas con los datos disponibles.", estilo_normal))
     elementos.append(Spacer(1, 10))
 
     elementos.append(PageBreak())
-    elementos.append(Paragraph("8. " + ESCENARIOS_PROSPECTIVOS_TITULO, estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf("8. " + ESCENARIOS_PROSPECTIVOS_TITULO, icono="🔮"))
     elementos.append(Paragraph(ESCENARIOS_PROSPECTIVOS_INTRO, estilo_normal))
     elementos.append(Spacer(1, 6))
     for titulo_esc, texto_esc in _construir_escenarios_prospectivos(nombre_entidad, diag, resultado_360):
