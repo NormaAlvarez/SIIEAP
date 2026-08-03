@@ -29,6 +29,13 @@ from backend.motores.motor_analisis_360 import analizar_360, filtrar_grupo, subr
 from backend.motores.motor_isvpt import calcular_isvpt
 from backend.motores.estudio_de_caso import generar_estudio_de_caso_docx, generar_estudio_de_caso_pdf
 from backend.motores.informe_alcaldes_gobernadores import generar_informe_alcaldes_docx, generar_informe_alcaldes_pdf
+from backend.motores.generador_informe import (
+    REGIMEN_ESPECIAL_NINGUNO,
+    REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA,
+    REGIMEN_ESPECIAL_ORGANO_CONTROL,
+    REGIMEN_ESPECIAL_BANCO_REPUBLICA,
+    REGIMEN_ESPECIAL_CORPORACION_AUTONOMA,
+)
 from backend.base_conocimiento.subregiones_antioquia import todas_las_subregiones
 
 CARPETA_DATA = Path(__file__).resolve().parent / "data"
@@ -36,6 +43,14 @@ RUTA_AUTO_NACION = CARPETA_DATA / "resultados_nacion.xlsx"
 RUTA_AUTO_TERRITORIO = CARPETA_DATA / "resultados_territorio.xlsx"
 RUTA_AUTO_RECOMENDACIONES = CARPETA_DATA / "recomendaciones_consolidado.json"
 RUTA_AUTO_RECOMENDACIONES_GZ = CARPETA_DATA / "recomendaciones_consolidado.json.gz"
+
+OPCIONES_REGIMEN_ESPECIAL = {
+    "Rama Ejecutiva — MIPG íntegro aplica (alcaldías, gobernaciones, EICE, ESE...)": REGIMEN_ESPECIAL_NINGUNO,
+    "Ente universitario autónomo (ej. Universidad de Antioquia)": REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA,
+    "Órgano de control — Contraloría/Personería territorial": REGIMEN_ESPECIAL_ORGANO_CONTROL,
+    "Banco de la República": REGIMEN_ESPECIAL_BANCO_REPUBLICA,
+    "Corporación Autónoma Regional": REGIMEN_ESPECIAL_CORPORACION_AUTONOMA,
+}
 
 st.set_page_config(page_title="SIIEAP — Diagnóstico IDI-MIPG", layout="wide")
 
@@ -206,6 +221,21 @@ with tab_real:
                 type=["xlsx"], key="archivo_recos",
             )
 
+        etiqueta_regimen_elegida = st.selectbox(
+            "Tipo de entidad (régimen especial MIPG/MECI)",
+            list(OPCIONES_REGIMEN_ESPECIAL.keys()),
+            key="tipo_regimen_especial_select",
+            help=(
+                "Si la entidad NO pertenece a la Rama Ejecutiva (universidades autónomas, "
+                "órganos de control territoriales, Banco de la República, Corporaciones "
+                "Autónomas Regionales), el MIPG no le aplica en su integralidad — solo la "
+                "política de Control Interno (MECI). Selecciónelo aquí para que los 3 "
+                "informes incluyan la nota jurídica correcta (art. 40 Ley 489/1998 y "
+                "Decreto 1499/2017) en vez de leer las demás dimensiones como brechas."
+            ),
+        )
+        tipo_regimen_especial_elegido = OPCIONES_REGIMEN_ESPECIAL[etiqueta_regimen_elegida]
+
         if entidad_elegida and st.button("Generar diagnóstico", type="primary", key="btn_real"):
             entidad, idi_oficial, grupo_par = entidad_por_nombre_exacto(df, entidad_elegida)
             st.subheader(entidad.nombre)
@@ -361,6 +391,7 @@ with tab_real:
                 "total_recos_entidad": total_recos_entidad,
                 "idi_oficial": idi_oficial,
                 "grupo_par": grupo_par,
+                "tipo_regimen_especial": tipo_regimen_especial_elegido,
             }
 
         if "ultimo_diagnostico_real" in st.session_state:
@@ -411,6 +442,7 @@ with tab_real:
                         idi_oficial=datos_informe.get("idi_oficial"),
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
+                        tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
                     )
                     col_docx.download_button(
                         "⬇️ Descargar informe en Word (.docx)",
@@ -427,6 +459,7 @@ with tab_real:
                         idi_oficial=datos_informe.get("idi_oficial"),
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
+                        tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
                     )
                     col_pdf.download_button(
                         "⬇️ Descargar informe en PDF",
@@ -457,6 +490,7 @@ with tab_real:
                         resultado_isvpt=datos_informe.get("isvpt"),
                         idi_oficial=datos_informe.get("idi_oficial"),
                         departamento=st.session_state.get("departamento_360_actual"),
+                        tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
                     )
                     col_ec_docx.download_button(
                         "⬇️ Descargar Estudio de Caso (.docx)",
@@ -473,6 +507,7 @@ with tab_real:
                         resultado_isvpt=datos_informe.get("isvpt"),
                         idi_oficial=datos_informe.get("idi_oficial"),
                         departamento=st.session_state.get("departamento_360_actual"),
+                        tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
                     )
                     col_ec_pdf.download_button(
                         "⬇️ Descargar Estudio de Caso (PDF)",
@@ -509,6 +544,7 @@ with tab_real:
                         idi_oficial=datos_informe.get("idi_oficial"),
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
+                        tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
                     )
                     col_alc_docx.download_button(
                         "⬇️ Descargar Informe Ejecutivo (.docx)",
@@ -525,6 +561,7 @@ with tab_real:
                         idi_oficial=datos_informe.get("idi_oficial"),
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
+                        tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
                     )
                     col_alc_pdf.download_button(
                         "⬇️ Descargar Informe Ejecutivo (PDF)",
