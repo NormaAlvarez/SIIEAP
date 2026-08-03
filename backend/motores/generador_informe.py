@@ -263,19 +263,6 @@ def _color_hex_quintil_mipg(puntaje) -> str | None:
     return _QUINTILES_MIPG[-1][1]
 
 
-def _color_hex_quintil_mipg(puntaje) -> str | None:
-    """Devuelve el color hex del quintil oficial MIPG correspondiente a un
-    puntaje de 0 a 100, o None si el puntaje no es un número válido."""
-    try:
-        puntaje = float(puntaje)
-    except (TypeError, ValueError):
-        return None
-    for limite, color_hex in _QUINTILES_MIPG:
-        if puntaje <= limite:
-            return color_hex
-    return _QUINTILES_MIPG[-1][1]
-
-
 _QUINTILES_MIPG_NOMBRE_EMOJI = [
     (20, "Crítico", "🔴"),
     (40, "Bajo", "🟠"),
