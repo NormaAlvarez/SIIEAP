@@ -61,6 +61,8 @@ from backend.motores.generador_informe import (
     ARTICULO_6_CONSTITUCION_EXPLICACION,
     _riesgo_alta_direccion_de_politica,
     _celda_pdf,
+    _agregar_nota_regimen_especial_docx,
+    _nota_regimen_especial_pdf_flowables,
 )
 
 
@@ -261,6 +263,7 @@ def generar_informe_alcaldes_docx(
     cruce_recomendaciones=None,
     total_recomendaciones_entidad=None,
     top_n_brechas: int = 15,
+    tipo_regimen_especial=None,
 ):
     """Genera el Informe Ejecutivo para Alcaldes/Gobernadores en Word.
 
@@ -308,6 +311,7 @@ def generar_informe_alcaldes_docx(
         # sin acción adicional: la altura se ajusta por el contenido
 
     doc.add_paragraph()
+    _agregar_nota_regimen_especial_docx(doc, tipo_regimen_especial)
 
     p_ent = doc.add_paragraph()
     p_ent.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -575,6 +579,7 @@ def generar_informe_alcaldes_pdf(
     cruce_recomendaciones=None,
     total_recomendaciones_entidad=None,
     top_n_brechas: int = 15,
+    tipo_regimen_especial=None,
 ):
     """Versión PDF (reportlab) de generar_informe_alcaldes_docx — mismo
     contenido y misma disciplina de trazabilidad oficial/propio."""
@@ -605,6 +610,7 @@ def generar_informe_alcaldes_pdf(
     # --- Portada: el título y subtítulo ya se dibujan en la banda superior
     # (ver _dibujar_banda_portada_pdf); aquí van los logos y el resto del contenido ---
     elementos.extend(_logos_pdf_flowables())
+    elementos.extend(_nota_regimen_especial_pdf_flowables(tipo_regimen_especial))
     elementos.append(Paragraph(f"<b>{nombre_entidad}</b>", ParagraphStyle("EntAlcaldes", parent=estilos["Heading1"], textColor=colors.HexColor(f"#{COLOR_INSTITUCIONAL}"))))
     elementos.append(Paragraph(f"Generado el {_fecha_hoy_es()} · Decreto 1499 de 2017", estilo_normal))
     elementos.append(Spacer(1, 14))

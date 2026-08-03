@@ -56,6 +56,8 @@ from backend.motores.generador_informe import (
     _ajustar_tabla_docx,
     _sombrear_celda,
     _celda_pdf,
+    _agregar_nota_regimen_especial_docx,
+    _nota_regimen_especial_pdf_flowables,
 )
 
 
@@ -817,6 +819,7 @@ def _construir_escenarios_prospectivos(nombre_entidad, diag, resultado_360=None)
 def generar_estudio_de_caso_docx(
     nombre_entidad, diag, analisis_ia_texto, cruce_recomendaciones=None,
     resultado_360=None, resultado_isvpt=None, idi_oficial=None, departamento=None,
+    tipo_regimen_especial=None,
 ):
     """Devuelve un BytesIO con el Estudio de Caso Académico en Word (.docx),
     siguiendo la estructura exigida por el microcurrículo para la Unidad 2.
@@ -844,6 +847,7 @@ def generar_estudio_de_caso_docx(
         "Informe Académico y de Investigación — Estudio de Caso Institucional "
         "(Enfoques y Teorías de la Administración Pública II)",
     )
+    _agregar_nota_regimen_especial_docx(doc, tipo_regimen_especial)
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = p.add_run(nombre_entidad)
@@ -858,8 +862,8 @@ def generar_estudio_de_caso_docx(
     p_autoria_ec = doc.add_paragraph()
     p_autoria_ec.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run_autoria_ec = p_autoria_ec.add_run(
-        "Docente: Norma Elizabeth Álvarez Grajales · Área de conocimiento: Entidades "
-        "Públicas y del Desarrollo · ESAP"
+        "Docente: Norma Elizabeth Álvarez Grajales · Área del conocimiento "
+        "Organizaciones Públicas y Gestión · ESAP"
     )
     run_autoria_ec.italic = True
     run_autoria_ec.font.size = Pt(9)
@@ -1219,6 +1223,7 @@ def generar_estudio_de_caso_docx(
 def generar_estudio_de_caso_pdf(
     nombre_entidad, diag, analisis_ia_texto, cruce_recomendaciones=None,
     resultado_360=None, resultado_isvpt=None, idi_oficial=None, departamento=None,
+    tipo_regimen_especial=None,
 ):
     """Devuelve un BytesIO con el Estudio de Caso Académico en PDF.
 
@@ -1250,11 +1255,12 @@ def generar_estudio_de_caso_pdf(
         "Informe Académico y de Investigación — Estudio de Caso Institucional "
         "(Enfoques y Teorías de la Administración Pública II)",
     ))
+    elementos.extend(_nota_regimen_especial_pdf_flowables(tipo_regimen_especial))
     elementos.append(Paragraph(f"<b>{nombre_entidad}</b>", estilos["Heading2"]))
     elementos.append(Paragraph(f"Maestría en Administración Pública · ESAP Territorial Antioquia · Generado el {_fecha_hoy_es()}", estilo_normal))
     elementos.append(Paragraph(
-        "Docente: Norma Elizabeth Álvarez Grajales · Área de conocimiento: Entidades "
-        "Públicas y del Desarrollo · ESAP",
+        "Docente: Norma Elizabeth Álvarez Grajales · Área del conocimiento "
+        "Organizaciones Públicas y Gestión · ESAP",
         estilo_cursiva,
     ))
     elementos.append(PageBreak())

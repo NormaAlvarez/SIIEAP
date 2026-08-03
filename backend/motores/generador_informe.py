@@ -350,6 +350,155 @@ DESCARGO_RESPONSABILIDAD_AMPLIADO = (
 
 
 # ---------------------------------------------------------------------------
+# Régimen especial MIPG/MECI: algunas entidades NO están obligadas a
+# implementar el MIPG en su integralidad (7 dimensiones, 19 políticas) sino
+# únicamente la política de Control Interno (Ley 87 de 1993 → política 15 →
+# dimensión 7 → MECI), en virtud del artículo 40 de la Ley 489 de 1998 y del
+# artículo 2.2.22.3.4 del Decreto 1499 de 2017. Esto es distinto de una
+# entidad de la Rama Ejecutiva territorial (alcaldías, gobernaciones,
+# establecimientos públicos, EICE) que sí debe reportar el MIPG completo.
+#
+# Catálogo verificado con conceptos oficiales de Función Pública (radicados
+# 20265000131771 de 2026 sobre Contralorías territoriales, y 20265000162111
+# de 2026 sobre la Universidad de Antioquia como ente universitario autónomo)
+# más el análisis normativo propio de Ley 489/1998 arts. 38-40 para EICE.
+# ---------------------------------------------------------------------------
+
+REGIMEN_ESPECIAL_NINGUNO = "ninguno"  # Rama Ejecutiva: MIPG íntegro aplica (alcaldías, gobernaciones, EICE, ESE, EOSP...)
+REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA = "universidad_autonoma"
+REGIMEN_ESPECIAL_ORGANO_CONTROL = "organo_control"
+REGIMEN_ESPECIAL_BANCO_REPUBLICA = "banco_republica"
+REGIMEN_ESPECIAL_CORPORACION_AUTONOMA = "corporacion_autonoma_regional"
+
+_CATALOGO_REGIMEN_ESPECIAL = {
+    REGIMEN_ESPECIAL_NINGUNO: {
+        "nombre": "Rama Ejecutiva (MIPG íntegro aplica)",
+        "aplica_mipg_integral": True,
+        "nota": None,
+    },
+    REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA: {
+        "nombre": "Ente universitario autónomo",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad es un ente universitario autónomo, sujeto a régimen especial "
+            "conforme al artículo 40 de la Ley 489 de 1998. Por esa razón, el Modelo "
+            "Integrado de Planeación y Gestión (MIPG) no le aplica en su integralidad: "
+            "solo está obligada a implementar la política de Control Interno (Ley 87 de "
+            "1993 — política 15, dimensión 7 del MIPG, desarrollada a través del MECI), "
+            "conforme lo confirmó el Departamento Administrativo de la Función Pública "
+            "(concepto con radicado 20265000162111 de 2026). Las demás 18 políticas se "
+            "implementan solo en la medida en que le sean aplicables por su propia "
+            "normativa sectorial — no por obligatoriedad del MIPG. Como consecuencia, el "
+            "resultado oficial publicado para esta entidad corresponde únicamente a la "
+            "Dimensión 7, y cualquier lectura de brecha en las demás dimensiones que "
+            "aparezca en este informe debe leerse con esa salvedad: no es un "
+            "incumplimiento del MIPG, porque el MIPG íntegro no le es exigible."
+        ),
+    },
+    REGIMEN_ESPECIAL_ORGANO_CONTROL: {
+        "nombre": "Órgano de control (Contraloría/Personería territorial)",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad es un órgano de control territorial (Contraloría departamental, "
+            "municipal o distrital) y, por tanto, no hace parte de la Rama Ejecutiva del "
+            "Poder Público (arts. 117 y 119 de la Constitución Política). En consecuencia, "
+            "no está sujeta al Modelo Integrado de Planeación y Gestión (MIPG) en su "
+            "integralidad: únicamente debe implementar la política de Control Interno "
+            "(Ley 87 de 1993 — política 15, dimensión 7, desarrollada a través del MECI), "
+            "conforme lo confirmó el Departamento Administrativo de la Función Pública "
+            "(concepto con radicado 20265000131771 de 2026). Las demás 18 políticas se "
+            "implementan solo en la medida en que le sean aplicables por su propia "
+            "normativa — no por obligatoriedad del MIPG. El resultado oficial publicado "
+            "para esta entidad corresponde únicamente a la Dimensión 7."
+        ),
+    },
+    REGIMEN_ESPECIAL_BANCO_REPUBLICA: {
+        "nombre": "Banco de la República",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "El Banco de la República es una entidad de régimen especial conforme al "
+            "artículo 40 de la Ley 489 de 1998, por lo que el MIPG no le aplica en su "
+            "integralidad — únicamente la política de Control Interno (Ley 87 de 1993)."
+        ),
+    },
+    REGIMEN_ESPECIAL_CORPORACION_AUTONOMA: {
+        "nombre": "Corporación Autónoma Regional",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad es una Corporación Autónoma Regional, sujeta a régimen especial "
+            "conforme al artículo 40 de la Ley 489 de 1998. El MIPG no le aplica en su "
+            "integralidad — únicamente la política de Control Interno (Ley 87 de 1993 — "
+            "política 15, dimensión 7, desarrollada a través del MECI). Las demás 18 "
+            "políticas se implementan solo en la medida en que le sean aplicables por su "
+            "propia normativa sectorial."
+        ),
+    },
+}
+
+
+def _info_regimen_especial(tipo_regimen_especial: str | None) -> dict | None:
+    """Devuelve el registro del catálogo de régimen especial para el tipo dado,
+    o None si el tipo no existe o corresponde a 'ninguno' (Rama Ejecutiva)."""
+    if not tipo_regimen_especial or tipo_regimen_especial == REGIMEN_ESPECIAL_NINGUNO:
+        return None
+    return _CATALOGO_REGIMEN_ESPECIAL.get(tipo_regimen_especial)
+
+
+def _agregar_nota_regimen_especial_docx(doc, tipo_regimen_especial: str | None) -> None:
+    """Inserta, si aplica, un recuadro con la nota fija de régimen especial
+    MIPG/MECI en la portada del informe (docx). No hace nada si la entidad
+    no tiene régimen especial (Rama Ejecutiva ordinaria)."""
+    info = _info_regimen_especial(tipo_regimen_especial)
+    if not info:
+        return
+    tabla_nota = doc.add_table(rows=1, cols=1)
+    tabla_nota.autofit = False
+    celda = tabla_nota.rows[0].cells[0]
+    celda.width = Cm(17)
+    _sombrear_celda(celda, "FDF2D0")
+    p_titulo = celda.paragraphs[0]
+    run_titulo = p_titulo.add_run(f"⚠️ Régimen especial MIPG/MECI — {info['nombre']}")
+    run_titulo.bold = True
+    run_titulo.font.size = Pt(10)
+    p_nota = celda.add_paragraph()
+    run_nota = p_nota.add_run(info["nota"])
+    run_nota.italic = True
+    run_nota.font.size = Pt(9)
+    doc.add_paragraph()
+
+
+def _nota_regimen_especial_pdf_flowables(tipo_regimen_especial: str | None):
+    """Versión PDF (lista de flowables) de la nota de régimen especial.
+    Devuelve una lista vacía si no aplica."""
+    info = _info_regimen_especial(tipo_regimen_especial)
+    if not info:
+        return []
+    estilo_titulo_nota = ParagraphStyle(
+        "TituloNotaRegimen", fontName="Helvetica-Bold", fontSize=9.5, leading=12,
+    )
+    estilo_cuerpo_nota = ParagraphStyle(
+        "CuerpoNotaRegimen", fontName="Helvetica-Oblique", fontSize=8.5, leading=11,
+        spaceBefore=4,
+    )
+    texto_escapado = info["nota"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    tabla = Table(
+        [[[
+            Paragraph(f"⚠️ Régimen especial MIPG/MECI — {info['nombre']}", estilo_titulo_nota),
+            Paragraph(texto_escapado, estilo_cuerpo_nota),
+        ]]],
+        colWidths=[17 * cm],
+    )
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FDF2D0")),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+    ]))
+    return [tabla, Spacer(1, 10)]
+
+
+# ---------------------------------------------------------------------------
 # Bloque fijo: Contextualización de la Administración Pública Contemporánea
 # ---------------------------------------------------------------------------
 
@@ -1207,7 +1356,7 @@ def _sombrear_celda(celda, color_hex: str) -> None:
 # Generación del .docx
 # ---------------------------------------------------------------------------
 
-def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None, cruce_recomendaciones=None, total_recomendaciones_entidad=None):
+def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None, cruce_recomendaciones=None, total_recomendaciones_entidad=None, tipo_regimen_especial=None):
     """Devuelve un BytesIO con el informe técnico en formato Word (.docx).
 
     resultado_isvpt (opcional): un motor_isvpt.ResultadoISVPT ya calculado
@@ -1251,6 +1400,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         "para la Evaluación Integral del Desempeño Institucional en Entidades Públicas (SIIEAP)",
         "Informe de Diagnóstico Institucional y Plan de Mejoramiento Prospectivo",
     )
+    _agregar_nota_regimen_especial_docx(doc, tipo_regimen_especial)
 
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -1266,8 +1416,8 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     p_autoria = doc.add_paragraph()
     p_autoria.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run_autoria = p_autoria.add_run(
-        "Docente: Norma Elizabeth Álvarez Grajales · Área de conocimiento: Entidades "
-        "Públicas y del Desarrollo · Escuela Superior de Administración Pública (ESAP)"
+        "Docente: Norma Elizabeth Álvarez Grajales · Área del conocimiento "
+        "Organizaciones Públicas y Gestión · Escuela Superior de Administración Pública (ESAP)"
     )
     run_autoria.italic = True
     run_autoria.font.size = Pt(9)
@@ -1605,7 +1755,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
 # Generación del PDF (reportlab)
 # ---------------------------------------------------------------------------
 
-def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None, cruce_recomendaciones=None, total_recomendaciones_entidad=None):
+def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None, cruce_recomendaciones=None, total_recomendaciones_entidad=None, tipo_regimen_especial=None):
     """Devuelve un BytesIO con el informe técnico en formato PDF.
 
     resultado_isvpt (opcional): ver docstring de generar_reporte_docx.
@@ -1640,11 +1790,12 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         "para la Evaluación Integral del Desempeño Institucional en Entidades Públicas (SIIEAP)",
         "Informe de Diagnóstico Institucional y Plan de Mejoramiento Prospectivo",
     ))
+    elementos.extend(_nota_regimen_especial_pdf_flowables(tipo_regimen_especial))
     elementos.append(Paragraph(f"<b>{nombre_entidad}</b>", ParagraphStyle("EntidadSIIEAP", parent=estilos["Heading2"], textColor=colors.HexColor("#1F3864"))))
     elementos.append(Paragraph(f"Generado el {_fecha_hoy_es()} · Índice de Desempeño Institucional (IDI-MIPG), Decreto 1499 de 2017", estilo_normal))
     elementos.append(Paragraph(
-        "Docente: Norma Elizabeth Álvarez Grajales · Área de conocimiento: Entidades "
-        "Públicas y del Desarrollo · Escuela Superior de Administración Pública (ESAP)",
+        "Docente: Norma Elizabeth Álvarez Grajales · Área del conocimiento "
+        "Organizaciones Públicas y Gestión · Escuela Superior de Administración Pública (ESAP)",
         ParagraphStyle("AutoriaSIIEAP", parent=estilo_normal, fontSize=9, fontName="Helvetica-Oblique"),
     ))
     elementos.append(Spacer(1, 14))
