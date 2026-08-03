@@ -28,6 +28,7 @@ from backend.motores.motor_diagnostico import diagnosticar
 from backend.motores.motor_analisis_360 import analizar_360, filtrar_grupo, subregiones_disponibles_para
 from backend.motores.motor_isvpt import calcular_isvpt
 from backend.motores.estudio_de_caso import generar_estudio_de_caso_docx, generar_estudio_de_caso_pdf
+from backend.motores.informe_alcaldes_gobernadores import generar_informe_alcaldes_docx, generar_informe_alcaldes_pdf
 from backend.base_conocimiento.subregiones_antioquia import todas_las_subregiones
 
 CARPETA_DATA = Path(__file__).resolve().parent / "data"
@@ -488,6 +489,52 @@ with tab_real:
                         )
                 except Exception as e:
                     st.error(f"No se pudo generar el Estudio de Caso: {e}")
+
+                st.markdown("---")
+                st.markdown("### 🏛️ Informe Ejecutivo para Alcaldes y Gobernadores")
+                st.caption(
+                    "Versión en lenguaje llano, sin jerga académica, pensada para la Alta "
+                    "Dirección: semáforo de 5 quintiles del MIPG, brechas más críticas, "
+                    "comparación con entidades similares, recomendaciones oficiales completas "
+                    "de la Función Pública y sus implicaciones legales, fiscales, "
+                    "administrativas y disciplinarias (incluye el artículo 6 de la "
+                    "Constitución y una matriz de riesgo)."
+                )
+                col_alc_docx, col_alc_pdf = st.columns(2)
+                try:
+                    docx_buffer_alc = generar_informe_alcaldes_docx(
+                        datos_informe["nombre"], datos_informe["diag"],
+                        resultado_isvpt=datos_informe.get("isvpt"),
+                        resultado_360=st.session_state.get("ultimo_analisis_360"),
+                        idi_oficial=datos_informe.get("idi_oficial"),
+                        cruce_recomendaciones=datos_informe.get("cruce"),
+                        total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
+                    )
+                    col_alc_docx.download_button(
+                        "⬇️ Descargar Informe Ejecutivo (.docx)",
+                        data=docx_buffer_alc,
+                        file_name=f"informe_ejecutivo_{datos_informe['nombre'].replace(' ', '_')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key="descarga_alc_docx",
+                    )
+
+                    pdf_buffer_alc = generar_informe_alcaldes_pdf(
+                        datos_informe["nombre"], datos_informe["diag"],
+                        resultado_isvpt=datos_informe.get("isvpt"),
+                        resultado_360=st.session_state.get("ultimo_analisis_360"),
+                        idi_oficial=datos_informe.get("idi_oficial"),
+                        cruce_recomendaciones=datos_informe.get("cruce"),
+                        total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
+                    )
+                    col_alc_pdf.download_button(
+                        "⬇️ Descargar Informe Ejecutivo (PDF)",
+                        data=pdf_buffer_alc,
+                        file_name=f"informe_ejecutivo_{datos_informe['nombre'].replace(' ', '_')}.pdf",
+                        mime="application/pdf",
+                        key="descarga_alc_pdf",
+                    )
+                except Exception as e:
+                    st.error(f"No se pudo generar el Informe Ejecutivo: {e}")
     else:
         st.info("Suba un archivo para habilitar el selector de entidades.")
 
