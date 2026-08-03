@@ -35,6 +35,8 @@ from backend.motores.generador_informe import (
     REGIMEN_ESPECIAL_ORGANO_CONTROL,
     REGIMEN_ESPECIAL_BANCO_REPUBLICA,
     REGIMEN_ESPECIAL_CORPORACION_AUTONOMA,
+    REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA,
+    REGIMEN_ESPECIAL_PERSONERIA,
 )
 from backend.base_conocimiento.subregiones_antioquia import todas_las_subregiones
 
@@ -47,7 +49,9 @@ RUTA_AUTO_RECOMENDACIONES_GZ = CARPETA_DATA / "recomendaciones_consolidado.json.
 OPCIONES_REGIMEN_ESPECIAL = {
     "Rama Ejecutiva — MIPG íntegro aplica (alcaldías, gobernaciones, EICE, ESE...)": REGIMEN_ESPECIAL_NINGUNO,
     "Ente universitario autónomo (ej. Universidad de Antioquia)": REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA,
-    "Órgano de control — Contraloría/Personería territorial": REGIMEN_ESPECIAL_ORGANO_CONTROL,
+    "Contraloría territorial (departamental/municipal/distrital)": REGIMEN_ESPECIAL_ORGANO_CONTROL,
+    "Personería municipal o distrital": REGIMEN_ESPECIAL_PERSONERIA,
+    "Concejo municipal o Asamblea departamental": REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA,
     "Banco de la República": REGIMEN_ESPECIAL_BANCO_REPUBLICA,
     "Corporación Autónoma Regional": REGIMEN_ESPECIAL_CORPORACION_AUTONOMA,
 }
