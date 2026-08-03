@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import io
 from datetime import datetime
+from pathlib import Path
 
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor, Inches
@@ -47,6 +48,277 @@ from reportlab.platypus import (
 )
 
 from backend.motores.graficas_informe import generar_grafica_dimensiones, generar_grafica_brechas
+
+
+# ---------------------------------------------------------------------------
+# Identidad visual institucional compartida por los 3 informes (Técnico,
+# Estudio de Caso, Alcaldes/Gobernadores): logos, banner de portada,
+# divisores de sección con ícono, franjas alternas en tablas y el esquema
+# de color por quintil oficial del MIPG. Todo lo que vive aquí se importa
+# desde los otros dos módulos para no duplicar código ni diseño.
+# ---------------------------------------------------------------------------
+
+COLOR_INSTITUCIONAL = "1F3864"  # azul institucional ESAP, usado en banners y divisores
+
+_CARPETA_ASSETS = Path(__file__).resolve().parent.parent.parent / "assets"
+_RUTA_LOGO_ESAP = _CARPETA_ASSETS / "logo_esap.png"
+_RUTA_LOGO_CERTIFICACIONES = _CARPETA_ASSETS / "certificaciones.png"
+
+
+def _agregar_logos_docx(doc) -> None:
+    """Inserta, si existen los archivos, el logo de la ESAP (izquierda) y el
+    de certificaciones ICONTEC/IQNET (derecha) lado a lado en la parte
+    superior de la portada. Si la carpeta assets/ no está presente (por
+    ejemplo, no se subió al repo de despliegue), el informe se genera igual,
+    simplemente sin logos — nunca se rompe la app por un archivo faltante."""
+    try:
+        if not (_RUTA_LOGO_ESAP.exists() and _RUTA_LOGO_CERTIFICACIONES.exists()):
+            return
+        tabla_logos = doc.add_table(rows=1, cols=2)
+        tabla_logos.autofit = False
+        celda_izq, celda_der = tabla_logos.rows[0].cells
+        celda_izq.width = Cm(8.5)
+        celda_der.width = Cm(8.5)
+        p_izq = celda_izq.paragraphs[0]
+        p_izq.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p_izq.add_run().add_picture(str(_RUTA_LOGO_ESAP), height=Cm(1.6))
+        p_der = celda_der.paragraphs[0]
+        p_der.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        p_der.add_run().add_picture(str(_RUTA_LOGO_CERTIFICACIONES), height=Cm(1.9))
+        doc.add_paragraph()
+    except Exception:
+        # Nunca romper la generación del informe por un problema con los logos
+        pass
+
+
+def _logos_pdf_flowables():
+    """Devuelve una lista de flowables (posiblemente vacía) con los dos
+    logos institucionales lado a lado, para insertar al inicio de la
+    portada PDF. Igual que en Word: si faltan los archivos, no falla nada."""
+    try:
+        if not (_RUTA_LOGO_ESAP.exists() and _RUTA_LOGO_CERTIFICACIONES.exists()):
+            return []
+        img_esap = Image(str(_RUTA_LOGO_ESAP), width=5.2 * cm, height=1.4 * cm)
+        img_cert = Image(str(_RUTA_LOGO_CERTIFICACIONES), width=2.9 * cm, height=2.4 * cm)
+        tabla_logos = Table([[img_esap, img_cert]], colWidths=[10 * cm, 6.5 * cm])
+        tabla_logos.setStyle(TableStyle([
+            ("ALIGN", (0, 0), (0, 0), "LEFT"),
+            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]))
+        return [tabla_logos, Spacer(1, 10)]
+    except Exception:
+        return []
+
+
+def _agregar_banner_docx(doc, titulo: str, subtitulo: str | None = None, color_hex: str = COLOR_INSTITUCIONAL) -> None:
+    """Banda institucional de ancho completo (fondo de color, texto blanco)
+    para usar como encabezado de portada en vez de un título plano
+    centrado. Reutilizable por los 3 informes."""
+    banner = doc.add_table(rows=1, cols=1)
+    banner.autofit = False
+    celda = banner.rows[0].cells[0]
+    celda.width = Cm(17)
+    _sombrear_celda(celda, color_hex)
+    p_titulo = celda.paragraphs[0]
+    p_titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run_titulo = p_titulo.add_run(titulo)
+    run_titulo.bold = True
+    run_titulo.font.size = Pt(16)
+    run_titulo.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    if subtitulo:
+        p_sub = celda.add_paragraph()
+        p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run_sub = p_sub.add_run(subtitulo)
+        run_sub.italic = True
+        run_sub.font.size = Pt(11)
+        run_sub.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    doc.add_paragraph()
+
+
+def _dibujar_banda_portada_pdf(titulo: str, subtitulo: str | None = None, color_hex: str = COLOR_INSTITUCIONAL, alto_cm: float = 3.2):
+    """Fábrica de función onFirstPage para reportlab: dibuja una banda de
+    color a todo el ancho en la parte superior de la primera página, con el
+    título y subtítulo en blanco, y delega el pie de página a
+    `funcion_pie` si se le pasa (ver `_combinar_callbacks_primera_pagina`)."""
+    def _dibujar(canvas_pdf, doc_pdf):
+        canvas_pdf.saveState()
+        ancho_pagina, alto_pagina = LETTER
+        alto_banda = alto_cm * cm
+        canvas_pdf.setFillColor(colors.HexColor(f"#{color_hex}"))
+        canvas_pdf.rect(0, alto_pagina - alto_banda, ancho_pagina, alto_banda, fill=1, stroke=0)
+        canvas_pdf.setFillColor(colors.white)
+        canvas_pdf.setFont("Helvetica-Bold", 15)
+        canvas_pdf.drawCentredString(ancho_pagina / 2, alto_pagina - alto_banda * 0.45, titulo)
+        if subtitulo:
+            canvas_pdf.setFont("Helvetica-Oblique", 10)
+            canvas_pdf.drawCentredString(ancho_pagina / 2, alto_pagina - alto_banda * 0.72, subtitulo)
+        canvas_pdf.restoreState()
+    return _dibujar
+
+
+def _banner_portada_pdf_flowables(titulo: str, subtitulo: str | None = None, color_hex: str = COLOR_INSTITUCIONAL):
+    """Versión del banner de portada como flowables (Table de una celda con
+    fondo de color), para insertar directamente en el flujo del documento
+    igual que en Word, sin depender de un callback de canvas."""
+    filas = [[titulo]]
+    if subtitulo:
+        filas.append([subtitulo])
+    tabla = Table(filas, colWidths=[17 * cm])
+    estilo = [
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(f"#{color_hex}")),
+        ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 15),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+    ]
+    if subtitulo:
+        estilo.append(("FONTNAME", (0, 1), (-1, 1), "Helvetica-Oblique"))
+        estilo.append(("FONTSIZE", (0, 1), (-1, 1), 10.5))
+    tabla.setStyle(TableStyle(estilo))
+    return [tabla, Spacer(1, 14)]
+
+
+def _combinar_callbacks_primera_pagina(*funciones):
+    """Combina varias funciones onFirstPage/onLaterPages de reportlab
+    (por ejemplo la banda de portada + el pie de página) en una sola,
+    ya que SimpleDocTemplate solo acepta un callback por evento."""
+    def _combinado(canvas_pdf, doc_pdf):
+        for funcion in funciones:
+            if funcion:
+                funcion(canvas_pdf, doc_pdf)
+    return _combinado
+
+
+def _agregar_divisor_seccion_docx(doc, titulo: str, icono: str = "▪", color_hex: str = COLOR_INSTITUCIONAL):
+    """Divisor de sección de ancho completo (barra de color + ícono +
+    título) para usar en vez de un doc.add_heading plano. Devuelve el
+    párrafo del título por si se necesita seguir estilizando."""
+    tabla = doc.add_table(rows=1, cols=1)
+    tabla.autofit = False
+    celda = tabla.rows[0].cells[0]
+    celda.width = Cm(17)
+    _sombrear_celda(celda, color_hex)
+    p = celda.paragraphs[0]
+    run = p.add_run(f"{icono}  {titulo}")
+    run.bold = True
+    run.font.size = Pt(13)
+    run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    doc.add_paragraph()
+    return p
+
+
+def _divisor_seccion_pdf(titulo: str, icono: str = "▪", color_hex: str = COLOR_INSTITUCIONAL):
+    """Versión PDF (lista de flowables) del divisor de sección: una tabla
+    de una celda con fondo de color, texto blanco e ícono, seguida de un
+    espaciador. Se antepone a cada Heading1 de los informes."""
+    tabla = Table([[f"{icono}  {titulo}"]], colWidths=[17 * cm])
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(f"#{color_hex}")),
+        ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 12),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    return [tabla, Spacer(1, 8)]
+
+
+def _franjas_alternas_docx(tabla, color_hex_par: str = "F2F4F8") -> None:
+    """Aplica sombreado en filas alternas (excluyendo el encabezado) a una
+    tabla de python-docx, para tablas más legibles en documentos largos."""
+    for indice_fila, fila in enumerate(tabla.rows[1:], start=1):
+        if indice_fila % 2 == 0:
+            for celda in fila.cells:
+                _sombrear_celda(celda, color_hex_par)
+
+
+# Esquema OFICIAL de 5 quintiles del MIPG (rangos de puntaje 0-100), usado
+# para colorear de forma consistente cualquier tabla que muestre puntajes
+# en los 3 informes — no debe confundirse con el esquema de 3 niveles de
+# riesgo (alta/media/baja) de las brechas, que es una convención distinta
+# y ya existente en este mismo módulo (_COLOR_HEX_POR_RIESGO).
+_QUINTILES_MIPG = [
+    (20, "E6534A"),   # 0-20   crítico
+    (40, "F0A02E"),   # 21-40  bajo
+    (60, "F5D65A"),   # 41-60  medio
+    (80, "8CC152"),   # 61-80  satisfactorio
+    (100, "2E8B57"),  # 81-100 sobresaliente
+]
+
+
+def _color_hex_quintil_mipg(puntaje) -> str | None:
+    """Devuelve el color hex del quintil oficial MIPG correspondiente a un
+    puntaje de 0 a 100, o None si el puntaje no es un número válido."""
+    try:
+        puntaje = float(puntaje)
+    except (TypeError, ValueError):
+        return None
+    for limite, color_hex in _QUINTILES_MIPG:
+        if puntaje <= limite:
+            return color_hex
+    return _QUINTILES_MIPG[-1][1]
+
+
+def _color_hex_quintil_mipg(puntaje) -> str | None:
+    """Devuelve el color hex del quintil oficial MIPG correspondiente a un
+    puntaje de 0 a 100, o None si el puntaje no es un número válido."""
+    try:
+        puntaje = float(puntaje)
+    except (TypeError, ValueError):
+        return None
+    for limite, color_hex in _QUINTILES_MIPG:
+        if puntaje <= limite:
+            return color_hex
+    return _QUINTILES_MIPG[-1][1]
+
+
+_QUINTILES_MIPG_NOMBRE_EMOJI = [
+    (20, "Crítico", "🔴"),
+    (40, "Bajo", "🟠"),
+    (60, "Medio", "🟡"),
+    (80, "Medio-alto", "🟢"),
+    (100, "Consolidación", "✅"),
+]
+
+
+def _quintil_mipg(puntaje):
+    """Devuelve (color_hex, emoji, nombre_categoria) para un puntaje de 0 a
+    100, según el esquema oficial de 5 quintiles del MIPG. Usado por el
+    Informe Ejecutivo para Alcaldes/Gobernadores (semáforo en lenguaje
+    llano) y disponible para los otros informes si lo necesitan."""
+    try:
+        puntaje_num = float(puntaje)
+    except (TypeError, ValueError):
+        return ("999999", "⚪", "Sin dato")
+    for limite, nombre, emoji in _QUINTILES_MIPG_NOMBRE_EMOJI:
+        if puntaje_num <= limite:
+            color_hex = _color_hex_quintil_mipg(puntaje_num)
+            return (color_hex, emoji, nombre)
+    color_hex = _QUINTILES_MIPG[-1][1]
+    return (color_hex, "✅", "Consolidación")
+
+
+DESCARGO_RESPONSABILIDAD_AMPLIADO = (
+    "Este informe fue generado por el Sistema Integral de Diagnóstico del Desempeño "
+    "Institucional (SIIEAP) a partir de datos reales del Índice de Desempeño "
+    "Institucional (IDI-MIPG) publicado por el Departamento Administrativo de la "
+    "Función Pública, complementado con un análisis generado por inteligencia "
+    "artificial (Claude, Anthropic) como punto de partida académico y metodológico. "
+    "El semáforo de quintiles, las brechas priorizadas y las lecturas de riesgo "
+    "legal, financiero, administrativo y disciplinario que aquí se presentan son "
+    "un ejercicio de apoyo a la toma de decisiones de la Alta Dirección — NO "
+    "constituyen un dictamen jurídico, fiscal ni disciplinario oficial, y no "
+    "sustituyen la valoración de la Oficina de Control Interno, la Oficina "
+    "Asesora Jurídica, la Secretaría de Hacienda ni de los organismos de control "
+    "(Procuraduría General de la Nación, Contraloría General de la República, "
+    "Contralorías territoriales) de la entidad. Se entrega con fines académicos, "
+    "como evidencia de ejecución del sistema y como insumo de trabajo para la "
+    "asignatura."
+)
 
 
 # ---------------------------------------------------------------------------
@@ -130,7 +402,11 @@ CONTEXTUALIZACION_ARCO_HISTORICO = [
         "post-NGP no abandona la orientación a resultados de la NGP, pero la "
         "combina con una lógica de red (gobernanza) y con las posibilidades que "
         "abre la digitalización del Estado para integrar de nuevo lo que estaba "
-        "fragmentado.",
+        "fragmentado. Desde la ESAP, Chica-Vélez y Salazar-Ortiz (2021) profundizan "
+        "en esta transición y muestran cómo la gobernanza y la innovación pública se "
+        "resignifican precisamente en el tránsito de la NGP hacia la post-NGP, "
+        "dejando de ser un simple discurso de modernización para convertirse en una "
+        "forma concreta de organizar y gestionar lo público.",
     ),
     (
         "Gobernanza Pública y Valor Público",
@@ -736,6 +1012,149 @@ def _enfoque_y_norma_de_politica(nombre_politica: str):
     return ("Capacidades Estatales", "Decreto 1499 de 2017 (MIPG)")
 
 
+# ---------------------------------------------------------------------------
+# Marco de responsabilidad de la Alta Dirección: artículo 6 de la
+# Constitución y cruce política MIPG -> tipo de riesgo (jurídico, fiscal,
+# administrativo o disciplinario) -> norma -> consecuencia posible.
+# Uso exclusivo del Informe Ejecutivo para Alcaldes/Gobernadores, pero vive
+# aquí (módulo compartido) por si otro informe necesita la misma lectura.
+# ---------------------------------------------------------------------------
+
+ARTICULO_6_CONSTITUCION_TITULO = "Artículo 6 de la Constitución Política de Colombia (1991)"
+
+ARTICULO_6_CONSTITUCION_TEXTO = (
+    "Los particulares sólo son responsables ante las autoridades por infringir "
+    "la Constitución y las leyes. Los servidores públicos lo son por la misma "
+    "causa y por omisión o extralimitación en el ejercicio de sus funciones."
+)
+
+ARTICULO_6_CONSTITUCION_EXPLICACION = (
+    "Esta es la razón de fondo por la que cada brecha de este informe importa más "
+    "allá del puntaje: a diferencia de un particular, que solo responde por infringir "
+    "la ley, el servidor público de esta entidad responde también por OMISIÓN — es "
+    "decir, por no hacer lo que la ley le exige — y por EXTRALIMITACIÓN — por hacer "
+    "más de lo que la ley le permite. Una brecha del MIPG sostenida en el tiempo, sin "
+    "plan de mejoramiento ni evidencia de gestión, es precisamente ese escenario de "
+    "omisión que el artículo 6 sanciona, y puede derivar en responsabilidad jurídica, "
+    "fiscal, administrativa y/o disciplinaria de quien tenía el deber legal de actuar."
+)
+
+# (tipo_de_riesgo, norma_principal, consecuencia_posible_breve)
+POLITICA_A_RIESGO_ALTA_DIRECCION = {
+    "gestión estratégica del talento humano": (
+        "Administrativo y disciplinario",
+        "Ley 909 de 2004 (empleo público); Ley 1952 de 2019 modif. Ley 2094 de 2021 (Código General Disciplinario)",
+        "Faltas en la carrera administrativa y en la evaluación del desempeño pueden derivar en nulidad de actos de personal y en investigación disciplinaria contra el nominador.",
+    ),
+    "integridad": (
+        "Disciplinario",
+        "Ley 1952 de 2019 modif. Ley 2094 de 2021; Ley 2013 de 2019 y Decreto 830 de 2021 (conflictos de interés)",
+        "Los conflictos de interés no declarados son falta disciplinaria autónoma, independiente de si hubo o no un daño patrimonial.",
+    ),
+    "planeación institucional": (
+        "Administrativo",
+        "Decreto 1499 de 2017, art. 2.2.22.3.2-3.3",
+        "La ausencia de planeación institucional debilita la defensa de la entidad ante entes de control al no poder demostrar la debida diligencia de gestión.",
+    ),
+    "gestión presupuestal y eficiencia del gasto": (
+        "Fiscal",
+        "Ley 610 de 2000 (proceso de responsabilidad fiscal); Ley 617 de 2000 (límites de gasto)",
+        "El detrimento patrimonial derivado de una gestión presupuestal deficiente puede abrir proceso de responsabilidad fiscal ante la Contraloría, con obligación de resarcir el daño con el patrimonio del responsable.",
+    ),
+    "compras y contratación pública": (
+        "Fiscal y disciplinario",
+        "Ley 80 de 1993 y Ley 1150 de 2007 (contratación estatal); Ley 1474 de 2011 (Estatuto Anticorrupción); Ley 610 de 2000",
+        "Irregularidades contractuales son la causa más frecuente de procesos de responsabilidad fiscal y disciplinaria contra alcaldes y gobernadores en Colombia.",
+    ),
+    "fortalecimiento organizacional y simplificación de procesos": (
+        "Administrativo",
+        "Ley 617 de 2000; Ley 1454 de 2011 (ordenamiento territorial)",
+        "Una estructura organizacional no ajustada a la capacidad fiscal real de la entidad es causal de observaciones de viabilidad fiscal ante el Ministerio de Hacienda.",
+    ),
+    "gobierno digital": (
+        "Administrativo",
+        "Decreto 767 de 2022; Decreto 1263 de 2022",
+        "El incumplimiento de la política de Gobierno Digital es hoy objeto de seguimiento directo por parte del MinTIC y de Función Pública dentro del FURAG.",
+    ),
+    "seguridad digital": (
+        "Administrativo y disciplinario",
+        "CONPES 3995 de 2020; Ley 1952 de 2019 (deber de custodia de la información)",
+        "La pérdida o filtración de información institucional por fallas de seguridad digital compromete disciplinariamente a quien tenía el deber de custodia.",
+    ),
+    "defensa jurídica": (
+        "Jurídico y fiscal",
+        "Ley 2213 de 2022 (procesos judiciales); Ley 678 de 2001 (acción de repetición); Ley 610 de 2000",
+        "Una defensa jurídica débil incrementa el riesgo de condenas judiciales contra la entidad, que a su vez pueden derivar en acción de repetición contra el servidor responsable.",
+    ),
+    "mejora normativa": (
+        "Administrativo",
+        "Decreto 1499 de 2017",
+        "Normas internas desactualizadas o contradictorias con la ley superior son causal de nulidad de actos administrativos ante lo contencioso administrativo.",
+    ),
+    "servicio a las ciudadanías": (
+        "Disciplinario",
+        "Ley 1755 de 2015 (derecho de petición); Ley 1952 de 2019",
+        "No responder oportunamente las peticiones ciudadanas es falta disciplinaria expresa y puede derivar en acción de tutela contra la entidad.",
+    ),
+    "racionalización de trámites": (
+        "Administrativo",
+        "Decreto 019 de 2012 (antitrámites); Decreto 767 de 2022",
+        "Exigir requisitos no autorizados por la ley es causal de responsabilidad disciplinaria del funcionario que los exige.",
+    ),
+    "participación ciudadana en la gestión pública": (
+        "Disciplinario y administrativo",
+        "Ley 1757 de 2015 (participación democrática)",
+        "El incumplimiento de los espacios de participación obligatorios (rendición de cuentas, presupuesto participativo) es objeto de seguimiento por los entes de control.",
+    ),
+    "seguimiento y evaluación del desempeño institucional": (
+        "Administrativo",
+        "Decreto 1499 de 2017; Ley 1523 de 2012 (gestión del riesgo)",
+        "La falta de seguimiento y evaluación impide demostrar la debida diligencia de la Alta Dirección ante un eventual proceso de responsabilidad.",
+    ),
+    "transparencia, acceso a la información y lucha contra la corrupción": (
+        "Disciplinario y penal",
+        "Ley 1712 de 2014 (transparencia); Ley 1474 de 2011 (Estatuto Anticorrupción); Código Penal, Título XV",
+        "Las faltas en transparencia son, junto con la contratación, la puerta de entrada más común a investigaciones disciplinarias y, en los casos más graves, penales.",
+    ),
+    "gestión documental": (
+        "Disciplinario",
+        "Ley 594 de 2000 (Ley General de Archivos); Decreto 1389 de 2022",
+        "La pérdida, alteración o destrucción de documentos públicos es falta disciplinaria gravísima según el Código General Disciplinario.",
+    ),
+    "gestión de la información estadística": (
+        "Administrativo",
+        "Decreto 1389 de 2022",
+        "Reportar información estadística inexacta a Función Pública compromete la validez del FURAG y de los indicadores oficiales de la entidad.",
+    ),
+    "gestión del conocimiento": (
+        "Administrativo",
+        "Decreto 1499 de 2017",
+        "La pérdida de conocimiento institucional por rotación de personal debilita la capacidad de respuesta de la entidad ante requerimientos de entes de control.",
+    ),
+    "control interno": (
+        "Disciplinario y fiscal",
+        "Ley 87 de 1993, art. 1-2-9; Ley 1523 de 2012, art. 8",
+        "Un sistema de control interno débil o inexistente agrava la responsabilidad de la Alta Dirección, porque elimina la primera línea de defensa que debía advertir el riesgo a tiempo.",
+    ),
+}
+
+
+def _riesgo_alta_direccion_de_politica(nombre_politica: str):
+    """Análogo a _enfoque_y_norma_de_politica, pero para la lectura de
+    riesgo legal/fiscal/administrativo/disciplinario dirigida a la Alta
+    Dirección (alcalde/gobernador)."""
+    clave = str(nombre_politica).strip().lower()
+    clave = clave.replace("política de ", "").replace("política ", "")
+    for politica_conocida, valor in POLITICA_A_RIESGO_ALTA_DIRECCION.items():
+        if politica_conocida in clave or clave in politica_conocida:
+            return valor
+    return (
+        "Administrativo",
+        "Decreto 1499 de 2017 (MIPG)",
+        "Toda brecha sostenida en el MIPG debilita la capacidad de la entidad para demostrar debida diligencia ante los entes de control.",
+    )
+
+
 def _color_hex_riesgo(nivel_riesgo) -> str | None:
     if not nivel_riesgo:
         return None
@@ -796,14 +1215,14 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     )
     nivel_riesgo_global = "ALTO" if (idi_protagonista or 0) < 40 else ("MEDIO" if (idi_protagonista or 0) < 70 else "BAJO")
 
-    # Portada — con contenido real, no un título vacío
-    titulo = doc.add_heading("Modelo de Conocimiento Institucional del Sistema de Inteligencia Artificial para la Evaluación Integral del Desempeño Institucional en Entidades Públicas (SIIEAP)", level=0)
-    titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_sub = doc.add_paragraph()
-    p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run_sub = p_sub.add_run("Informe de Diagnóstico Institucional y Plan de Mejoramiento Prospectivo")
-    run_sub.italic = True
-    run_sub.font.size = Pt(13)
+    # Portada — logos institucionales + banner de color en vez de un título plano
+    _agregar_logos_docx(doc)
+    _agregar_banner_docx(
+        doc,
+        "Modelo de Conocimiento Institucional del Sistema de Inteligencia Artificial "
+        "para la Evaluación Integral del Desempeño Institucional en Entidades Públicas (SIIEAP)",
+        "Informe de Diagnóstico Institucional y Plan de Mejoramiento Prospectivo",
+    )
 
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -903,7 +1322,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     _agregar_glosario_docx(doc)
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
-    doc.add_heading("1. Resumen ejecutivo", level=1)
+    _agregar_divisor_seccion_docx(doc, "1. Resumen ejecutivo", icono="📊")
     parrafos_resumen = [
         f"{nombre_entidad} obtuvo un Índice de Desempeño Institucional (IDI) oficial de {idi_protagonista} "
         f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}."
@@ -955,7 +1374,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         doc.add_paragraph(parrafo_r)
 
     # Contextualización académica (bloque fijo)
-    doc.add_heading(CONTEXTUALIZACION_TITULO, level=1)
+    _agregar_divisor_seccion_docx(doc, CONTEXTUALIZACION_TITULO, icono="📚")
     doc.add_paragraph(CONTEXTUALIZACION_INTRO)
 
     doc.add_heading("Arco teórico: de los griegos a la Administración Pública contemporánea", level=2)
@@ -982,7 +1401,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     doc.add_page_break()
 
     # Cadena de interpretación institucional (bloque fijo)
-    doc.add_heading(CADENA_INTERPRETACION_TITULO, level=1)
+    _agregar_divisor_seccion_docx(doc, CADENA_INTERPRETACION_TITULO, icono="🔗")
     doc.add_paragraph(CADENA_INTERPRETACION_INTRO)
     for paso in CADENA_INTERPRETACION_PASOS:
         doc.add_paragraph(paso, style="List Bullet")
@@ -994,7 +1413,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     doc.add_page_break()
 
     # Resultado real del diagnóstico
-    doc.add_heading("Resultado del diagnóstico institucional (datos reales)", level=1)
+    _agregar_divisor_seccion_docx(doc, "Resultado del diagnóstico institucional (datos reales)", icono="📈")
     p_idi = doc.add_paragraph()
     run_idi = p_idi.add_run(f"IDI estimado: {diag.idi_estimado}")
     run_idi.bold = True
@@ -1018,6 +1437,9 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         color_fondo = _color_hex_riesgo(r.nivel_riesgo)
         if color_fondo:
             _sombrear_celda(fila[2], color_fondo)
+        color_quintil = _color_hex_quintil_mipg(r.promedio)
+        if color_quintil:
+            _sombrear_celda(fila[1], color_quintil)
     _ajustar_tabla_docx(tabla, anchos_cm=[9.5, 2.3, 2.3, 2.0])
 
     doc.add_paragraph()
@@ -1077,10 +1499,11 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
             fila[1].text = enfoque
             fila[2].text = norma
         _ajustar_tabla_docx(tabla_enfoques, anchos_cm=[5.0, 4.5, 6.0], tamano_fuente_pt=8.5)
+        _franjas_alternas_docx(tabla_enfoques)
 
     if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None:
         doc.add_page_break()
-        doc.add_heading("🎯 El Termómetro del Valor Público: Índice Sintético de Valor Público Territorial (ISVPT)", level=1)
+        _agregar_divisor_seccion_docx(doc, "El Termómetro del Valor Público: Índice Sintético de Valor Público Territorial (ISVPT)", icono="🎯")
         doc.add_paragraph(
             "Como complemento al IDI oficial, este informe incorpora un ejercicio de índice "
             "sintético construido con la metodología académica validada por Vélez Tamayo, "
@@ -1122,7 +1545,15 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     doc.add_page_break()
 
     # Análisis integral IA
-    doc.add_heading("Análisis integral, señales de riesgo multinivel y Plan de Mejoramiento Prospectivo (generado por IA a partir de los datos reales)", level=1)
+    _agregar_divisor_seccion_docx(doc, "Análisis integral, señales de riesgo multinivel y Plan de Mejoramiento Prospectivo (generado por IA a partir de los datos reales)", icono="⚠️")
+    p_cita_riesgo = doc.add_paragraph()
+    run_cita_riesgo = p_cita_riesgo.add_run(
+        "La lectura de riesgo institucional que sigue retoma la metodología de gestión integrada "
+        "de riesgos (ISO 31000) documentada por Jurado-Zambrano y Villanueva (2021, ESAP) para el "
+        "sector público colombiano, aplicada aquí a los datos reales de esta entidad."
+    )
+    run_cita_riesgo.italic = True
+    run_cita_riesgo.font.size = Pt(9.5)
     for parrafo in analisis_ia_texto.split("\n"):
         if parrafo.strip():
             doc.add_paragraph(parrafo)
@@ -1174,10 +1605,13 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
 
     elementos = []
 
-    # Portada — con contenido real, no un título vacío
-    elementos.append(Paragraph("Modelo de Conocimiento Institucional del Sistema de Inteligencia Artificial para la Evaluación Integral del Desempeño Institucional en Entidades Públicas (SIIEAP)", estilo_titulo))
-    elementos.append(Paragraph("Informe de Diagnóstico Institucional y Plan de Mejoramiento Prospectivo", ParagraphStyle("SubtituloSIIEAP", parent=estilo_normal, fontSize=13, fontName="Helvetica-Oblique")))
-    elementos.append(Spacer(1, 14))
+    # Portada — logos institucionales + banner de color en vez de un título plano
+    elementos.extend(_logos_pdf_flowables())
+    elementos.extend(_banner_portada_pdf_flowables(
+        "Modelo de Conocimiento Institucional del Sistema de Inteligencia Artificial "
+        "para la Evaluación Integral del Desempeño Institucional en Entidades Públicas (SIIEAP)",
+        "Informe de Diagnóstico Institucional y Plan de Mejoramiento Prospectivo",
+    ))
     elementos.append(Paragraph(f"<b>{nombre_entidad}</b>", ParagraphStyle("EntidadSIIEAP", parent=estilos["Heading2"], textColor=colors.HexColor("#1F3864"))))
     elementos.append(Paragraph(f"Generado el {_fecha_hoy_es()} · Índice de Desempeño Institucional (IDI-MIPG), Decreto 1499 de 2017", estilo_normal))
     elementos.append(Paragraph(
@@ -1257,7 +1691,7 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2)
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
-    elementos.append(Paragraph("1. Resumen ejecutivo", estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf("1. Resumen ejecutivo", icono="📊"))
     parrafos_resumen = [
         f"{nombre_entidad} obtuvo un Índice de Desempeño Institucional (IDI) oficial de {idi_protagonista} "
         f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}."
@@ -1309,7 +1743,7 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     elementos.append(PageBreak())
 
     # Contextualización
-    elementos.append(Paragraph(CONTEXTUALIZACION_TITULO, estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf(CONTEXTUALIZACION_TITULO, icono="📚"))
     elementos.append(Paragraph(CONTEXTUALIZACION_INTRO, estilo_normal))
     elementos.append(Paragraph("Arco teórico: de los griegos a la Administración Pública contemporánea", estilo_h2))
     for titulo_hito, texto_hito in CONTEXTUALIZACION_ARCO_HISTORICO:
@@ -1330,7 +1764,7 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     elementos.append(PageBreak())
 
     # Cadena de interpretación institucional (bloque fijo)
-    elementos.append(Paragraph(CADENA_INTERPRETACION_TITULO, estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf(CADENA_INTERPRETACION_TITULO, icono="🔗"))
     elementos.append(Paragraph(CADENA_INTERPRETACION_INTRO, estilo_normal))
     elementos.append(Spacer(1, 6))
     for paso in CADENA_INTERPRETACION_PASOS:
@@ -1340,7 +1774,7 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     elementos.append(PageBreak())
 
     # Resultado real del diagnóstico
-    elementos.append(Paragraph("Resultado del diagnóstico institucional (datos reales)", estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf("Resultado del diagnóstico institucional (datos reales)", icono="📈"))
     elementos.append(Paragraph(f"<b>IDI estimado: {diag.idi_estimado}</b>", ParagraphStyle("IDIGrande", parent=estilo_normal, fontSize=15)))
     elementos.append(Spacer(1, 8))
 
@@ -1367,6 +1801,9 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         color_riesgo = _COLOR_PDF_POR_RIESGO.get(str(r.nivel_riesgo).strip().lower())
         if color_riesgo:
             estilo_tabla_dim.append(("BACKGROUND", (2, indice_fila), (2, indice_fila), color_riesgo))
+        color_quintil_hex = _color_hex_quintil_mipg(r.promedio)
+        if color_quintil_hex:
+            estilo_tabla_dim.append(("BACKGROUND", (1, indice_fila), (1, indice_fila), colors.HexColor(f"#{color_quintil_hex}")))
     tabla.setStyle(TableStyle(estilo_tabla_dim))
     elementos.append(tabla)
     elementos.append(Spacer(1, 10))
@@ -1421,12 +1858,13 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
             ("FONTSIZE", (0, 0), (-1, -1), 8),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2F4F8")]),
         ]))
         elementos.append(tabla_enfoques)
         elementos.append(PageBreak())
 
     if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None:
-        elementos.append(Paragraph("🎯 El Termómetro del Valor Público: Índice Sintético de Valor Público Territorial (ISVPT)", estilos["Heading1"]))
+        elementos.extend(_divisor_seccion_pdf("El Termómetro del Valor Público: Índice Sintético de Valor Público Territorial (ISVPT)", icono="🎯"))
         elementos.append(Paragraph(
             "Como complemento al IDI oficial, este informe incorpora un ejercicio de índice "
             "sintético construido con la metodología académica validada por Vélez Tamayo, "
@@ -1465,7 +1903,14 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         elementos.append(PageBreak())
 
     # Análisis integral IA
-    elementos.append(Paragraph("Análisis integral, señales de riesgo multinivel y Plan de Mejoramiento Prospectivo (generado por IA a partir de los datos reales)", estilos["Heading1"]))
+    elementos.extend(_divisor_seccion_pdf("Análisis integral, señales de riesgo multinivel y Plan de Mejoramiento Prospectivo (generado por IA a partir de los datos reales)", icono="⚠️"))
+    elementos.append(Paragraph(
+        "La lectura de riesgo institucional que sigue retoma la metodología de gestión integrada de "
+        "riesgos (ISO 31000) documentada por Jurado-Zambrano y Villanueva (2021, ESAP) para el sector "
+        "público colombiano, aplicada aquí a los datos reales de esta entidad.",
+        estilo_cursiva,
+    ))
+    elementos.append(Spacer(1, 6))
     for parrafo in analisis_ia_texto.split("\n"):
         if parrafo.strip():
             texto_escapado = parrafo.replace("&amp;", "&amp;amp;").replace("&lt;", "&amp;lt;").replace("&gt;", "&amp;gt;")
