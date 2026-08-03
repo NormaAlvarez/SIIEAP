@@ -258,6 +258,8 @@ with tab_real:
             else:
                 departamento_360 = departamento_elegido
 
+            st.session_state["departamento_360_actual"] = departamento_360
+
             opciones_subregion = ["(ninguna)"] + subregiones_disponibles_para(departamento_360)
             subregion_360 = col_360_b.selectbox(
                 f"Subregión de {departamento_360 or '—'} (opcional)", opciones_subregion, key="subregion_360"
@@ -402,6 +404,7 @@ with tab_real:
                         resultado_isvpt=datos_informe.get("isvpt"),
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
                         idi_oficial=datos_informe.get("idi_oficial"),
+                        cruce_recomendaciones=datos_informe.get("cruce"),
                     )
                     col_docx.download_button(
                         "⬇️ Descargar informe en Word (.docx)",
@@ -416,6 +419,7 @@ with tab_real:
                         resultado_isvpt=datos_informe.get("isvpt"),
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
                         idi_oficial=datos_informe.get("idi_oficial"),
+                        cruce_recomendaciones=datos_informe.get("cruce"),
                     )
                     col_pdf.download_button(
                         "⬇️ Descargar informe en PDF",
@@ -445,7 +449,7 @@ with tab_real:
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
                         resultado_isvpt=datos_informe.get("isvpt"),
                         idi_oficial=datos_informe.get("idi_oficial"),
-                        departamento=departamento_360,
+                        departamento=st.session_state.get("departamento_360_actual"),
                     )
                     col_ec_docx.download_button(
                         "⬇️ Descargar Estudio de Caso (.docx)",
@@ -461,7 +465,7 @@ with tab_real:
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
                         resultado_isvpt=datos_informe.get("isvpt"),
                         idi_oficial=datos_informe.get("idi_oficial"),
-                        departamento=departamento_360,
+                        departamento=st.session_state.get("departamento_360_actual"),
                     )
                     col_ec_pdf.download_button(
                         "⬇️ Descargar Estudio de Caso (PDF)",
