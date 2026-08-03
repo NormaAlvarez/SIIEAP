@@ -861,9 +861,12 @@ def generar_estudio_de_caso_docx(
     if diag.brechas:
         doc.add_paragraph(
             f"A partir del diagnóstico real IDI-MIPG de {nombre_entidad} "
-            f"(IDI oficial de Función Pública: {idi_protagonista}), se identifican "
-            f"{len(diag.brechas)} brechas de implementación por debajo del "
-            "umbral esperado. El problema público objeto de este estudio de "
+            f"(IDI oficial de Función Pública: {idi_protagonista}), este estudio de caso "
+            f"identifica —con metodología propia y exclusiva de SIIEAP, no con una cifra "
+            f"publicada por la Función Pública— {len(diag.brechas)} brechas de "
+            "implementación por debajo del umbral de alerta metodológico interno del "
+            "sistema (60 puntos; la meta plena de la gestión pública es siempre el 100%, "
+            "no 60). El problema público objeto de este estudio de "
             "caso es, en términos generales, la brecha entre el estándar de "
             "desempeño institucional exigido por el Modelo Integrado de "
             "Planeación y Gestión (MIPG) y la capacidad real de la entidad "
@@ -1502,4 +1505,3 @@ def generar_estudio_de_caso_pdf(
     doc.build(elementos)
     buffer.seek(0)
     return buffer
-
