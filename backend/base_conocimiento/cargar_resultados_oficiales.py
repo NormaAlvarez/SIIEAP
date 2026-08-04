@@ -19,7 +19,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from backend.base_conocimiento.catalogo import dimensiones
 from backend.modelos.entidades import Entidad, ResultadoIndice, ResultadoPolitica
 
 PATRON_CODIGO_INDICE = re.compile(r"^\s*[iI](\d+)\b")
@@ -61,27 +60,29 @@ def columnas_de_indice(df: pd.DataFrame) -> dict[str, str]:
     return mapa
 
 
-def _politicas_sin_indices_propios() -> set[str]:
-    """Códigos de política (p.ej. 'POL14') que en el catálogo no tienen
-    índices propios y por tanto deben leerse como puntaje directo."""
-    codigos = set()
-    for dim in dimensiones().values():
-        for cod_pol, pol in dim["politicas"].items():
-            if not pol["indices"]:
-                codigos.add(cod_pol)
-    return codigos
-
-
 def columnas_de_politica_directa(df: pd.DataFrame) -> dict[str, str]:
-    """Mapa nombre_columna_original -> código de política, solo para las
-    políticas que el catálogo marca sin índices propios (p.ej. POL14)."""
-    politicas_directas = _politicas_sin_indices_propios()
+    """Mapa nombre_columna_original -> código de política, para TODAS las
+    columnas de resumen por política (POL01 Índice... hasta POL19
+    Índice...) presentes en el archivo — no solo las que el catálogo marca
+    como "sin índices propios" (p.ej. POL14).
+
+    Se guardan como RESPALDO: motor_diagnostico.py usa el detalle por
+    índice cuando la entidad lo reportó, y solo recurre a este agregado
+    por política cuando no encontró ningún índice individual reportado
+    para esa política. Esto es indispensable para entidades de régimen
+    especial (Concejos, Personerías, Contralorías) que solo están
+    obligadas al MECI: Función Pública les publica el agregado por
+    política (p.ej. "POL19 Índice de Control Interno"), pero nunca el
+    desglose índice por índice que sí reporta una alcaldía o gobernación.
+    Antes de este cambio, esa columna se descartaba precisamente para esas
+    entidades porque el catálogo esperaba encontrar el detalle en otro
+    lado — detalle que esa entidad nunca reporta."""
     mapa = {}
     for col in df.columns:
         if not isinstance(col, str):
             continue
         m = PATRON_CODIGO_POLITICA.match(col)
-        if m and m.group(1).upper() in politicas_directas:
+        if m:
             mapa[col] = m.group(1).upper()
     return mapa
 
