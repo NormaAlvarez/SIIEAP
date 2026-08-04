@@ -131,6 +131,32 @@ def diagnosticar(entidad: Entidad, umbral_brecha: float = UMBRAL_BRECHA) -> Diag
                         )
                     )
 
+            # Respaldo: si el catálogo espera índices propios para esta
+            # política pero la entidad no reportó NINGUNO de ellos, se usa
+            # el agregado por política que sí publicó Función Pública
+            # (columna "POLxx Índice..." del archivo oficial). Es el caso
+            # típico de entidades MECI-only (Concejos, Personerías,
+            # Contralorías): Función Pública nunca les publica el
+            # desglose índice por índice, solo el agregado de la política.
+            indices_reportados_en_esta_politica = any(
+                entidad.resultado_de(cod_idx) is not None for cod_idx in pol["indices"]
+            )
+            if not indices_reportados_en_esta_politica:
+                directa = entidad.resultado_politica_directa_de(cod_pol)
+                if directa is not None:
+                    puntajes_dim.append(directa.puntaje)
+                    if politica_aplica and directa.puntaje < umbral_brecha:
+                        brechas.append(
+                            Brecha(
+                                codigo_indice=cod_pol,
+                                nombre_indice=pol["nombre"],
+                                puntaje=directa.puntaje,
+                                dimension=dim["nombre"],
+                                politica=pol["nombre"],
+                                codigo_politica=cod_pol,
+                            )
+                        )
+
         promedio = sum(puntajes_dim) / len(puntajes_dim) if puntajes_dim else None
         resultados_dim.append(
             ResultadoDimension(
