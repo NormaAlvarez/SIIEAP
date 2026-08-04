@@ -1476,7 +1476,8 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     tabla_portada.autofit = False
     tabla_portada.allow_autofit = False
     celdas_portada = tabla_portada.rows[0].cells
-    celdas_portada[0].text = f"IDI oficial (Función Pública)\n{idi_protagonista}"
+    etiqueta_idi = "IDI oficial (Función Pública)" if diag.aplica_mipg_integral else "Índice Control Interno (MECI)"
+    celdas_portada[0].text = f"{etiqueta_idi}\n{idi_protagonista}"
     celdas_portada[1].text = f"Nivel de riesgo global\n{nivel_riesgo_global}"
     celdas_portada[2].text = f"Brechas detectadas (dato exclusivo de este informe)\n{len(diag.brechas)}"
     ancho_celda = Cm(4.2) if n_columnas_portada == 4 else Cm(5.5)
@@ -1844,15 +1845,16 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         else (sum(len(lista) for lista in cruce_recomendaciones.values()) if cruce_recomendaciones else None)
     )
 
+    etiqueta_idi_pdf = "IDI oficial (Función Pública)" if diag.aplica_mipg_integral else "Índice Control Interno (MECI)"
     if total_recomendaciones is not None:
         datos_tabla_portada = [
-            ["IDI oficial (Función Pública)", "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)", "Recomendaciones oficiales FP"],
+            [etiqueta_idi_pdf, "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)", "Recomendaciones oficiales FP"],
             [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas)), str(total_recomendaciones)],
         ]
         anchos_portada = [4 * cm, 4 * cm, 4 * cm, 4.5 * cm]
     else:
         datos_tabla_portada = [
-            ["IDI oficial (Función Pública)", "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)"],
+            [etiqueta_idi_pdf, "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)"],
             [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas))],
         ]
         anchos_portada = [5 * cm, 5 * cm, 5 * cm]

@@ -196,12 +196,18 @@ def _fila_alterna_pdf(indice_datos: int) -> tuple:
     return colors.HexColor(f"#{COLOR_FRANJA_ALTERNA}") if indice_datos % 2 == 1 else colors.white
 
 
-def _dibujar_banda_portada_pdf(nombre_entidad: str):
+def _dibujar_banda_portada_pdf(nombre_entidad: str, aplica_mipg_integral: bool = True):
     """Devuelve una función callback compatible con onFirstPage de reportlab
     que dibuja, solo en la primera página, una banda de color institucional a
     todo el ancho con el título en blanco — el mismo recurso visual que usan
     los documentos oficiales de alto nivel (MinTIC, DNP, Función Pública)
     para anclar la identidad del documento desde el primer vistazo."""
+    subtitulo_banner = (
+        "Resultado de la medición oficial del Índice de Desempeño Institucional (IDI-MIPG)"
+        if aplica_mipg_integral
+        else "Resultado de la medición oficial del Índice de Control Interno (MECI)"
+    )
+
     def _callback(canvas_pdf, doc_pdf):
         ancho_pagina, alto_pagina = LETTER
         canvas_pdf.saveState()
@@ -216,7 +222,7 @@ def _dibujar_banda_portada_pdf(nombre_entidad: str):
         canvas_pdf.setFillColor(colors.HexColor("#E8B84B"))
         canvas_pdf.drawCentredString(
             ancho_pagina / 2, alto_pagina - 2.3 * cm,
-            "Resultado de la medición oficial del Índice de Desempeño Institucional (IDI-MIPG)",
+            subtitulo_banner,
         )
         canvas_pdf.setFont("Helvetica", 9)
         canvas_pdf.setFillColor(colors.white)
@@ -302,7 +308,11 @@ def generar_informe_alcaldes_docx(
     p_banner_sub = celda_banner.add_paragraph()
     p_banner_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_banner_sub.paragraph_format.space_after = Pt(14)
-    run_banner_sub = p_banner_sub.add_run("Resultado de la medición oficial del Índice de Desempeño Institucional (IDI-MIPG)")
+    run_banner_sub = p_banner_sub.add_run(
+        "Resultado de la medición oficial del Índice de Desempeño Institucional (IDI-MIPG)"
+        if diag.aplica_mipg_integral
+        else "Resultado de la medición oficial del Índice de Control Interno (MECI)"
+    )
     run_banner_sub.italic = True
     run_banner_sub.font.size = Pt(12)
     run_banner_sub.font.color.rgb = RGBColor(0xE8, 0xB8, 0x4B)
@@ -331,7 +341,7 @@ def generar_informe_alcaldes_docx(
     tabla_cifras = doc.add_table(rows=2, cols=n_columnas)
     tabla_cifras.style = "Light Grid Accent 1"
     tabla_cifras.alignment = WD_TABLE_ALIGNMENT.CENTER
-    encabezados = ["IDI oficial", f"Nivel de riesgo {emoji_global}", "Brechas más críticas detectadas"]
+    encabezados = [("IDI oficial" if diag.aplica_mipg_integral else "Índice Control Interno"), f"Nivel de riesgo {emoji_global}", "Brechas más críticas detectadas"]
     valores = [str(idi_protagonista), texto_global, str(len(diag.brechas))]
     if total_recomendaciones is not None:
         encabezados.append("Recomendaciones oficiales de Función Pública")
@@ -616,7 +626,7 @@ def generar_informe_alcaldes_pdf(
     elementos.append(Spacer(1, 14))
 
     n_columnas = 4 if total_recomendaciones is not None else 3
-    encabezados = ["IDI oficial", f"Nivel de riesgo {emoji_global}", "Brechas más críticas detectadas"]
+    encabezados = [("IDI oficial" if diag.aplica_mipg_integral else "Índice Control Interno"), f"Nivel de riesgo {emoji_global}", "Brechas más críticas detectadas"]
     valores = [str(idi_protagonista), texto_global, str(len(diag.brechas))]
     if total_recomendaciones is not None:
         encabezados.append("Recomendaciones oficiales FP")
@@ -831,7 +841,7 @@ def generar_informe_alcaldes_pdf(
 
     doc.build(
         elementos,
-        onFirstPage=_dibujar_banda_portada_pdf(nombre_entidad),
+        onFirstPage=_dibujar_banda_portada_pdf(nombre_entidad, diag.aplica_mipg_integral),
         onLaterPages=lambda c, d: _pie_de_pagina_alcaldes(c, d, nombre_entidad),
     )
     buffer.seek(0)

@@ -75,6 +75,7 @@ def diagnosticar(entidad: Entidad, umbral_brecha: float = UMBRAL_BRECHA) -> Diag
     brechas: list[Brecha] = []
 
     aplica_integral = entidad.aplica_mipg_integral()
+    codigo_dimension_control_interno = None
     # Entidades de régimen especial (universidades autónomas, órganos de
     # control, Concejos/Asambleas, Banco de la República, Corporaciones
     # Autónomas Regionales) solo están obligadas a la política de Control
@@ -168,9 +169,28 @@ def diagnosticar(entidad: Entidad, umbral_brecha: float = UMBRAL_BRECHA) -> Diag
                 nivel_riesgo=_nivel_riesgo(promedio),
             )
         )
+        if any(_es_politica_control_interno(pol["nombre"]) for pol in dim["politicas"].values()):
+            codigo_dimension_control_interno = cod_dim
 
-    promedios_validos = [r.promedio for r in resultados_dim if r.promedio is not None]
-    idi_estimado = round(sum(promedios_validos) / len(promedios_validos), 2) if promedios_validos else None
+    if aplica_integral:
+        # MIPG íntegro: el IDI es el promedio de TODAS las dimensiones con
+        # información, tal como lo calcula y publica Función Pública.
+        promedios_validos = [r.promedio for r in resultados_dim if r.promedio is not None]
+        idi_estimado = round(sum(promedios_validos) / len(promedios_validos), 2) if promedios_validos else None
+    else:
+        # Régimen especial (MECI-only): NO existe un "IDI-MIPG" para estas
+        # entidades — Función Pública solo mide y publica el Índice de
+        # Control Interno. Promediarlo con otras políticas que la entidad
+        # reportó de forma voluntaria (transparencia, gestión documental,
+        # etc.) inflaría o desinflaría artificialmente la cifra oficial.
+        # Por eso aquí el "idi_estimado" es, para estas entidades,
+        # literalmente el promedio de la dimensión de Control Interno —
+        # el mismo dato que muestra el tablero MECI de Función Pública.
+        dim_control_interno = next(
+            (r for r in resultados_dim if r.codigo == codigo_dimension_control_interno),
+            None,
+        )
+        idi_estimado = dim_control_interno.promedio if dim_control_interno else None
 
     brechas.sort(key=lambda b: b.puntaje)  # las más críticas primero
 
