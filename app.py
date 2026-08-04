@@ -242,7 +242,15 @@ with tab_real:
 
         if entidad_elegida and st.button("Generar diagnóstico", type="primary", key="btn_real"):
             entidad, idi_oficial, grupo_par = entidad_por_nombre_exacto(df, entidad_elegida)
+            entidad.regimen_especial = tipo_regimen_especial_elegido
             st.subheader(entidad.nombre)
+            if not entidad.aplica_mipg_integral():
+                st.info(
+                    f"⚠️ Régimen especial: **{etiqueta_regimen_elegida}** — las brechas y el "
+                    "semáforo de este diagnóstico solo consideran la política de Control "
+                    "Interno (MECI) como exigible; las demás se muestran de forma informativa "
+                    "pero no se marcan como brecha."
+                )
             st.caption(
                 f"Índices/políticas con información: {len(entidad.resultados) + len(entidad.resultados_politica_directa)} de 66"
             )
