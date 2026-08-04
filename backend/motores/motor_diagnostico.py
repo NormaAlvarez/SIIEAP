@@ -47,6 +47,8 @@ class DiagnosticoInstitucional:
     resultados_por_dimension: list[ResultadoDimension]
     brechas: list[Brecha]
     idi_estimado: float | None  # promedio simple de dimensiones con información
+    aplica_mipg_integral: bool = True
+    regimen_especial: str | None = None
 
 
 def _nivel_riesgo(promedio: float | None) -> str:
@@ -59,16 +61,37 @@ def _nivel_riesgo(promedio: float | None) -> str:
     return "Baja"
 
 
+def _es_politica_control_interno(nombre_politica: str) -> bool:
+    """Identifica la política de Control Interno por NOMBRE, no por código
+    numérico — el número de política ha cambiado entre versiones del Manual
+    Operativo del MIPG (era la política 15 en la v5/2023, es la política 19
+    en la v6.1/2026), así que no es un identificador estable."""
+    return "control interno" in nombre_politica.strip().lower()
+
+
 def diagnosticar(entidad: Entidad, umbral_brecha: float = UMBRAL_BRECHA) -> DiagnosticoInstitucional:
     catalogo_dim = dimensiones()
     resultados_dim: list[ResultadoDimension] = []
     brechas: list[Brecha] = []
+
+    aplica_integral = entidad.aplica_mipg_integral()
+    # Entidades de régimen especial (universidades autónomas, órganos de
+    # control, Concejos/Asambleas, Banco de la República, Corporaciones
+    # Autónomas Regionales) solo están obligadas a la política de Control
+    # Interno (MECI) — art. 40 Ley 489/1998 y art. 2.2.22.3.4 Decreto
+    # 1499/2017. Si reportan datos en otras políticas de forma voluntaria,
+    # esos datos SÍ se muestran y SÍ entran al promedio de su dimensión
+    # (es información real, no hay razón para ocultarla), pero NO se
+    # marcan como "brecha" — no tiene sentido decirle a un Concejo o a una
+    # Personería que "debe corregir" algo que la norma no le exige.
 
     for cod_dim, dim in catalogo_dim.items():
         puntajes_dim: list[float] = []
         indices_esperados = 0
 
         for cod_pol, pol in dim["politicas"].items():
+            politica_aplica = aplica_integral or _es_politica_control_interno(pol["nombre"])
+
             if not pol["indices"]:
                 # Política sin índices propios (p.ej. POL14): se usa su
                 # puntaje directo, si la entidad lo reportó.
@@ -77,7 +100,7 @@ def diagnosticar(entidad: Entidad, umbral_brecha: float = UMBRAL_BRECHA) -> Diag
                 if directa is None:
                     continue
                 puntajes_dim.append(directa.puntaje)
-                if directa.puntaje < umbral_brecha:
+                if politica_aplica and directa.puntaje < umbral_brecha:
                     brechas.append(
                         Brecha(
                             codigo_indice=cod_pol,
@@ -96,7 +119,7 @@ def diagnosticar(entidad: Entidad, umbral_brecha: float = UMBRAL_BRECHA) -> Diag
                 if resultado is None:
                     continue
                 puntajes_dim.append(resultado.puntaje)
-                if resultado.puntaje < umbral_brecha:
+                if politica_aplica and resultado.puntaje < umbral_brecha:
                     brechas.append(
                         Brecha(
                             codigo_indice=cod_idx,
@@ -131,4 +154,6 @@ def diagnosticar(entidad: Entidad, umbral_brecha: float = UMBRAL_BRECHA) -> Diag
         resultados_por_dimension=resultados_dim,
         brechas=brechas,
         idi_estimado=idi_estimado,
+        aplica_mipg_integral=aplica_integral,
+        regimen_especial=entidad.regimen_especial,
     )
