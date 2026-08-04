@@ -4,6 +4,38 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 
+# ---------------------------------------------------------------------------
+# Régimen especial MIPG/MECI: algunas entidades no están obligadas a
+# implementar el MIPG en su integralidad (7 dimensiones, 19 políticas) sino
+# únicamente la política de Control Interno (MECI), en virtud del artículo 40
+# de la Ley 489 de 1998 y del artículo 2.2.22.3.4 del Decreto 1499 de 2017.
+#
+# Estos códigos son la fuente de verdad única del sistema: motor_diagnostico.py
+# los usa para no penalizar a estas entidades por políticas que no les aplican,
+# y backend/motores/generador_informe.py los usa para la nota jurídica que se
+# inserta en los 3 informes. Si se agrega una categoría nueva, agréguese aquí
+# primero y luego en el catálogo de notas de generador_informe.py.
+# ---------------------------------------------------------------------------
+
+REGIMEN_ESPECIAL_NINGUNO = "ninguno"  # Rama Ejecutiva: MIPG íntegro aplica
+REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA = "universidad_autonoma"
+REGIMEN_ESPECIAL_ORGANO_CONTROL = "organo_control"  # Contraloría territorial
+REGIMEN_ESPECIAL_PERSONERIA = "personeria"
+REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA = "concejo_asamblea"
+REGIMEN_ESPECIAL_BANCO_REPUBLICA = "banco_republica"
+REGIMEN_ESPECIAL_CORPORACION_AUTONOMA = "corporacion_autonoma_regional"
+
+# Categorías que NO están obligadas al MIPG íntegro (solo MECI/Control Interno)
+ENTIDADES_MECI_UNICAMENTE = frozenset({
+    REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA,
+    REGIMEN_ESPECIAL_ORGANO_CONTROL,
+    REGIMEN_ESPECIAL_PERSONERIA,
+    REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA,
+    REGIMEN_ESPECIAL_BANCO_REPUBLICA,
+    REGIMEN_ESPECIAL_CORPORACION_AUTONOMA,
+})
+
+
 @dataclass
 class ResultadoIndice:
     """Resultado oficial de un índice para una entidad, en una vigencia dada."""
@@ -48,6 +80,15 @@ class Entidad:
     vigencia: int
     resultados: list[ResultadoIndice] = field(default_factory=list)
     resultados_politica_directa: list[ResultadoPolitica] = field(default_factory=list)
+    regimen_especial: str | None = None  # ver constantes REGIMEN_ESPECIAL_* arriba
+
+    def aplica_mipg_integral(self) -> bool:
+        """True si esta entidad está obligada al MIPG en su integralidad (7
+        dimensiones, 19 políticas). False si, por su naturaleza jurídica
+        (ente universitario autónomo, órgano de control, Concejo/Asamblea,
+        Banco de la República, Corporación Autónoma Regional), solo está
+        obligada a la política de Control Interno (MECI)."""
+        return self.regimen_especial not in ENTIDADES_MECI_UNICAMENTE
 
     def resultado_de(self, codigo_indice: str) -> ResultadoIndice | None:
         codigo_indice = codigo_indice.strip().upper()
