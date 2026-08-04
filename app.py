@@ -85,8 +85,8 @@ if not verificar_acceso():
 
 st.title("Modelo de Conocimiento Institucional del Sistema de Inteligencia Artificial para la Evaluación Integral del Desempeño Institucional en Entidades Públicas (SIIEAP)")
 st.caption(
-    "Docente: Norma Elizabeth Álvarez Grajales · Área de conocimiento: Entidades "
-    "Públicas y del Desarrollo · Escuela Superior de Administración Pública (ESAP)"
+    "Docente: Norma Elizabeth Álvarez Grajales · Área del conocimiento "
+    "Organizaciones Públicas y Gestión. Escuela Superior de Administración Pública (ESAP)"
 )
 st.caption(
     "Catálogo oficial: "
