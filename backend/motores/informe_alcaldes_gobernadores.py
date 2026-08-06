@@ -1,9 +1,11 @@
-"""Generador del Informe Ejecutivo para Alcaldes y Gobernadores — Word (.docx)
+"""Generador del Informe Ejecutivo para Representantes Legales — Word (.docx)
 y PDF descargables.
 
-Tercer tipo de informe de SIIEAP, pensado para la Alta Dirección (alcalde,
-gobernador, secretario de despacho) — NO para el estudiante ni para el
-técnico de la oficina de planeación. Por eso:
+Tercer tipo de informe de SIIEAP, pensado para el representante legal de la
+entidad (alcalde, gobernador, contralor, personero, gerente de ESE, gerente
+de entidad descentralizada, rector de universidad pública, gerente de
+empresa industrial y comercial del Estado) — NO para el estudiante ni para
+el técnico de la oficina de planeación. Por eso:
 
   - Usa lenguaje llano, directo y sin jerga académica (nada de "Nuevo
     Institucionalismo", "post-NGP", etc. — eso vive en el Informe Técnico
@@ -63,6 +65,10 @@ from backend.motores.generador_informe import (
     _celda_pdf,
     _agregar_nota_regimen_especial_docx,
     _nota_regimen_especial_pdf_flowables,
+    _agregar_tabla_contenido_docx,
+    _agregar_razon_de_ser_docx,
+    _toc_pdf_flowables,
+    _razon_de_ser_pdf_flowables,
 )
 
 
@@ -224,8 +230,13 @@ def _dibujar_banda_portada_pdf(nombre_entidad: str, aplica_mipg_integral: bool =
             ancho_pagina / 2, alto_pagina - 2.3 * cm,
             subtitulo_banner,
         )
-        canvas_pdf.setFont("Helvetica", 9)
+        # CORREGIDO: el nombre de la entidad es de longitud variable (algunos
+        # nombres de municipios/departamentos son largos); antes se dibujaba
+        # con drawCentredString a tamaño fijo y podía desbordarse. Ahora el
+        # tamaño de fuente se reduce automáticamente si el nombre es largo.
         canvas_pdf.setFillColor(colors.white)
+        tamano_nombre = 9 if len(nombre_entidad) <= 55 else 7.5
+        canvas_pdf.setFont("Helvetica", tamano_nombre)
         canvas_pdf.drawCentredString(ancho_pagina / 2, alto_pagina - 2.95 * cm, nombre_entidad)
         canvas_pdf.restoreState()
         _pie_de_pagina_alcaldes(canvas_pdf, doc_pdf, nombre_entidad)
@@ -380,6 +391,9 @@ def generar_informe_alcaldes_docx(
     run_nota_sem.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
     doc.add_page_break()
+
+    _agregar_tabla_contenido_docx(doc)
+    _agregar_razon_de_ser_docx(doc, "ejecutivo")
 
     # --- 1. Cómo está la entidad, dimensión por dimensión (semáforo) ---
     _titulo_seccion_docx(doc, 1, "Cómo está la entidad, dimensión por dimensión")
@@ -655,6 +669,15 @@ def generar_informe_alcaldes_pdf(
     elementos.append(Spacer(1, 6))
     elementos.append(Paragraph(NOTA_SEMAFORO, estilo_cursiva))
     elementos.append(PageBreak())
+
+    elementos.extend(_toc_pdf_flowables([
+        "Cómo está la entidad, dimensión por dimensión",
+        "Brechas más críticas y su implicación legal, fiscal y disciplinaria",
+        "Matriz de riesgo probabilidad-impacto",
+        "Recomendaciones oficiales de la Función Pública",
+        "Artículo 6 constitucional y responsabilidad de la Alta Dirección",
+    ]))
+    elementos.extend(_razon_de_ser_pdf_flowables("ejecutivo"))
 
     # --- 1. Semáforo por dimensión ---
     elementos.extend(_divisor_seccion_pdf(1, "Cómo está la entidad, dimensión por dimensión", estilos))

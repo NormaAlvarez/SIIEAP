@@ -58,6 +58,10 @@ from backend.motores.generador_informe import (
     _celda_pdf,
     _agregar_nota_regimen_especial_docx,
     _nota_regimen_especial_pdf_flowables,
+    _agregar_tabla_contenido_docx,
+    _agregar_razon_de_ser_docx,
+    _toc_pdf_flowables,
+    _razon_de_ser_pdf_flowables,
 )
 
 
@@ -869,6 +873,9 @@ def generar_estudio_de_caso_docx(
     run_autoria_ec.font.size = Pt(9)
     doc.add_page_break()
 
+    _agregar_tabla_contenido_docx(doc)
+    _agregar_razon_de_ser_docx(doc, "estudio_caso")
+
     # 1. Descripción del problema público
     _agregar_divisor_seccion_docx(doc, "1. Descripción del problema público", icono="📝")
     try:
@@ -1264,6 +1271,16 @@ def generar_estudio_de_caso_pdf(
         estilo_cursiva,
     ))
     elementos.append(PageBreak())
+
+    elementos.extend(_toc_pdf_flowables([
+        "Descripción del problema público",
+        "Contexto institucional y fuentes de datos abiertos",
+        "Análisis teórico (NGP, Post-NGP, Nuevo Institucionalismo)",
+        "Fundamento jurídico ampliado",
+        "Fortalezas, debilidades y escenarios prospectivos",
+        "Nota de uso responsable de IA",
+    ]))
+    elementos.extend(_razon_de_ser_pdf_flowables("estudio_caso"))
 
     elementos.extend(_divisor_seccion_pdf("1. Descripción del problema público", icono="📝"))
     try:

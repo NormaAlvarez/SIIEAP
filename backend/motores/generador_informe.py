@@ -168,19 +168,52 @@ def _dibujar_banda_portada_pdf(titulo: str, subtitulo: str | None = None, color_
     """Fábrica de función onFirstPage para reportlab: dibuja una banda de
     color a todo el ancho en la parte superior de la primera página, con el
     título y subtítulo en blanco, y delega el pie de página a
-    `funcion_pie` si se le pasa (ver `_combinar_callbacks_primera_pagina`)."""
+    `funcion_pie` si se le pasa (ver `_combinar_callbacks_primera_pagina`).
+
+    CORREGIDO: títulos largos (p. ej. el nombre completo de SIIEAP) ya no
+    se dibujan con drawCentredString en una sola línea sin ajuste — eso
+    los hacía desbordarse fuera del ancho de la página. Ahora se envuelven
+    con reportlab.platypus.Paragraph dentro del ancho real de la banda,
+    con tamaño de fuente que se reduce automáticamente si el título es muy
+    largo, y la altura de la banda se ajusta al número de líneas reales."""
     def _dibujar(canvas_pdf, doc_pdf):
-        canvas_pdf.saveState()
+        from reportlab.platypus import Paragraph as _P
         ancho_pagina, alto_pagina = LETTER
-        alto_banda = alto_cm * cm
+        margen_lateral = 1.5 * cm
+        ancho_disponible = ancho_pagina - 2 * margen_lateral
+
+        tamano_titulo = 15 if len(titulo) <= 70 else (12.5 if len(titulo) <= 130 else 10.5)
+        estilo_titulo = ParagraphStyle(
+            "BandaTitulo", fontName="Helvetica-Bold", fontSize=tamano_titulo,
+            leading=tamano_titulo * 1.2, textColor=colors.white, alignment=1,  # 1 = centro
+        )
+        p_titulo = _P(titulo, estilo_titulo)
+        ancho_usado, alto_titulo = p_titulo.wrap(ancho_disponible, 10 * cm)
+
+        alto_subtitulo = 0
+        p_subtitulo = None
+        if subtitulo:
+            estilo_subtitulo = ParagraphStyle(
+                "BandaSubtitulo", fontName="Helvetica-Oblique", fontSize=10,
+                leading=12, textColor=colors.white, alignment=1,
+            )
+            p_subtitulo = _P(subtitulo, estilo_subtitulo)
+            _, alto_subtitulo = p_subtitulo.wrap(ancho_disponible, 10 * cm)
+
+        # Alto real de la banda: máximo entre el mínimo estético (alto_cm) y
+        # lo que de verdad ocupa el texto envuelto, con margen de respiro.
+        alto_contenido = alto_titulo + (alto_subtitulo + 6 if subtitulo else 0) + 24
+        alto_banda = max(alto_cm * cm, alto_contenido)
+
+        canvas_pdf.saveState()
         canvas_pdf.setFillColor(colors.HexColor(f"#{color_hex}"))
         canvas_pdf.rect(0, alto_pagina - alto_banda, ancho_pagina, alto_banda, fill=1, stroke=0)
-        canvas_pdf.setFillColor(colors.white)
-        canvas_pdf.setFont("Helvetica-Bold", 15)
-        canvas_pdf.drawCentredString(ancho_pagina / 2, alto_pagina - alto_banda * 0.45, titulo)
-        if subtitulo:
-            canvas_pdf.setFont("Helvetica-Oblique", 10)
-            canvas_pdf.drawCentredString(ancho_pagina / 2, alto_pagina - alto_banda * 0.72, subtitulo)
+
+        y_actual = alto_pagina - 14 - alto_titulo
+        p_titulo.drawOn(canvas_pdf, margen_lateral, y_actual)
+        if p_subtitulo:
+            y_actual -= (alto_subtitulo + 6)
+            p_subtitulo.drawOn(canvas_pdf, margen_lateral, y_actual)
         canvas_pdf.restoreState()
     return _dibujar
 
@@ -188,23 +221,33 @@ def _dibujar_banda_portada_pdf(titulo: str, subtitulo: str | None = None, color_
 def _banner_portada_pdf_flowables(titulo: str, subtitulo: str | None = None, color_hex: str = COLOR_INSTITUCIONAL):
     """Versión del banner de portada como flowables (Table de una celda con
     fondo de color), para insertar directamente en el flujo del documento
-    igual que en Word, sin depender de un callback de canvas."""
-    filas = [[titulo]]
+    igual que en Word, sin depender de un callback de canvas.
+
+    CORREGIDO: el título y subtítulo ahora van envueltos en Paragraph (no
+    como string plano dentro de la Table), para que el texto largo haga
+    salto de línea dentro de la celda en vez de desbordarse."""
+    tamano_titulo = 15 if len(titulo) <= 70 else (12.5 if len(titulo) <= 130 else 10.5)
+    estilo_titulo = ParagraphStyle(
+        "BannerFlowTitulo", fontName="Helvetica-Bold", fontSize=tamano_titulo,
+        leading=tamano_titulo * 1.25, textColor=colors.white, alignment=1,
+    )
+    filas = [[Paragraph(titulo, estilo_titulo)]]
     if subtitulo:
-        filas.append([subtitulo])
+        estilo_subtitulo = ParagraphStyle(
+            "BannerFlowSubtitulo", fontName="Helvetica-Oblique", fontSize=10.5,
+            leading=13, textColor=colors.white, alignment=1,
+        )
+        filas.append([Paragraph(subtitulo, estilo_subtitulo)])
     tabla = Table(filas, colWidths=[17 * cm])
     estilo = [
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(f"#{color_hex}")),
-        ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, 0), 15),
-        ("TOPPADDING", (0, 0), (-1, -1), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING", (0, 0), (-1, -1), 14),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 14),
     ]
-    if subtitulo:
-        estilo.append(("FONTNAME", (0, 1), (-1, 1), "Helvetica-Oblique"))
-        estilo.append(("FONTSIZE", (0, 1), (-1, 1), 10.5))
     tabla.setStyle(TableStyle(estilo))
     return [tabla, Spacer(1, 14)]
 
@@ -241,18 +284,28 @@ def _agregar_divisor_seccion_docx(doc, titulo: str, icono: str = "▪", color_he
 def _divisor_seccion_pdf(titulo: str, icono: str = "▪", color_hex: str = COLOR_INSTITUCIONAL):
     """Versión PDF (lista de flowables) del divisor de sección: una tabla
     de una celda con fondo de color, texto blanco e ícono, seguida de un
-    espaciador. Se antepone a cada Heading1 de los informes."""
-    tabla = Table([[f"{icono}  {titulo}"]], colWidths=[17 * cm])
+    espaciador. Se antepone a cada Heading1 de los informes.
+
+    CORREGIDO: antes el título iba como string plano dentro de la Table,
+    lo que hacía que títulos largos (algunos de más de 100 caracteres, como
+    el de la sección de análisis integral) se desbordaran fuera de la
+    celda o se vieran amontonados. Ahora va envuelto en Paragraph, con el
+    tamaño de fuente ajustado según la longitud del título."""
+    tamano_fuente = 12.5 if len(titulo) <= 55 else (11 if len(titulo) <= 100 else 9.5)
+    estilo_divisor = ParagraphStyle(
+        "DivisorSeccionPDF", fontName="Helvetica-Bold", fontSize=tamano_fuente,
+        leading=tamano_fuente * 1.25, textColor=colors.white,
+    )
+    tabla = Table([[Paragraph(f"{icono}&nbsp;&nbsp;{titulo}", estilo_divisor)]], colWidths=[17 * cm])
     tabla.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(f"#{color_hex}")),
-        ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
-        ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 12),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
     ]))
-    return [tabla, Spacer(1, 8)]
+    return [tabla, Spacer(1, 10)]
 
 
 def _franjas_alternas_docx(tabla, color_hex_par: str = "F2F4F8") -> None:
@@ -262,6 +315,204 @@ def _franjas_alternas_docx(tabla, color_hex_par: str = "F2F4F8") -> None:
         if indice_fila % 2 == 0:
             for celda in fila.cells:
                 _sombrear_celda(celda, color_hex_par)
+
+
+# ---------------------------------------------------------------------------
+# Identidad compartida — Tabla de contenido, Razón de ser y Nota cruzada
+# entre los 3 informes. Agregado a solicitud explícita de Norma: cada
+# informe debe (a) traer su propia tabla de contenido, (b) explicar al
+# inicio para qué sirve y a quién está dirigido, y (c) decirle a quien lo
+# recibe que existen otros 2 informes y qué contienen, para que sepa que
+# puede solicitarlos.
+# ---------------------------------------------------------------------------
+
+# Claves válidas: "tecnico", "estudio_caso", "ejecutivo"
+RAZON_DE_SER_POR_INFORME = {
+    "tecnico": {
+        "titulo": "¿Qué es este Informe Técnico y para quién es?",
+        "texto": (
+            "Este documento está dirigido a los equipos técnicos y de planeación "
+            "de la entidad. Responde a la pregunta: ¿qué dice exactamente el "
+            "diagnóstico institucional y cómo se construye, a partir de él, el "
+            "plan de mejoramiento? Contiene el diagnóstico completo por dimensión "
+            "e índice del MIPG, el Índice Sintético de Valor Público Territorial "
+            "(ISVPT) y el análisis integral generado por inteligencia artificial, "
+            "con fundamentación teórica (Nueva Gestión Pública, Post-NGP y Nuevo "
+            "Institucionalismo)."
+        ),
+        "nota_cruzada": (
+            "Este es 1 de 3 informes que SIIEAP genera para esta misma entidad. "
+            "Si usted es el representante legal (alcalde, gobernador, contralor, "
+            "personero, gerente o rector) y necesita una versión breve, en "
+            "lenguaje llano, con las consecuencias legales, fiscales y "
+            "disciplinarias de cada brecha, solicite el Informe Ejecutivo para "
+            "Representantes Legales. Si necesita el análisis académico completo, "
+            "con fundamentación teórica ampliada y escenarios prospectivos, "
+            "solicite el Estudio de Caso Académico."
+        ),
+    },
+    "estudio_caso": {
+        "titulo": "¿Qué es este Estudio de Caso y para quién es?",
+        "texto": (
+            "Este documento está dirigido a estudiantes e investigadores, en el "
+            "marco de la Maestría en Administración Pública de la ESAP. Responde "
+            "a la pregunta: ¿cómo se explica este caso institucional desde la "
+            "teoría de la administración pública? Contiene la misma "
+            "fundamentación teórica del Informe Técnico, generada dinámicamente "
+            "en función de la entidad elegida, el Análisis 360° regional y "
+            "escenarios prospectivos."
+        ),
+        "nota_cruzada": (
+            "Este es 1 de 3 informes que SIIEAP genera para esta misma entidad. "
+            "Si necesita el diagnóstico completo por dimensión e índice para "
+            "construir un plan de mejoramiento, solicite el Informe Técnico. Si "
+            "usted es el representante legal de la entidad y necesita una "
+            "versión breve, en lenguaje llano, con las consecuencias legales, "
+            "fiscales y disciplinarias, solicite el Informe Ejecutivo para "
+            "Representantes Legales."
+        ),
+    },
+    "ejecutivo": {
+        "titulo": "¿Qué es este Informe Ejecutivo y para quién es?",
+        "texto": (
+            "Este documento está dirigido al representante legal de la entidad "
+            "— alcalde, gobernador, contralor, personero, gerente de una ESE o "
+            "de una entidad descentralizada, rector de universidad pública, o "
+            "gerente de una empresa industrial y comercial del Estado — en su "
+            "condición de presidente del Comité Institucional de Gestión y "
+            "Desempeño y del Comité Institucional de Coordinación de Control "
+            "Interno. Responde a la pregunta: ¿qué le falta a mi entidad, por "
+            "qué me expone legalmente, y qué debo decidir ya? Sin tecnicismos: "
+            "semáforo visual de 5 quintiles del MIPG, matriz de riesgo "
+            "probabilidad-impacto, y el marco legal, fiscal, administrativo y "
+            "disciplinario aplicable a cada brecha, incluido el artículo 6 "
+            "constitucional."
+        ),
+        "nota_cruzada": (
+            "Este es 1 de 3 informes que SIIEAP genera para esta misma entidad. "
+            "Si su equipo técnico necesita el diagnóstico completo por dimensión "
+            "e índice para construir el plan de mejoramiento, solicite el "
+            "Informe Técnico. Si necesita el análisis académico con "
+            "fundamentación teórica ampliada, solicite el Estudio de Caso "
+            "Académico."
+        ),
+    },
+}
+
+
+def _agregar_tabla_contenido_docx(doc) -> None:
+    """Inserta un campo de Tabla de Contenido NATIVO de Word (niveles 1-3).
+
+    También activa la marca 'actualizar campos al abrir' en settings.xml,
+    para que Microsoft Word ofrezca (o en muchas configuraciones, resuelva
+    directamente) la actualización del índice apenas se abre el documento,
+    en vez de depender de que quien lo reciba sepa hacer clic derecho >
+    Actualizar campo. Si el documento se abre en un visor que no soporta
+    campos (algunos lectores de PDF-desde-Word, apps móviles muy básicas),
+    el texto de repuesto ("Haga clic derecho...") sigue siendo visible como
+    respaldo."""
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+
+    # Activar 'actualizar campos al abrir' en settings.xml (una sola vez por documento)
+    settings_element = doc.settings.element
+    if settings_element.find(qn("w:updateFields")) is None:
+        update_fields = OxmlElement("w:updateFields")
+        update_fields.set(qn("w:val"), "true")
+        settings_element.append(update_fields)
+
+    p_titulo = doc.add_paragraph()
+    run_titulo = p_titulo.add_run("Tabla de contenido")
+    run_titulo.bold = True
+    run_titulo.font.size = Pt(16)
+    run_titulo.font.color.rgb = RGBColor(0x1F, 0x38, 0x64)
+
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run()
+    fld_begin = OxmlElement("w:fldChar")
+    fld_begin.set(qn("w:fldCharType"), "begin")
+    instr_text = OxmlElement("w:instrText")
+    instr_text.set(qn("xml:space"), "preserve")
+    instr_text.text = 'TOC \\o "1-3" \\h \\z \\u'
+    fld_separate = OxmlElement("w:fldChar")
+    fld_separate.set(qn("w:fldCharType"), "separate")
+    fld_text = OxmlElement("w:t")
+    fld_text.text = "Haga clic derecho sobre esta tabla y seleccione 'Actualizar campo' para generar el índice."
+    fld_end = OxmlElement("w:fldChar")
+    fld_end.set(qn("w:fldCharType"), "end")
+
+    r_element = run._r
+    r_element.append(fld_begin)
+    r_element.append(instr_text)
+    r_element.append(fld_separate)
+    r_element.append(fld_text)
+    r_element.append(fld_end)
+
+    doc.add_page_break()
+
+
+def _agregar_razon_de_ser_docx(doc, tipo_informe: str) -> None:
+    """Inserta el bloque de 'razón de ser' (qué es este informe, para quién)
+    y la nota cruzada (qué otros 2 informes existen), justo después de la
+    tabla de contenido y antes del contenido propio del informe."""
+    info = RAZON_DE_SER_POR_INFORME[tipo_informe]
+
+    p_titulo = doc.add_paragraph()
+    run_titulo = p_titulo.add_run(info["titulo"])
+    run_titulo.bold = True
+    run_titulo.font.size = Pt(14)
+    run_titulo.font.color.rgb = RGBColor(0x1F, 0x4E, 0x79)
+
+    p_texto = doc.add_paragraph(info["texto"])
+    p_texto.paragraph_format.space_after = Pt(10)
+
+    p_nota = doc.add_paragraph()
+    run_nota = p_nota.add_run(info["nota_cruzada"])
+    run_nota.italic = True
+    run_nota.font.size = Pt(9.5)
+    run_nota.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
+
+    doc.add_page_break()
+
+
+def _toc_pdf_flowables(secciones: list[str]):
+    """Índice estático (sin números de página dinámicos) para la versión
+    PDF: lista los títulos de sección en orden. A diferencia del .docx,
+    reportlab no resuelve automáticamente números de página sin un
+    refactor mayor del pipeline de construcción (doc.build -> multiBuild);
+    se prioriza no arriesgar la generación ya estable del PDF."""
+    elementos = [Paragraph("<b>Contenido</b>", ParagraphStyle(
+        "TituloIndicePDF", fontName="Helvetica-Bold", fontSize=14,
+        textColor=colors.HexColor(f"#{COLOR_INSTITUCIONAL}"),
+    ))]
+    elementos.append(Spacer(1, 6))
+    for seccion in secciones:
+        elementos.append(Paragraph(f"• {seccion}", _ESTILO_CELDA_TABLA_PDF))
+    elementos.append(Spacer(1, 10))
+    elementos.append(PageBreak())
+    return elementos
+
+
+def _razon_de_ser_pdf_flowables(tipo_informe: str):
+    """Versión PDF (lista de flowables) de _agregar_razon_de_ser_docx."""
+    info = RAZON_DE_SER_POR_INFORME[tipo_informe]
+    estilo_titulo = ParagraphStyle(
+        "TituloRazonSerPDF", fontName="Helvetica-Bold", fontSize=13,
+        textColor=colors.HexColor("#1F4E79"), spaceAfter=6,
+    )
+    estilo_texto = ParagraphStyle(
+        "TextoRazonSerPDF", fontName="Helvetica", fontSize=10.5, leading=14, spaceAfter=8,
+    )
+    estilo_nota = ParagraphStyle(
+        "NotaCruzadaPDF", fontName="Helvetica-Oblique", fontSize=9,
+        textColor=colors.grey, spaceAfter=10,
+    )
+    return [
+        Paragraph(info["titulo"], estilo_titulo),
+        Paragraph(info["texto"], estilo_texto),
+        Paragraph(info["nota_cruzada"], estilo_nota),
+        PageBreak(),
+    ]
 
 
 # Esquema OFICIAL de 5 quintiles del MIPG (rangos de puntaje 0-100), usado
@@ -1270,8 +1521,12 @@ POLITICA_A_RIESGO_ALTA_DIRECCION = {
     ),
     "gestión presupuestal y eficiencia del gasto": (
         "Fiscal",
-        "Ley 610 de 2000 (proceso de responsabilidad fiscal); Ley 617 de 2000 (límites de gasto)",
-        "El detrimento patrimonial derivado de una gestión presupuestal deficiente puede abrir proceso de responsabilidad fiscal ante la Contraloría, con obligación de resarcir el daño con el patrimonio del responsable.",
+        "Ley 610 de 2000 (proceso de responsabilidad fiscal); Ley 617 de 2000 (límites de gasto); "
+        "Acto Legislativo 05 de 2019, Ley 2056 de 2020 y Decreto 1821 de 2020 (Sistema General de "
+        "Regalías, para entidades territoriales receptoras)",
+        "El detrimento patrimonial derivado de una gestión presupuestal deficiente —incluida la "
+        "ejecución irregular de recursos de regalías— puede abrir proceso de responsabilidad fiscal "
+        "ante la Contraloría, con obligación de resarcir el daño con el patrimonio del responsable.",
     ),
     "compras y contratación pública": (
         "Fiscal y disciplinario",
@@ -1532,6 +1787,9 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         run_nota_idi.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
     doc.add_page_break()
+
+    _agregar_tabla_contenido_docx(doc)
+    _agregar_razon_de_ser_docx(doc, "tecnico")
 
     _agregar_glosario_docx(doc)
 
@@ -1903,6 +2161,16 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
             ParagraphStyle("NotaIDI", parent=estilo_cursiva, fontSize=8),
         ))
     elementos.append(PageBreak())
+
+    elementos.extend(_toc_pdf_flowables([
+        "Contextualización de la Administración Pública Contemporánea",
+        "Diagnóstico institucional por dimensión",
+        "Índice Sintético de Valor Público Territorial (ISVPT)",
+        "Análisis integral generado por IA",
+        "Plan de mejoramiento prospectivo",
+        "Glosario y notas de trazabilidad",
+    ]))
+    elementos.extend(_razon_de_ser_pdf_flowables("tecnico"))
 
     _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2)
 
