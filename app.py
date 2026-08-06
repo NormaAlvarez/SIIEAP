@@ -538,7 +538,7 @@ with tab_real:
                     st.error(f"No se pudo generar el Estudio de Caso: {e}")
 
                 st.markdown("---")
-                st.markdown("### 🏛️ Informe Ejecutivo para Alcaldes y Gobernadores")
+                st.markdown("### 🏛️ Informe Ejecutivo para Representantes Legales")
                 st.caption(
                     "Versión en lenguaje llano, sin jerga académica, pensada para la Alta "
                     "Dirección: semáforo de 5 quintiles del MIPG, brechas más críticas, "
