@@ -1442,8 +1442,8 @@ _COLOR_HEX_POR_RIESGO = {
 # partir de las brechas reales de la entidad, garantizando que la conexión
 # con los 15 enfoques contemporáneos sea visible en TODOS los informes.
 POLITICA_A_ENFOQUE_Y_NORMA = {
-    "gestión estratégica del talento humano": ("Capacidades Estatales", "Ley 617 de 2000, art. 1-2; Ley 1454 de 2011, art. 3"),
-    "integridad": ("Gobierno Abierto", "Ley 1712 de 2014; Ley 2013 de 2019 y Decreto 830 de 2021 (conflictos de interés)"),
+    "gestión estratégica del talento humano": ("Capacidades Estatales", "Ley 909 de 2004 (Sistema de Empleo Público); Decreto 1083 de 2015, Libro 2 (DUR Función Pública); Ley 1960 de 2019 (modifica la Ley 909, encargos y evaluación del desempeño); Decreto 2539 de 2005 (competencias laborales)"),
+    "integridad": ("Gobierno Abierto", "Ley 1712 de 2014; Ley 2013 de 2019 y Decreto 830 de 2021 (conflictos de interés); Decreto 648 de 2017 (adopta el Código de Integridad del Servicio Público); Ley 1474 de 2011 (Estatuto Anticorrupción)"),
     "planeación institucional": ("Administración Pública Basada en Evidencia", "Decreto 1499 de 2017, art. 2.2.22.3.2-3.3"),
     "gestión presupuestal y eficiencia del gasto": ("Capacidades Estatales", "Ley 610 de 2000, art. 1 (responsabilidad fiscal)"),
     "compras y contratación pública": ("Gobierno como Plataforma", "Decreto 620 de 2020, art. 2.2.17.2.2.1-2.2.2 (TVEC/Articulador)"),
@@ -1506,12 +1506,12 @@ ARTICULO_6_CONSTITUCION_EXPLICACION = (
 POLITICA_A_RIESGO_ALTA_DIRECCION = {
     "gestión estratégica del talento humano": (
         "Administrativo y disciplinario",
-        "Ley 909 de 2004 (empleo público); Ley 1952 de 2019 modif. Ley 2094 de 2021 (Código General Disciplinario)",
+        "Ley 909 de 2004 (empleo público); Decreto 1083 de 2015, Libro 2 (DUR Función Pública); Ley 1960 de 2019 (modifica la Ley 909, encargos y evaluación del desempeño); Ley 1952 de 2019 modif. Ley 2094 de 2021 (Código General Disciplinario)",
         "Faltas en la carrera administrativa y en la evaluación del desempeño pueden derivar en nulidad de actos de personal y en investigación disciplinaria contra el nominador.",
     ),
     "integridad": (
         "Disciplinario",
-        "Ley 1952 de 2019 modif. Ley 2094 de 2021; Ley 2013 de 2019 y Decreto 830 de 2021 (conflictos de interés)",
+        "Decreto 648 de 2017 (Código de Integridad del Servicio Público); Ley 1952 de 2019 modif. Ley 2094 de 2021; Ley 2013 de 2019 y Decreto 830 de 2021 (conflictos de interés)",
         "Los conflictos de interés no declarados son falta disciplinaria autónoma, independiente de si hubo o no un daño patrimonial.",
     ),
     "planeación institucional": (
