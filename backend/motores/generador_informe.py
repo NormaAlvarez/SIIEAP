@@ -1238,21 +1238,38 @@ DISCLAIMER_INFORME = (
 # Glosario y convenciones del informe
 #
 # Fuente de los términos OFICIALES: Glosario MIPG v7 (octubre de 2021),
-# Departamento Administrativo de la Función Pública — definiciones
-# parafraseadas aquí, no citadas textualmente. Se listan aparte los términos
-# de CONVENCIÓN PROPIA de SIIEAP, que NO existen en el glosario oficial y son
-# exclusivos de este sistema, para que el lector nunca confunda unos con
-# otros.
+# Departamento Administrativo de la Función Pública — verificado línea por
+# línea contra el PDF oficial (2021-10-25_Glosario_mipg_v7.pdf) el 8 de
+# agosto de 2026. Definiciones parafraseadas aquí, no citadas textualmente.
+# Se listan aparte los términos de CONVENCIÓN PROPIA de SIIEAP, que NO
+# existen en el glosario oficial y son exclusivos de este sistema, para que
+# el lector nunca confunda unos con otros.
+#
+# Correcciones aplicadas en la verificación del 8 de agosto de 2026:
+#   - MIPG: el glosario oficial v7 remite a Decreto 1083 de 2015 (Único
+#     Reglamentario), no a Decreto 1499 de 2017 como decía la versión
+#     anterior. Se citan ambos para no perder la referencia de creación.
+#   - Grupo par: se añadió el mecanismo de quintiles, presente en el
+#     glosario oficial y ausente en la versión anterior de este código.
+#   - Valor público: se ajustó la redacción para no editorializar más allá
+#     de lo que dice la fuente oficial.
+#   - Se agregaron 6 términos oficiales adicionales que ya se usan en los
+#     tres informes del SIIEAP pero no tenían entrada en este glosario:
+#     Grupos de valor, Talento humano, Autocontrol, Rendición de cuentas,
+#     Transparencia activa y Transparencia pasiva.
 # ---------------------------------------------------------------------------
 
 GLOSARIO_OFICIAL_MIPG = [
     (
         "MIPG (Modelo Integrado de Planeación y Gestión)",
-        "Marco de referencia oficial del Estado colombiano (Decreto 1499 de "
-        "2017) para dirigir, planear, ejecutar, hacer seguimiento, evaluar y "
-        "controlar la gestión de las entidades públicas, con el fin de generar "
-        "resultados que atiendan los planes de desarrollo y las necesidades de "
-        "la ciudadanía.",
+        "Marco de referencia oficial del Estado colombiano para dirigir, "
+        "planear, ejecutar, hacer seguimiento, evaluar y controlar la "
+        "gestión de las entidades públicas, con integridad y calidad en el "
+        "servicio, con el fin de generar resultados que atiendan los planes "
+        "de desarrollo y resuelvan las necesidades de la ciudadanía. Creado "
+        "por el Decreto 1499 de 2017, hoy compilado en el Decreto 1083 de "
+        "2015 (Único Reglamentario del sector Función Pública), que es la "
+        "norma que cita expresamente el glosario oficial vigente.",
     ),
     (
         "Índice de Desempeño Institucional (IDI)",
@@ -1283,23 +1300,64 @@ GLOSARIO_OFICIAL_MIPG = [
     ),
     (
         "Grupo par",
-        "Agrupación oficial de entidades con características homogéneas (por "
-        "ejemplo, mismo tipo y tamaño de alcaldía) que Función Pública usa para "
-        "que los resultados del FURAG sean comparables entre entidades "
-        "similares.",
+        "Agrupación oficial de entidades con características homogéneas que "
+        "Función Pública usa para que los resultados del FURAG sean "
+        "comparables entre entidades similares. Dentro de cada grupo par, los "
+        "resultados se ordenan y se subagrupan en quintiles: cinco categorías "
+        "de igual tamaño, cada una con el 20 % de las entidades del grupo.",
     ),
     (
         "Valor público",
-        "Los cambios sociales reales y medibles que una entidad pública "
-        "produce para responder a las necesidades de la ciudadanía; es el "
-        "criterio último con el que se juzga si la gestión institucional tuvo "
-        "sentido, más allá del cumplimiento formal de indicadores.",
+        "Cambios sociales observables y medibles que el Estado produce como "
+        "respuesta a las necesidades y demandas de la ciudadanía, legitimados "
+        "democráticamente. Son, en últimas, los resultados que la gestión "
+        "pública busca alcanzar.",
     ),
     (
         "ODS (Objetivos de Desarrollo Sostenible)",
         "Los 17 objetivos globales adoptados por la ONU en 2015 para poner fin "
         "a la pobreza, proteger el planeta y garantizar la prosperidad para "
         "2030; se usan aquí como marco de referencia para la prospectiva.",
+    ),
+    (
+        "Grupos de valor",
+        "Personas naturales (ciudadanos) o jurídicas —públicas o privadas— a "
+        "quienes se dirigen los bienes y servicios de una entidad, y que "
+        "reciben directamente los resultados de su gestión.",
+    ),
+    (
+        "Talento humano",
+        "El activo más importante de una entidad pública: todas las personas "
+        "que, en el marco de los valores del servicio público, contribuyen "
+        "con su trabajo al cumplimiento de la misión estatal y a responder "
+        "las demandas de la ciudadanía.",
+    ),
+    (
+        "Autocontrol",
+        "Capacidad que debe desarrollar todo servidor público, sin importar "
+        "su nivel jerárquico, para evaluar y controlar su propio trabajo, "
+        "detectar desviaciones y corregirlas oportunamente en el ejercicio de "
+        "sus funciones.",
+    ),
+    (
+        "Rendición de cuentas",
+        "Conjunto de normas, procedimientos y prácticas mediante los cuales "
+        "las entidades públicas y sus servidores informan y explican a la "
+        "ciudadanía, a la sociedad civil y a los organismos de control los "
+        "resultados de su gestión. Es, en sí misma, una expresión de control "
+        "social.",
+    ),
+    (
+        "Transparencia activa",
+        "Obligación de publicar proactivamente información de la entidad, "
+        "sin que medie una solicitud, a través de los medios oficiales "
+        "(sitio web, carteleras, etc.).",
+    ),
+    (
+        "Transparencia pasiva",
+        "Obligación de la entidad de gestionar y responder, dentro de los "
+        "plazos legales, las solicitudes de información que presente la "
+        "ciudadanía.",
     ),
 ]
 
@@ -1345,6 +1403,7 @@ GLOSARIO_CONVENCIONES_SIIEAP = [
 
 def _agregar_glosario_docx(doc, estilo_normal=None):
     """Inserta la sección 'Glosario y convenciones' en el documento Word,
+    en formato de MATRIZ (tabla de dos columnas: Término | Definición),
     separando siempre los términos OFICIALES (Glosario MIPG v7, Función
     Pública) de las CONVENCIONES PROPIAS de SIIEAP, para que el lector nunca
     confunda un dato exclusivo de este informe con un dato oficial.
@@ -1352,37 +1411,89 @@ def _agregar_glosario_docx(doc, estilo_normal=None):
     doc.add_heading("Glosario y convenciones de este informe", level=1)
     doc.add_paragraph(
         "Los términos técnicos usados a lo largo de este informe se explican "
-        "aquí en dos grupos: primero los términos OFICIALES del Modelo "
+        "aquí en dos matrices: primero los términos OFICIALES del Modelo "
         "Integrado de Planeación y Gestión, tal como los define el Glosario "
         "MIPG versión 7 (octubre de 2021) del Departamento Administrativo de "
         "la Función Pública; y luego las CONVENCIONES PROPIAS de este sistema "
         "(SIIEAP), que no existen en el glosario oficial y no deben "
         "confundirse con cifras que publique Función Pública."
     )
+
+    def _tabla_glosario_docx(lista_terminos, color_encabezado, color_texto_encabezado=(0xFF, 0xFF, 0xFF)):
+        tabla = doc.add_table(rows=1, cols=2)
+        tabla.style = "Light Grid Accent 1"
+        enc = tabla.rows[0].cells
+        for celda, texto in zip(enc, ["Término", "Definición"]):
+            celda.text = texto
+            _sombrear_celda(celda, color_encabezado)
+            for parrafo in celda.paragraphs:
+                for run_enc in parrafo.runs:
+                    run_enc.bold = True
+                    run_enc.font.color.rgb = RGBColor(*color_texto_encabezado)
+        for termino, definicion in lista_terminos:
+            fila = tabla.add_row().cells
+            fila[0].text = ""
+            run_term = fila[0].paragraphs[0].add_run(termino)
+            run_term.bold = True
+            fila[1].text = definicion
+        _ajustar_tabla_docx(tabla, anchos_cm=[4.5, 12.5], tamano_fuente_pt=9)
+        _franjas_alternas_docx(tabla)
+        doc.add_paragraph()
+
     doc.add_heading("Términos oficiales (Glosario MIPG v7, Función Pública)", level=2)
-    for termino, definicion in GLOSARIO_OFICIAL_MIPG:
-        p = doc.add_paragraph()
-        run_t = p.add_run(f"{termino}: ")
-        run_t.bold = True
-        p.add_run(definicion)
+    _tabla_glosario_docx(GLOSARIO_OFICIAL_MIPG, COLOR_INSTITUCIONAL)
+
     doc.add_heading("Convenciones propias de SIIEAP (NO oficiales)", level=2)
-    for termino, definicion in GLOSARIO_CONVENCIONES_SIIEAP:
-        p = doc.add_paragraph()
-        run_t = p.add_run(f"{termino}: ")
-        run_t.bold = True
-        run_t.font.color.rgb = RGBColor(0xB8, 0x5C, 0x00)
-        p.add_run(definicion)
+    _tabla_glosario_docx(GLOSARIO_CONVENCIONES_SIIEAP, "B85C00")
     doc.add_page_break()
 
 
 def _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2):
-    """Versión PDF (reportlab) de _agregar_glosario_docx: misma separación
-    estricta entre términos oficiales (Glosario MIPG v7, Función Pública) y
-    convenciones propias de SIIEAP."""
+    """Versión PDF (reportlab) de _agregar_glosario_docx: mismo formato de
+    MATRIZ (tabla de dos columnas) y misma separación estricta entre
+    términos oficiales (Glosario MIPG v7, Función Pública) y convenciones
+    propias de SIIEAP."""
+    estilo_celda = ParagraphStyle(
+        "GlosarioCelda", parent=estilo_normal, fontSize=8.3, leading=10.5,
+    )
+    estilo_celda_termino = ParagraphStyle(
+        "GlosarioTermino", parent=estilo_celda, fontName="Helvetica-Bold",
+    )
+    estilo_encabezado_tabla = ParagraphStyle(
+        "GlosarioEncabezado", parent=estilo_celda, fontName="Helvetica-Bold",
+        textColor=colors.white,
+    )
+
+    def _tabla_glosario_pdf(lista_terminos, color_hex_encabezado):
+        filas = [[
+            Paragraph("Término", estilo_encabezado_tabla),
+            Paragraph("Definición", estilo_encabezado_tabla),
+        ]]
+        for termino, definicion in lista_terminos:
+            filas.append([
+                Paragraph(termino, estilo_celda_termino),
+                Paragraph(definicion, estilo_celda),
+            ])
+        tabla = Table(filas, colWidths=[4.2 * cm, 12.8 * cm], repeatRows=1)
+        estilo_tabla = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(f"#{color_hex_encabezado}")),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D0D0D0")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]
+        for i in range(1, len(filas)):
+            if i % 2 == 0:
+                estilo_tabla.append(("BACKGROUND", (0, i), (-1, i), colors.HexColor("#F2F4F8")))
+        tabla.setStyle(TableStyle(estilo_tabla))
+        return tabla
+
     elementos.append(Paragraph("Glosario y convenciones de este informe", estilos["Heading1"]))
     elementos.append(Paragraph(
         "Los términos técnicos usados a lo largo de este informe se explican aquí en dos "
-        "grupos: primero los términos OFICIALES del Modelo Integrado de Planeación y "
+        "matrices: primero los términos OFICIALES del Modelo Integrado de Planeación y "
         "Gestión, tal como los define el Glosario MIPG versión 7 (octubre de 2021) del "
         "Departamento Administrativo de la Función Pública; y luego las CONVENCIONES "
         "PROPIAS de este sistema (SIIEAP), que no existen en el glosario oficial y no deben "
@@ -1391,17 +1502,329 @@ def _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2):
     ))
     elementos.append(Spacer(1, 8))
     elementos.append(Paragraph("Términos oficiales (Glosario MIPG v7, Función Pública)", estilo_h2))
-    for termino, definicion in GLOSARIO_OFICIAL_MIPG:
-        elementos.append(Paragraph(f"<b>{termino}:</b> {definicion}", estilo_normal))
-        elementos.append(Spacer(1, 4))
-    elementos.append(Spacer(1, 6))
+    elementos.append(Spacer(1, 4))
+    elementos.append(_tabla_glosario_pdf(GLOSARIO_OFICIAL_MIPG, COLOR_INSTITUCIONAL))
+    elementos.append(Spacer(1, 12))
     elementos.append(Paragraph("Convenciones propias de SIIEAP (NO oficiales)", estilo_h2))
-    for termino, definicion in GLOSARIO_CONVENCIONES_SIIEAP:
-        elementos.append(Paragraph(
-            f'<font color="#B85C00"><b>{termino}:</b></font> {definicion}',
-            estilo_normal,
-        ))
-        elementos.append(Spacer(1, 4))
+    elementos.append(Spacer(1, 4))
+    elementos.append(_tabla_glosario_pdf(GLOSARIO_CONVENCIONES_SIIEAP, "B85C00"))
+    elementos.append(PageBreak())
+
+
+# ---------------------------------------------------------------------------
+# Anexo: Marco de descentralización 2026-2030
+#
+# Compartido por los TRES informes del SIIEAP (Técnico, Estudio de Caso,
+# Ejecutivo). Resume, en formato de matriz, la Misión de Descentralización,
+# el Acto Legislativo 3 de 2024 (VIGENTE) y el Proyecto de Ley de
+# Competencias (EN TRÁMITE, texto puede cambiar), con la distribución del
+# SGP hoy y la meta del 39,5 %, y el paralelo entre la Ley 617 de 2000, la
+# Ley 715 de 2001 (SGP) y la Ley 2056 de 2020 (SGR — regalías).
+#
+# LEY_COMPETENCIAS_VIGENTE = False: bandera explícita de que el proyecto de
+# ley AÚN NO es derecho vigente al momento de generar este informe. Debe
+# actualizarse a True (y revisarse el contenido) el día en que el Congreso
+# sancione la Ley de Competencias, o eliminarse el anexo si el proyecto se
+# archiva.
+# ---------------------------------------------------------------------------
+
+LEY_COMPETENCIAS_VIGENTE = False
+
+MARCO_DESCENTRALIZACION_INTRO = (
+    "Este anexo resume el nuevo marco de descentralización territorial que enmarca la "
+    "labor de esta entidad, con independencia de quién ocupe la Presidencia o la "
+    "alcaldía/gobernación de turno: es resultado de un proceso institucional de más de "
+    "cuatro años (Misión de Descentralización, 2022-2024) y de actos del Congreso de la "
+    "República. Se distingue expresamente entre lo que YA ES norma vigente y lo que ES "
+    "UN PROYECTO EN TRÁMITE."
+)
+
+MARCO_DESCENTRALIZACION_TIMELINE = [
+    ("2019", "Ley 1962 de 2019 (Ley de Regiones)", "Ordena crear la Misión de Descentralización."),
+    ("Dic. 2021", "Decreto 1665 de 2021", "Crea la Misión de Descentralización (5 componentes)."),
+    ("Ago. 2024", "Informe final de la Misión", "9 propuestas de reforma; publicado por DNP y PNUD."),
+    ("Dic. 2024", "Acto Legislativo 3 de 2024 — VIGENTE", "Reforma arts. 356-357 C.P.; incrementa el SGP hasta 39,5 % de los ICN."),
+    ("Dic. 2025", "Proyecto de Ley Orgánica de Competencias — EN TRÁMITE", "Reglamenta el Acto Legislativo; su articulado puede cambiar."),
+]
+
+MARCO_SGP_DISTRIBUCION = [
+    ("Educación", "58,5 %"),
+    ("Salud", "24,5 %"),
+    ("Agua Potable y Saneamiento Básico", "5,4 %"),
+    ("Propósito General", "11,6 %"),
+]
+
+MARCO_SGP_CRECIMIENTO = [
+    ("Cierre de brechas sociales, económicas E INSTITUCIONALES", "80 %"),
+    ("Propósito general (70 % del 20 % restante)", "14 %"),
+    ("Desarrollo económico (30 % del 20 % restante)", "6 %"),
+]
+
+MARCO_CATEGORIZACION_NUEVA = [
+    ("1. Capacidades fiscales", "Ingresos propios y dependencia de transferencias"),
+    ("2. Capacidades institucionales", "Exactamente lo que mide el IDI-MIPG y, por tanto, el SIIEAP"),
+    ("3. Densidad poblacional", "Concentración de población en el territorio"),
+    ("4. Conectividad territorial", "Vías, infraestructura y acceso físico al territorio"),
+]
+
+MARCO_PARALELO_LEYES = [
+    ("Objeto", "Categorizar entidades territoriales (gasto público, sostenibilidad fiscal)", "Distribuir competencias y recursos del SGP", "Regular el SGR (regalías)"),
+    ("Fundamento C.P.", "Arts. 302 y 320", "Arts. 356 y 357", "Arts. 360 y 361"),
+    ("Última reforma", "Ley 2082 de 2019 (coexiste)", "Ley 1176 de 2007 (fijó 58,5/24,5/5,4/11,6 %)", "Reforma integral de 2020 (reemplazó Ley 1530/2012)"),
+    ("¿La toca la reforma 2024-2027?", "NO se deroga; la nueva categorización SE SUMA (art. 9, parág. 4)", "SÍ — es su objeto central", "NO — el SGR queda fuera de esta reforma"),
+]
+
+
+def _agregar_marco_descentralizacion_docx(doc):
+    """Inserta el anexo 'Marco de descentralización 2026-2030', compartido
+    por los tres informes del SIIEAP. Ver notas de módulo arriba."""
+    doc.add_page_break()
+    doc.add_heading("Anexo: Marco de descentralización 2026-2030", level=1)
+    doc.add_paragraph(MARCO_DESCENTRALIZACION_INTRO)
+
+    doc.add_heading("Línea de tiempo", level=2)
+    tabla_tl = doc.add_table(rows=1, cols=3)
+    tabla_tl.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_tl.rows[0].cells, ["Fecha", "Hito", "Qué significa"]):
+        celda.text = texto
+        _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for fecha, hito, significado in MARCO_DESCENTRALIZACION_TIMELINE:
+        fila = tabla_tl.add_row().cells
+        fila[0].text = fecha
+        run_h = fila[1].paragraphs[0].add_run(hito)
+        run_h.bold = True
+        fila[2].text = significado
+    _ajustar_tabla_docx(tabla_tl, anchos_cm=[2.8, 5.2, 9.0], tamano_fuente_pt=8.7)
+    _franjas_alternas_docx(tabla_tl)
+
+    doc.add_heading("El SGP hoy y la meta del 39,5 % (Acto Legislativo 3 de 2024, VIGENTE)", level=2)
+    doc.add_paragraph(
+        "Distribución sectorial vigente del SGP (Ley 715 de 2001, sobre el 96 % que queda "
+        "tras el 4 % de Asignaciones Especiales):"
+    )
+    tabla_sgp = doc.add_table(rows=1, cols=2)
+    tabla_sgp.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_sgp.rows[0].cells, ["Sector", "% del SGP sectorial"]):
+        celda.text = texto
+        _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for sector, pct in MARCO_SGP_DISTRIBUCION:
+        fila = tabla_sgp.add_row().cells
+        fila[0].text = sector
+        fila[1].text = pct
+    _ajustar_tabla_docx(tabla_sgp, anchos_cm=[10.0, 5.0], tamano_fuente_pt=9)
+    _franjas_alternas_docx(tabla_sgp)
+
+    p_meta = doc.add_paragraph()
+    run_meta = p_meta.add_run(
+        "Meta: de 29,5 % a 39,5 % de los Ingresos Corrientes de la Nación (ICN), en 12 años "
+        "desde el 1 de enero de 2027, en incrementos anuales iguales (~0,83 puntos "
+        "porcentuales/año). Línea base según el proyecto de Ley de Competencias (dic. 2025)."
+    )
+    run_meta.italic = True
+
+    doc.add_heading("Cómo se reparte el crecimiento del SGP", level=3)
+    tabla_crec = doc.add_table(rows=1, cols=2)
+    tabla_crec.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_crec.rows[0].cells, ["Destino del incremento", "% del incremento"]):
+        celda.text = texto
+        _sombrear_celda(celda, "B9752A")
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for destino, pct in MARCO_SGP_CRECIMIENTO:
+        fila = tabla_crec.add_row().cells
+        fila[0].text = destino
+        fila[1].text = pct
+    _ajustar_tabla_docx(tabla_crec, anchos_cm=[11.0, 4.0], tamano_fuente_pt=9)
+    _franjas_alternas_docx(tabla_crec)
+
+    p_puente = doc.add_paragraph()
+    run_puente_t = p_puente.add_run("El puente con el SIIEAP: ")
+    run_puente_t.bold = True
+    p_puente.add_run(
+        "el Acto Legislativo 3 de 2024 ordena que el 80 % del crecimiento del SGP se "
+        "destine al cierre de brechas \"sociales, económicas E INSTITUCIONALES\" — esa "
+        "palabra conecta, por mandato constitucional, ese recurso con exactamente lo que "
+        "mide el IDI-MIPG y con las brechas que este informe ya diagnosticó para "
+        f"{'esta entidad' if True else ''}."
+    )
+
+    doc.add_heading("Categorización territorial: Ley 617 de 2000 y el nuevo régimen (en trámite)", level=2)
+    doc.add_paragraph(
+        "La categorización vigente de la Ley 617 de 2000 usa 2 criterios (población e "
+        "ingresos en SMLV) y clasifica al 92 % de los municipios del país en las "
+        "categorías 5ª y 6ª. El proyecto de Ley de Competencias (art. 9) propone 4 "
+        "criterios adicionales, SIN derogar la Ley 617 — coexisten (art. 9, parág. 4):"
+    )
+    tabla_cat = doc.add_table(rows=1, cols=2)
+    tabla_cat.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_cat.rows[0].cells, ["Criterio nuevo (desde 2027, en trámite)", "Qué mide"]):
+        celda.text = texto
+        _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for criterio, que_mide in MARCO_CATEGORIZACION_NUEVA:
+        fila = tabla_cat.add_row().cells
+        fila[0].text = criterio
+        fila[1].text = que_mide
+    _ajustar_tabla_docx(tabla_cat, anchos_cm=[6.0, 9.0], tamano_fuente_pt=9)
+    _franjas_alternas_docx(tabla_cat)
+
+    doc.add_heading("Paralelo: Ley 617/2000, Ley 715/2001 (SGP) y Ley 2056/2020 (SGR — regalías)", level=2)
+    tabla_par = doc.add_table(rows=1, cols=4)
+    tabla_par.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_par.rows[0].cells, ["Aspecto", "Ley 617/2000", "Ley 715/2001 (SGP)", "Ley 2056/2020 (SGR)"]):
+        celda.text = texto
+        _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for aspecto, l617, l715, l2056 in MARCO_PARALELO_LEYES:
+        fila = tabla_par.add_row().cells
+        run_a = fila[0].paragraphs[0].add_run(aspecto)
+        run_a.bold = True
+        fila[1].text = l617
+        fila[2].text = l715
+        fila[3].text = l2056
+    _ajustar_tabla_docx(tabla_par, anchos_cm=[3.2, 3.9, 3.9, 4.0], tamano_fuente_pt=7.8)
+    _franjas_alternas_docx(tabla_par)
+
+    p_confusion = doc.add_paragraph()
+    run_confusion = p_confusion.add_run(
+        "La confusión más frecuente: creer que la reforma 2024-2027 también cambia las "
+        "regalías. No es así — son dos sistemas y dos artículos constitucionales "
+        "distintos (356-357 para el SGP, 360-361 para el SGR); el Sistema General de "
+        "Regalías sigue rigiéndose, sin cambios por esta reforma, por la Ley 2056 de "
+        "2020 y el Decreto 1821 de 2020."
+    )
+    run_confusion.italic = True
+    run_confusion.font.size = Pt(9.5)
+    run_confusion.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
+
+    p_vigencia = doc.add_paragraph()
+    run_vig_t = p_vigencia.add_run("Advertencia de vigencia: ")
+    run_vig_t.bold = True
+    run_vig_t.font.color.rgb = RGBColor(0xB8, 0x5C, 0x00)
+    p_vigencia.add_run(
+        "a la fecha de generación de este informe, el Proyecto de Ley Orgánica de "
+        "Competencias NO es ley de la República — está en trámite en el Congreso y su "
+        "articulado puede cambiar antes de la sanción presidencial, o el proyecto puede "
+        "no llegar a aprobarse. Solo el Acto Legislativo 3 de 2024 es, hoy, norma "
+        "constitucional vigente."
+    )
+
+
+def _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2):
+    """Versión PDF (reportlab) de _agregar_marco_descentralizacion_docx."""
+    estilo_celda = ParagraphStyle("MarcoCelda", parent=estilo_normal, fontSize=8.2, leading=10.3)
+    estilo_celda_b = ParagraphStyle("MarcoCeldaB", parent=estilo_celda, fontName="Helvetica-Bold")
+    estilo_enc = ParagraphStyle("MarcoEnc", parent=estilo_celda, fontName="Helvetica-Bold", textColor=colors.white)
+
+    def _tabla_pdf(encabezados, filas_datos, anchos_cm, color_hex_enc=COLOR_INSTITUCIONAL, negrita_primera_col=False):
+        filas = [[Paragraph(h, estilo_enc) for h in encabezados]]
+        for fila_datos in filas_datos:
+            fila_p = []
+            for i, valor in enumerate(fila_datos):
+                estilo_usar = estilo_celda_b if (negrita_primera_col and i == 0) else estilo_celda
+                fila_p.append(Paragraph(valor, estilo_usar))
+            filas.append(fila_p)
+        tabla = Table(filas, colWidths=[a * cm for a in anchos_cm], repeatRows=1)
+        estilo_tabla = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(f"#{color_hex_enc}")),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D0D0D0")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6), ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]
+        for i in range(1, len(filas)):
+            if i % 2 == 0:
+                estilo_tabla.append(("BACKGROUND", (0, i), (-1, i), colors.HexColor("#F2F4F8")))
+        tabla.setStyle(TableStyle(estilo_tabla))
+        return tabla
+
+    estilo_nota = ParagraphStyle("MarcoNota", parent=estilo_normal, fontSize=8.5, textColor=colors.HexColor("#666666"), italic=True)
+    estilo_vigencia = ParagraphStyle("MarcoVigencia", parent=estilo_normal, textColor=colors.HexColor("#B85C00"))
+
+    elementos.append(PageBreak())
+    elementos.append(Paragraph("Anexo: Marco de descentralización 2026-2030", estilos["Heading1"]))
+    elementos.append(Paragraph(MARCO_DESCENTRALIZACION_INTRO, estilo_normal))
+    elementos.append(Spacer(1, 8))
+
+    elementos.append(Paragraph("Línea de tiempo", estilo_h2))
+    elementos.append(Spacer(1, 4))
+    filas_tl = [[f, h, s] for f, h, s in MARCO_DESCENTRALIZACION_TIMELINE]
+    elementos.append(_tabla_pdf(["Fecha", "Hito", "Qué significa"], filas_tl, [2.6, 4.8, 8.6], negrita_primera_col=False))
+    elementos.append(Spacer(1, 12))
+
+    elementos.append(Paragraph("El SGP hoy y la meta del 39,5 % (Acto Legislativo 3 de 2024, VIGENTE)", estilo_h2))
+    elementos.append(Paragraph(
+        "Distribución sectorial vigente del SGP (Ley 715 de 2001, sobre el 96 % que queda tras "
+        "el 4 % de Asignaciones Especiales):", estilo_normal,
+    ))
+    elementos.append(Spacer(1, 4))
+    elementos.append(_tabla_pdf(["Sector", "% del SGP sectorial"], list(MARCO_SGP_DISTRIBUCION), [9.0, 4.0]))
+    elementos.append(Spacer(1, 6))
+    elementos.append(Paragraph(
+        "<i>Meta: de 29,5 % a 39,5 % de los ICN, en 12 años desde el 1 de enero de 2027, en "
+        "incrementos anuales iguales (~0,83 pp/año). Línea base según el proyecto de Ley de "
+        "Competencias (dic. 2025).</i>", estilo_normal,
+    ))
+    elementos.append(Spacer(1, 8))
+    elementos.append(Paragraph("Cómo se reparte el crecimiento del SGP", estilos["Heading3"] if "Heading3" in estilos else estilo_h2))
+    elementos.append(Spacer(1, 4))
+    elementos.append(_tabla_pdf(["Destino del incremento", "% del incremento"], list(MARCO_SGP_CRECIMIENTO), [10.0, 3.0], color_hex_enc="B9752A"))
+    elementos.append(Spacer(1, 6))
+    elementos.append(Paragraph(
+        "<b>El puente con el SIIEAP:</b> el Acto Legislativo 3 de 2024 ordena que el 80 % del "
+        "crecimiento del SGP se destine al cierre de brechas \"sociales, económicas E "
+        "INSTITUCIONALES\" — esa palabra conecta, por mandato constitucional, ese recurso con "
+        "exactamente lo que mide el IDI-MIPG y con las brechas que este informe ya diagnosticó.",
+        estilo_normal,
+    ))
+    elementos.append(Spacer(1, 12))
+
+    elementos.append(Paragraph("Categorización territorial: Ley 617 de 2000 y el nuevo régimen (en trámite)", estilo_h2))
+    elementos.append(Paragraph(
+        "La Ley 617 de 2000 usa 2 criterios (población e ingresos en SMLV) y clasifica al 92 % "
+        "de los municipios en categorías 5ª y 6ª. El proyecto de Ley de Competencias (art. 9) "
+        "propone 4 criterios adicionales, SIN derogar la Ley 617 — coexisten (art. 9, parág. 4):",
+        estilo_normal,
+    ))
+    elementos.append(Spacer(1, 4))
+    elementos.append(_tabla_pdf(["Criterio nuevo (desde 2027, en trámite)", "Qué mide"], list(MARCO_CATEGORIZACION_NUEVA), [6.5, 8.5]))
+    elementos.append(Spacer(1, 12))
+
+    elementos.append(Paragraph("Paralelo: Ley 617/2000, Ley 715/2001 (SGP) y Ley 2056/2020 (SGR — regalías)", estilo_h2))
+    elementos.append(Spacer(1, 4))
+    filas_par = [[a, b, c, d] for a, b, c, d in MARCO_PARALELO_LEYES]
+    elementos.append(_tabla_pdf(["Aspecto", "Ley 617/2000", "Ley 715/2001 (SGP)", "Ley 2056/2020 (SGR)"], filas_par, [3.4, 3.7, 3.7, 4.2], negrita_primera_col=True))
+    elementos.append(Spacer(1, 6))
+    elementos.append(Paragraph(
+        "La confusión más frecuente: creer que la reforma 2024-2027 también cambia las regalías. "
+        "No es así — son dos sistemas y dos artículos constitucionales distintos (356-357 para el "
+        "SGP, 360-361 para el SGR); el SGR sigue rigiéndose, sin cambios por esta reforma, por la "
+        "Ley 2056 de 2020 y el Decreto 1821 de 2020.", estilo_nota,
+    ))
+    elementos.append(Spacer(1, 10))
+    elementos.append(Paragraph(
+        "<b>Advertencia de vigencia:</b> a la fecha de generación de este informe, el Proyecto de "
+        "Ley Orgánica de Competencias NO es ley de la República — está en trámite en el Congreso "
+        "y su articulado puede cambiar antes de la sanción presidencial, o el proyecto puede no "
+        "llegar a aprobarse. Solo el Acto Legislativo 3 de 2024 es, hoy, norma constitucional "
+        "vigente.", estilo_vigencia,
+    ))
     elementos.append(PageBreak())
 
 
@@ -2039,6 +2462,8 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     run_disc.italic = True
     run_disc.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
+    _agregar_marco_descentralizacion_docx(doc)
+
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -2405,6 +2830,8 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     # Disclaimer
     elementos.append(Paragraph("Nota metodológica", estilos["Heading2"]))
     elementos.append(Paragraph(DISCLAIMER_INFORME, estilo_cursiva))
+
+    _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2)
 
     def _pie_de_pagina(canvas_pdf, doc_pdf):
         canvas_pdf.saveState()
