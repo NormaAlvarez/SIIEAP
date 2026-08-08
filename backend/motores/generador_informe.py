@@ -48,6 +48,10 @@ from reportlab.platypus import (
 )
 
 from backend.motores.graficas_informe import generar_grafica_dimensiones, generar_grafica_brechas
+from backend.base_conocimiento.normativa_politicas import (
+    todas_las_politicas_con_normativa,
+    normativa_de_politica,
+)
 
 
 _ESTILO_CELDA_TABLA_PDF = ParagraphStyle(
@@ -1512,6 +1516,157 @@ def _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2):
 
 
 # ---------------------------------------------------------------------------
+# Anexo: Normativa vigente por política MIPG (las 19 políticas)
+#
+# Se agrega en los 3 informes (Técnico, Estudio de Caso, Ejecutivo), en
+# Word y PDF, como sustento jurídico DIRECTO de dos cosas que pide la
+# entidad: (a) que las brechas priorizadas por SIIEAP tengan como guía la
+# normativa vigente de esa política concreta, y (b) que el plan de
+# mejoramiento cite esa misma normativa como sustento de cada acción.
+#
+# Por eso la tabla se divide en dos bloques, siempre en este orden:
+#   1. Políticas CON brecha detectada en la entidad (si hay diagnóstico
+#      real disponible): aparecen primero y resaltadas, porque son las que
+#      de verdad hay que usar para estructurar el plan de mejoramiento.
+#   2. El resto de las 19 políticas, como anexo de referencia completo.
+#
+# Fuente y alcance: ver docstring de
+# backend/base_conocimiento/normativa_politicas.py — no es una
+# verificación exhaustiva artículo por artículo; prioriza los cambios
+# normativos de 2022 en adelante.
+# ---------------------------------------------------------------------------
+
+def _politicas_con_brecha(diag=None) -> set[str]:
+    """Códigos de política (POLxx) con al menos una brecha detectada para
+    la entidad, según el diagnóstico real. Si no hay diagnóstico
+    disponible, retorna un conjunto vacío (no se resalta nada)."""
+    if diag is None or not getattr(diag, "brechas", None):
+        return set()
+    return {b.codigo_politica for b in diag.brechas}
+
+
+def _agregar_normativa_politicas_docx(doc, diag=None):
+    doc.add_heading("Normativa vigente por política MIPG", level=1)
+    doc.add_paragraph(
+        "Esta sección consolida, política por política, la normatividad que la "
+        "entidad reportó como vigente para cada una de las 19 políticas de "
+        "Gestión y Desempeño de MIPG. Es la referencia jurídica directa que "
+        "este informe usa para priorizar acciones frente a las brechas "
+        "detectadas y para sustentar el plan de mejoramiento. Las políticas con "
+        "brecha detectada en esta entidad aparecen primero y resaltadas."
+    )
+
+    codigos_con_brecha = _politicas_con_brecha(diag)
+    todas = todas_las_politicas_con_normativa()
+    orden = sorted(
+        todas.keys(),
+        key=lambda c: (c not in codigos_con_brecha, int(c[3:])),
+    )
+
+    if codigos_con_brecha:
+        doc.add_heading(
+            "Políticas con brecha detectada en esta entidad (prioridad para el plan de mejoramiento)",
+            level=2,
+        )
+
+    bloque_actual = "con_brecha" if codigos_con_brecha else None
+    for codigo in orden:
+        info = todas[codigo]
+        es_con_brecha = codigo in codigos_con_brecha
+        if codigos_con_brecha and bloque_actual == "con_brecha" and not es_con_brecha:
+            doc.add_heading("Resto de políticas (anexo de referencia completo)", level=2)
+            bloque_actual = "resto"
+
+        color_encabezado = "C0392B" if es_con_brecha else COLOR_INSTITUCIONAL
+        titulo = f"{codigo} — {info['nombre']}" + ("  ⚠ BRECHA DETECTADA" if es_con_brecha else "")
+        doc.add_heading(titulo, level=3)
+
+        tabla = doc.add_table(rows=1, cols=1)
+        tabla.style = "Light Grid Accent 1"
+        enc = tabla.rows[0].cells[0]
+        enc.text = "Normativa"
+        _sombrear_celda(enc, color_encabezado)
+        for parrafo in enc.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        for norma in info["normas"]:
+            fila = tabla.add_row().cells[0]
+            fila.text = norma
+        _ajustar_tabla_docx(tabla, anchos_cm=[17.0], tamano_fuente_pt=8.5)
+        doc.add_paragraph()
+
+    doc.add_page_break()
+
+
+def _agregar_normativa_politicas_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=None):
+    elementos.append(Paragraph("Normativa vigente por política MIPG", estilos["Heading1"]))
+    elementos.append(Paragraph(
+        "Esta sección consolida, política por política, la normatividad que la entidad "
+        "reportó como vigente para cada una de las 19 políticas de Gestión y Desempeño de "
+        "MIPG. Es la referencia jurídica directa que este informe usa para priorizar "
+        "acciones frente a las brechas detectadas y para sustentar el plan de mejoramiento. "
+        "Las políticas con brecha detectada en esta entidad aparecen primero y resaltadas.",
+        estilo_normal,
+    ))
+    elementos.append(Spacer(1, 8))
+
+    estilo_norma = ParagraphStyle("NormaCelda", parent=estilo_normal, fontSize=8.2, leading=10.2)
+
+    codigos_con_brecha = _politicas_con_brecha(diag)
+    todas = todas_las_politicas_con_normativa()
+    orden = sorted(
+        todas.keys(),
+        key=lambda c: (c not in codigos_con_brecha, int(c[3:])),
+    )
+
+    if codigos_con_brecha:
+        elementos.append(Paragraph(
+            "Políticas con brecha detectada en esta entidad (prioridad para el plan de mejoramiento)",
+            estilo_h2,
+        ))
+        elementos.append(Spacer(1, 4))
+
+    bloque_actual = "con_brecha" if codigos_con_brecha else None
+    for codigo in orden:
+        info = todas[codigo]
+        es_con_brecha = codigo in codigos_con_brecha
+        if codigos_con_brecha and bloque_actual == "con_brecha" and not es_con_brecha:
+            elementos.append(Paragraph("Resto de políticas (anexo de referencia completo)", estilo_h2))
+            elementos.append(Spacer(1, 4))
+            bloque_actual = "resto"
+
+        color_hex = "C0392B" if es_con_brecha else COLOR_INSTITUCIONAL
+        titulo = f"{codigo} — {info['nombre']}" + ("  ⚠ BRECHA DETECTADA" if es_con_brecha else "")
+        elementos.append(Paragraph(titulo, estilo_h2))
+        elementos.append(Spacer(1, 3))
+
+        filas = [[Paragraph("Normativa", ParagraphStyle(
+            "EncNorma", parent=estilo_norma, fontName="Helvetica-Bold", textColor=colors.white,
+        ))]]
+        for norma in info["normas"]:
+            filas.append([Paragraph(norma, estilo_norma)])
+        tabla = Table(filas, colWidths=[17.0 * cm], repeatRows=1)
+        estilo_tabla = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(f"#{color_hex}")),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D0D0D0")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ]
+        for i in range(1, len(filas)):
+            if i % 2 == 0:
+                estilo_tabla.append(("BACKGROUND", (0, i), (-1, i), colors.HexColor("#F2F4F8")))
+        tabla.setStyle(TableStyle(estilo_tabla))
+        elementos.append(tabla)
+        elementos.append(Spacer(1, 10))
+
+    elementos.append(PageBreak())
+
+
+# ---------------------------------------------------------------------------
 # Anexo: Marco de descentralización 2026-2030
 #
 # Compartido por los TRES informes del SIIEAP (Técnico, Estudio de Caso,
@@ -1531,13 +1686,93 @@ def _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2):
 LEY_COMPETENCIAS_VIGENTE = False
 
 MARCO_DESCENTRALIZACION_INTRO = (
-    "Este anexo resume el nuevo marco de descentralización territorial que enmarca la "
-    "labor de esta entidad, con independencia de quién ocupe la Presidencia o la "
-    "alcaldía/gobernación de turno: es resultado de un proceso institucional de más de "
-    "cuatro años (Misión de Descentralización, 2022-2024) y de actos del Congreso de la "
-    "República. Se distingue expresamente entre lo que YA ES norma vigente y lo que ES "
-    "UN PROYECTO EN TRÁMITE."
+    "Este anexo incorpora, en su totalidad, el Capítulo Especial de Descentralización del "
+    "SIIEAP: el marco de descentralización territorial que enmarca la labor de esta entidad, "
+    "con independencia de quién ocupe la Presidencia o la alcaldía/gobernación de turno. Es "
+    "resultado de un proceso institucional de más de cuatro años (Misión de Descentralización, "
+    "2022-2024) y de actos del Congreso de la República. En todo el capítulo se distingue "
+    "expresamente entre lo que YA ES norma vigente y lo que ES UN PROYECTO EN TRÁMITE."
 )
+
+MARCO_ENCUADRE_METODOLOGICO = (
+    "Antes de entrar en materia: lo que aquí importa no es quién ocupa la Presidencia, sino "
+    "que el régimen de competencias que se analiza es resultado de un proceso institucional "
+    "que lleva más de cuatro años en construcción —la Misión de Descentralización (2022-2024), "
+    "con participación del DNP, el Ministerio de Hacienda, el Ministerio del Interior, "
+    "alcaldes, gobernadores, pueblos indígenas y organismos de cooperación internacional— y de "
+    "actos del Congreso de la República aprobados en dos legislaturas sucesivas —el Acto "
+    "Legislativo 3 de 2024 y, en trámite, el Proyecto de Ley de Competencias—. Ese proceso no "
+    "depende de una persona ni de un gobierno en particular, y continuaría con independencia "
+    "de quién gobierne."
+)
+
+MARCO_CONTINUIDAD_7AGOSTO = (
+    "El 7 de agosto de 2026 tomó posesión como presidente de la República Abelardo de la "
+    "Espriella. La transmisión de mando —realizada en Cali, primera vez fuera de Bogotá— es "
+    "relevante para el SIIEAP no por el mandatario que asumió, sino porque CONFIRMA que la "
+    "construcción institucional descrita sigue en pie: hubo juramento ante el Congreso, respeto "
+    "al período constitucional, y un compromiso explícito de gobernar dentro del marco "
+    "constitucional vigente, sin Asamblea Constituyente. Eso es, en los términos del artículo 1 "
+    "de la Constitución, la manifestación misma del \"Estado social de derecho\" — el orden "
+    "institucional funcionando — y no un mérito atribuible a una persona. El discurso se cita "
+    "aquí únicamente como evidencia de que el nuevo gobierno se sitúa dentro del marco "
+    "normativo ya construido, no como fuente de autoridad jurídica."
+)
+
+MARCO_ARTICULOS_CP = [
+    ("Artículo 1, C.P.", "\"Colombia es un Estado social de derecho, organizado en forma de "
+     "República unitaria, descentralizada, con autonomía de sus entidades territoriales, "
+     "democrática, participativa y pluralista (...)\""),
+    ("Artículo 2, C.P.", "\"Son fines esenciales del Estado: servir a la comunidad, promover la "
+     "prosperidad general (...); facilitar la participación de todos en las decisiones que los "
+     "afectan (...) y asegurar la convivencia pacífica y la vigencia de un orden justo.\""),
+]
+
+MARCO_MISION_EJES = [
+    ("1. Competencias entre niveles de gobierno", "Definir y distribuir competencias entre Nación y entidades territoriales."),
+    ("2. Fuentes y usos de los recursos para el desarrollo", "Proponer fuentes de financiación territorial articuladas con la nueva distribución de competencias."),
+    ("3. Arquitectura institucional y modernización de la administración pública", "Revisar la estructura institucional del Estado para hacerla coherente con el nuevo reparto de funciones."),
+    ("4. Estado abierto y participación ciudadana territorial", "Fortalecer la transparencia, la rendición de cuentas y la participación ciudadana territorial."),
+    ("5. Descentralización y territorios indígenas", "Definir las acciones para el ordenamiento, la planeación y la institucionalidad de los territorios indígenas."),
+]
+
+MARCO_MISION_PROPUESTAS = (
+    "El informe final (firmado en junio de 2024, publicado por el DNP el 5 de agosto de 2024 y "
+    "copublicado por el PNUD Colombia el 6 de agosto de 2024) formuló 9 propuestas de reforma: "
+    "1) nuevas categorías de entidades territoriales; 2) nueva Ley Orgánica de Ordenamiento "
+    "Territorial; 3) política de arquitectura institucional; 4) reforma al Sistema General de "
+    "Participaciones (SGP); 5) creación del Fondo de Convergencia Económica Territorial (FECET); "
+    "6) modificaciones al Sistema General de Regalías (SGR); 7) reforma al Marco de "
+    "Responsabilidad Fiscal Subnacional; 8) Estado abierto y participación ciudadana; y 9) "
+    "caminos para la conformación de los territorios indígenas."
+)
+
+MARCO_COOPERACION = [
+    ("PNUD", "Socio técnico principal: cofinanció y coejecutó la ruta de diálogo territorial (68 espacios, 2.200+ personas); copublicó el informe final."),
+    ("USAID y Agencia Francesa de Desarrollo", "Cooperación técnica y financiera para los estudios de arquitectura institucional y Estado abierto."),
+    ("OCDE", "Citada como fuente metodológica directa (2019); Colombia es miembro pleno desde 2020."),
+    ("BID", "Citado como fuente (2019); financia además un programa de apoyo al cumplimiento de compromisos OCDE de Colombia, con misión técnica activa en julio de 2026."),
+    ("OEA", "Citada como fuente conceptual (Secretaría General, 2008) sobre riesgos de asimetría de capacidades entre gobiernos locales."),
+]
+
+MARCO_COMPETENCIAS_NACION = [
+    ("5", "Fortalecimiento institucional y cooperación técnica", "El plan de mejoramiento que ya genera el SIIEAP es, en la práctica, un insumo de fortalecimiento institucional."),
+    ("6", "Indicadores para clasificar entidades territoriales", "El IDI-MIPG y sus 69 índices ya son un sistema de indicadores de capacidad institucional listo para esa clasificación."),
+    ("8", "Monitoreo, seguimiento y control con alertas tempranas", "Las brechas priorizadas que detecta el SIIEAP son, de hecho, alertas tempranas de riesgo institucional."),
+    ("9", "Participación ciudadana y Estado abierto", "Las políticas de Participación Ciudadana y Transparencia, ya evaluadas por el SIIEAP, son exactamente ese frente."),
+    ("11", "Coherencia metodológica e integración de indicadores", "El banco de recomendaciones consolidado de Función Pública, que el SIIEAP ya integra, es un ejercicio de esa misma coherencia."),
+    ("13", "Ajustes a la estructura de la administración pública", "La Política de Fortalecimiento Organizacional, ya evaluada por el SIIEAP, mide justo esa capacidad de ajuste."),
+]
+
+MARCO_MATRIZ_DIMENSIONES = [
+    ("D1. Talento Humano", "Art. 9 (capacidades institucionales); art. 15 núm. 5", "Diagnóstico por índice con normativa de Ley 909/2004, Decreto 1083/2015 y Ley 1960/2019."),
+    ("D2. Direccionamiento Estratégico", "Art. 180 (ruta de trabajo del Programa de Fortalecimiento)", "Diagnóstico de POL03 como insumo directo de esa ruta de trabajo."),
+    ("D3. Gestión para Resultados", "Cap. III, Tít. II (cierre de brechas)", "El concepto \"brecha SIIEAP\" opera igual que el \"cierre de brechas\" que exige la ley en trámite."),
+    ("D4. Evaluación de Resultados", "Art. 15 núm. 8 (alertas tempranas)", "POL14 es, hoy, una alerta temprana por entidad."),
+    ("D5. Información y Comunicación", "Art. 186 (SUI-SGP)", "Base de datos estructurada, interoperable en el mediano plazo con el SUI-SGP."),
+    ("D6. Gestión del Conocimiento", "Art. 15 núm. 11 (coherencia metodológica)", "Integración del banco de recomendaciones consolidado dentro de cada informe."),
+    ("D7. Control Interno", "Art. 15 núm. 8; art. 181", "Diagnóstico de ambiente de control, riesgo y monitoreo, ya conectado a Ley 87/1993."),
+]
 
 MARCO_DESCENTRALIZACION_TIMELINE = [
     ("2019", "Ley 1962 de 2019 (Ley de Regiones)", "Ordena crear la Misión de Descentralización."),
@@ -1570,19 +1805,191 @@ MARCO_CATEGORIZACION_NUEVA = [
 MARCO_PARALELO_LEYES = [
     ("Objeto", "Categorizar entidades territoriales (gasto público, sostenibilidad fiscal)", "Distribuir competencias y recursos del SGP", "Regular el SGR (regalías)"),
     ("Fundamento C.P.", "Arts. 302 y 320", "Arts. 356 y 357", "Arts. 360 y 361"),
-    ("Última reforma", "Ley 2082 de 2019 (coexiste)", "Ley 1176 de 2007 (fijó 58,5/24,5/5,4/11,6 %)", "Reforma integral de 2020 (reemplazó Ley 1530/2012)"),
+    ("Última reforma", "Ley 2082 de 2021 (coexiste)", "Ley 1176 de 2007 (fijó 58,5/24,5/5,4/11,6 %)", "Reforma integral de 2020 (reemplazó Ley 1530/2012)"),
     ("¿La toca la reforma 2024-2027?", "NO se deroga; la nueva categorización SE SUMA (art. 9, parág. 4)", "SÍ — es su objeto central", "NO — el SGR queda fuera de esta reforma"),
 ]
 
+MARCO_PLAN_TRES_NIVELES = [
+    ("Estratégico", "Alta dirección nacional y territorial", "Priorizar, con base en las brechas del SIIEAP, qué entidades necesitan asunción más gradual de nuevas competencias; usar el histórico de informes como insumo para el informe técnico trienal del DNP al Congreso (art. 10, parág. 4)."),
+    ("Táctico", "Equipos técnicos y de planeación, secretarías departamentales", "Convertir el plan de mejoramiento del SIIEAP en la \"ruta de trabajo\" formal del art. 180; articular el cronograma de cierre de brechas con la Estrategia de Monitoreo del SGP."),
+    ("Operacional", "Servidores públicos responsables de cada índice/política", "Las recomendaciones que ya genera el SIIEAP por índice siguen siendo el nivel operativo — ahora con relevancia legal directa frente a la futura categorización territorial."),
+]
 
-def _agregar_marco_descentralizacion_docx(doc):
-    """Inserta el anexo 'Marco de descentralización 2026-2030', compartido
-    por los tres informes del SIIEAP. Ver notas de módulo arriba."""
+MARCO_INVERSION_POR_DIMENSION = {
+    "D1": ("Plan de capacitación (convenios ESAP/SENA), fortalecimiento de la carrera administrativa", "Propósito general"),
+    "D2": ("Fortalecimiento de la planeación institucional y presupuestal, articulación con el Marco de Gasto de Mediano Plazo", "Cierre de brechas institucionales"),
+    "D3": ("Conectividad, arquitectura empresarial, tablero de indicadores para decisiones basadas en datos, fortalecimiento del servicio al ciudadano", "Cierre de brechas institucionales"),
+    "D4": ("Sistema de seguimiento y evaluación del desempeño institucional, tablero de control", "Cierre de brechas institucionales"),
+    "D5": ("Infraestructura de gestión documental y archivo, fortalecimiento de registros administrativos", "Cierre de brechas institucionales"),
+    "D6": ("Repositorio digital institucional, capacitación en gestión del conocimiento, analítica institucional básica", "Cierre de brechas institucionales"),
+    "D7": ("Fortalecimiento del equipo de control interno, mapa de riesgos, software de seguimiento", "Cierre de brechas institucionales"),
+}
+
+MARCO_YOUTUBE_ESAP = [
+    ("Foro Internacional MIPG — retos y oportunidades para la gestión pública territorial", "Escuela de Alto Gobierno ESAP + DAFP · 2 dic. 2025", "https://www.youtube.com/watch?v=L4SbFpWNN78"),
+    ("Diálogos Territoriales de la Escuela de Alto Gobierno con la Gerencia Pública", "Escuela de Alto Gobierno ESAP", "https://www.youtube.com/watch?v=beRJf0qM880"),
+    ("Playlist completa — Escuela de Alto Gobierno (60 videos)", "Foros, diálogos territoriales y capacitaciones", "https://www.youtube.com/playlist?list=PL3Wr6Pblz26PULiu-YVVhs2tWqVGmWRbu"),
+    ("Canal oficial ESAP", "Para explorar todas las sesiones", "https://www.youtube.com/channel/UCsDXXFW16Dxe7QqXHz6_Yhg"),
+]
+
+
+def _filas_inversion_brechas(diag, top_n=5):
+    """Construye, a partir del diagnóstico REAL de la entidad (diag), las filas
+    de la tabla 'en qué invertir, brecha por brecha' — dinámica por entidad,
+    no un ejemplo fijo. Toma las dimensiones con peor promedio (excluyendo las
+    que no tienen información) y las cruza con MARCO_INVERSION_POR_DIMENSION.
+    """
+    filas = []
+    if diag is None:
+        return filas
+    dims_validas = [d for d in diag.resultados_por_dimension if d.promedio is not None]
+    dims_ordenadas = sorted(dims_validas, key=lambda d: d.promedio)[:top_n]
+    for d in dims_ordenadas:
+        inversion, canal = MARCO_INVERSION_POR_DIMENSION.get(
+            d.codigo, ("Fortalecimiento institucional general de la dimensión", "Cierre de brechas institucionales")
+        )
+        etiqueta = f"{d.nombre} ({d.promedio:.2f})"
+        filas.append((etiqueta, inversion, canal))
+    return filas
+
+
+def _agregar_marco_descentralizacion_docx(doc, diag=None, nombre_entidad=None):
+    """Inserta el Capítulo Especial de Descentralización COMPLETO (no solo un
+    resumen), compartido por los tres informes del SIIEAP. Personaliza la
+    tabla de inversión por brecha con los datos reales de `diag`."""
     doc.add_page_break()
-    doc.add_heading("Anexo: Marco de descentralización 2026-2030", level=1)
+    doc.add_heading("Anexo: Capítulo Especial de Descentralización 2026-2030", level=1)
     doc.add_paragraph(MARCO_DESCENTRALIZACION_INTRO)
 
-    doc.add_heading("Línea de tiempo", level=2)
+    # ---- 1. Contexto ----
+    doc.add_heading("1. Contexto: continuidad institucional, no personalismo", level=2)
+    doc.add_paragraph(MARCO_ENCUADRE_METODOLOGICO)
+    doc.add_paragraph(MARCO_CONTINUIDAD_7AGOSTO)
+    for etiqueta, texto in MARCO_ARTICULOS_CP:
+        p = doc.add_paragraph()
+        run_e = p.add_run(f"{etiqueta}: ")
+        run_e.bold = True
+        run_c = p.add_run(texto)
+        run_c.italic = True
+
+    # ---- 2. Misión de Descentralización ----
+    doc.add_heading("2. La Misión de Descentralización (2022-2024)", level=2)
+    tabla_ejes = doc.add_table(rows=1, cols=2)
+    tabla_ejes.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_ejes.rows[0].cells, ["Eje", "Objetivo"]):
+        celda.text = texto
+        _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for eje, objetivo in MARCO_MISION_EJES:
+        fila = tabla_ejes.add_row().cells
+        run_e = fila[0].paragraphs[0].add_run(eje)
+        run_e.bold = True
+        fila[1].text = objetivo
+    _ajustar_tabla_docx(tabla_ejes, anchos_cm=[7.0, 9.0], tamano_fuente_pt=8.7)
+    _franjas_alternas_docx(tabla_ejes)
+    doc.add_paragraph(MARCO_MISION_PROPUESTAS)
+
+    doc.add_heading("Cooperación multilateral y bilateral", level=3)
+    tabla_coop = doc.add_table(rows=1, cols=2)
+    tabla_coop.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_coop.rows[0].cells, ["Organismo", "Rol documentado"]):
+        celda.text = texto
+        _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for org, rol in MARCO_COOPERACION:
+        fila = tabla_coop.add_row().cells
+        run_o = fila[0].paragraphs[0].add_run(org)
+        run_o.bold = True
+        fila[1].text = rol
+    _ajustar_tabla_docx(tabla_coop, anchos_cm=[4.5, 11.5], tamano_fuente_pt=8.7)
+    _franjas_alternas_docx(tabla_coop)
+
+    # ---- 3. Acto Legislativo ----
+    doc.add_heading("3. Acto Legislativo 3 de 2024 (norma constitucional VIGENTE)", level=2)
+    doc.add_paragraph(
+        "Modifica los arts. 356 y 357 C.P.; incrementa el SGP hasta 39,5 % de los ICN; "
+        "ordena que la Ley de Competencias distribuya esos recursos según capacidad "
+        "institucional de las entidades territoriales; mientras esa ley no se expida, el SGP "
+        "se calcula con la fórmula de transición vigente."
+    )
+
+    # ---- 4. Ley de Competencias ----
+    doc.add_heading("4. Proyecto de Ley de Competencias (EN TRÁMITE, no vigente)", level=2)
+    doc.add_paragraph(
+        "Objeto: fortalecer la autonomía y el desarrollo territorial mediante la asignación y "
+        "distribución de competencias y recursos entre la Nación, las entidades territoriales y "
+        "las beneficiarias del SGP, priorizando salud, educación y agua potable."
+    )
+    doc.add_heading("Competencias de la Nación que dialogan con el SIIEAP (art. 15)", level=3)
+    tabla_comp = doc.add_table(rows=1, cols=3)
+    tabla_comp.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_comp.rows[0].cells, ["Núm.", "Competencia", "Vínculo con el SIIEAP"]):
+        celda.text = texto
+        _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for num, comp, vinculo in MARCO_COMPETENCIAS_NACION:
+        fila = tabla_comp.add_row().cells
+        fila[0].text = num
+        fila[1].text = comp
+        fila[2].text = vinculo
+    _ajustar_tabla_docx(tabla_comp, anchos_cm=[1.3, 6.7, 8.0], tamano_fuente_pt=8.2)
+    _franjas_alternas_docx(tabla_comp)
+    doc.add_paragraph(
+        "El Título IV crea el Sistema de Autonomía y Descentralización Territorial, con el "
+        "Consejo Superior de Autonomía y Descentralización (el DAFP como miembro CON VOZ Y "
+        "VOTO), el Programa para el Fortalecimiento de la Autonomía y la Descentralización "
+        "Territorial (art. 180) y el Programa de Adecuación Institucional del Orden Nacional "
+        "(art. 181, con acompañamiento del DAFP). El Título V (art. 186) crea el Sistema Único "
+        "de Información del SGP (SUI-SGP)."
+    )
+
+    # ---- 5. Lectura estratégica ----
+    doc.add_heading("5. Por qué esto es el momento del SIIEAP", level=2)
+    doc.add_paragraph(
+        "El nuevo régimen no inventa un concepto nuevo de \"capacidad institucional\" — lo "
+        "convierte en criterio legal de clasificación territorial, algo que el IDI-MIPG, y por "
+        "tanto el SIIEAP, ya miden hoy con 7 dimensiones, 19 políticas y 69 índices."
+    )
+
+    # ---- 6. Matriz de correspondencia ----
+    doc.add_heading("6. Matriz de correspondencia: 7 dimensiones IDI-MIPG", level=2)
+    tabla_matriz = doc.add_table(rows=1, cols=3)
+    tabla_matriz.style = "Light Grid Accent 1"
+    for celda, texto in zip(tabla_matriz.rows[0].cells, ["Dimensión", "Disposición del nuevo marco", "Qué aporta el SIIEAP"]):
+        celda.text = texto
+        _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+        for parrafo in celda.paragraphs:
+            for run_enc in parrafo.runs:
+                run_enc.bold = True
+                run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    for dim, disp, aporte in MARCO_MATRIZ_DIMENSIONES:
+        fila = tabla_matriz.add_row().cells
+        run_d = fila[0].paragraphs[0].add_run(dim)
+        run_d.bold = True
+        fila[1].text = disp
+        fila[2].text = aporte
+    _ajustar_tabla_docx(tabla_matriz, anchos_cm=[4.0, 5.5, 6.5], tamano_fuente_pt=8.2)
+    _franjas_alternas_docx(tabla_matriz)
+
+    # ---- 7. Plan en 3 niveles ----
+    doc.add_heading("7. Plan de implementación en tres niveles", level=2)
+    for nivel, quien, accion in MARCO_PLAN_TRES_NIVELES:
+        p = doc.add_paragraph()
+        run_n = p.add_run(f"{nivel} ({quien}): ")
+        run_n.bold = True
+        p.add_run(accion)
+
+    # ---- 8. Línea de tiempo ----
+    doc.add_heading("8. Línea de tiempo", level=2)
     tabla_tl = doc.add_table(rows=1, cols=3)
     tabla_tl.style = "Light Grid Accent 1"
     for celda, texto in zip(tabla_tl.rows[0].cells, ["Fecha", "Hito", "Qué significa"]):
@@ -1601,7 +2008,8 @@ def _agregar_marco_descentralizacion_docx(doc):
     _ajustar_tabla_docx(tabla_tl, anchos_cm=[2.8, 5.2, 9.0], tamano_fuente_pt=8.7)
     _franjas_alternas_docx(tabla_tl)
 
-    doc.add_heading("El SGP hoy y la meta del 39,5 % (Acto Legislativo 3 de 2024, VIGENTE)", level=2)
+    # ---- 9. SGP hoy y meta ----
+    doc.add_heading("9. El SGP hoy y la meta del 39,5 %", level=2)
     doc.add_paragraph(
         "Distribución sectorial vigente del SGP (Ley 715 de 2001, sobre el 96 % que queda "
         "tras el 4 % de Asignaciones Especiales):"
@@ -1624,9 +2032,8 @@ def _agregar_marco_descentralizacion_docx(doc):
 
     p_meta = doc.add_paragraph()
     run_meta = p_meta.add_run(
-        "Meta: de 29,5 % a 39,5 % de los Ingresos Corrientes de la Nación (ICN), en 12 años "
-        "desde el 1 de enero de 2027, en incrementos anuales iguales (~0,83 puntos "
-        "porcentuales/año). Línea base según el proyecto de Ley de Competencias (dic. 2025)."
+        "Meta: de 29,5 % a 39,5 % de los ICN, en 12 años desde el 1 de enero de 2027, en "
+        "incrementos anuales iguales (~0,83 pp/año)."
     )
     run_meta.italic = True
 
@@ -1651,19 +2058,18 @@ def _agregar_marco_descentralizacion_docx(doc):
     run_puente_t = p_puente.add_run("El puente con el SIIEAP: ")
     run_puente_t.bold = True
     p_puente.add_run(
-        "el Acto Legislativo 3 de 2024 ordena que el 80 % del crecimiento del SGP se "
-        "destine al cierre de brechas \"sociales, económicas E INSTITUCIONALES\" — esa "
-        "palabra conecta, por mandato constitucional, ese recurso con exactamente lo que "
-        "mide el IDI-MIPG y con las brechas que este informe ya diagnosticó para "
-        f"{'esta entidad' if True else ''}."
+        "el 80 % del crecimiento del SGP se destina al cierre de brechas \"sociales, "
+        "económicas E INSTITUCIONALES\" — esa palabra conecta, por mandato constitucional, ese "
+        "recurso con exactamente lo que mide el IDI-MIPG y con las brechas que este informe ya "
+        "diagnosticó."
     )
 
-    doc.add_heading("Categorización territorial: Ley 617 de 2000 y el nuevo régimen (en trámite)", level=2)
+    # ---- 10. Categorización ----
+    doc.add_heading("10. Categorización territorial: Ley 617 y el nuevo régimen", level=2)
     doc.add_paragraph(
-        "La categorización vigente de la Ley 617 de 2000 usa 2 criterios (población e "
-        "ingresos en SMLV) y clasifica al 92 % de los municipios del país en las "
-        "categorías 5ª y 6ª. El proyecto de Ley de Competencias (art. 9) propone 4 "
-        "criterios adicionales, SIN derogar la Ley 617 — coexisten (art. 9, parág. 4):"
+        "La Ley 617 de 2000 usa 2 criterios (población e ingresos en SMLV) y clasifica al 92 % "
+        "de los municipios en categorías 5ª y 6ª. El proyecto de Ley de Competencias (art. 9) "
+        "propone 4 criterios adicionales, SIN derogar la Ley 617 — coexisten (art. 9, parág. 4):"
     )
     tabla_cat = doc.add_table(rows=1, cols=2)
     tabla_cat.style = "Light Grid Accent 1"
@@ -1681,7 +2087,8 @@ def _agregar_marco_descentralizacion_docx(doc):
     _ajustar_tabla_docx(tabla_cat, anchos_cm=[6.0, 9.0], tamano_fuente_pt=9)
     _franjas_alternas_docx(tabla_cat)
 
-    doc.add_heading("Paralelo: Ley 617/2000, Ley 715/2001 (SGP) y Ley 2056/2020 (SGR — regalías)", level=2)
+    # ---- 11. Paralelo de las 3 leyes ----
+    doc.add_heading("11. Paralelo: Ley 617/2000, Ley 715/2001 (SGP) y Ley 2056/2020 (SGR)", level=2)
     tabla_par = doc.add_table(rows=1, cols=4)
     tabla_par.style = "Light Grid Accent 1"
     for celda, texto in zip(tabla_par.rows[0].cells, ["Aspecto", "Ley 617/2000", "Ley 715/2001 (SGP)", "Ley 2056/2020 (SGR)"]):
@@ -1700,37 +2107,141 @@ def _agregar_marco_descentralizacion_docx(doc):
         fila[3].text = l2056
     _ajustar_tabla_docx(tabla_par, anchos_cm=[3.2, 3.9, 3.9, 4.0], tamano_fuente_pt=7.8)
     _franjas_alternas_docx(tabla_par)
-
     p_confusion = doc.add_paragraph()
     run_confusion = p_confusion.add_run(
         "La confusión más frecuente: creer que la reforma 2024-2027 también cambia las "
-        "regalías. No es así — son dos sistemas y dos artículos constitucionales "
-        "distintos (356-357 para el SGP, 360-361 para el SGR); el Sistema General de "
-        "Regalías sigue rigiéndose, sin cambios por esta reforma, por la Ley 2056 de "
-        "2020 y el Decreto 1821 de 2020."
+        "regalías. No es así — son dos sistemas y dos artículos constitucionales distintos; "
+        "el SGR sigue rigiéndose, sin cambios por esta reforma, por la Ley 2056 de 2020 y el "
+        "Decreto 1821 de 2020."
     )
     run_confusion.italic = True
     run_confusion.font.size = Pt(9.5)
     run_confusion.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
+    # ---- 12. Inversión brecha por brecha (DINÁMICO por entidad) ----
+    nombre_mostrar = nombre_entidad or (diag.entidad if diag is not None else "esta entidad")
+    doc.add_heading(f"12. En qué invertir esos recursos: brecha por brecha para {nombre_mostrar}", level=2)
+    filas_inversion = _filas_inversion_brechas(diag)
+    if filas_inversion:
+        doc.add_paragraph(
+            f"Con base en el diagnóstico REAL ya calculado en este informe para {nombre_mostrar}, "
+            "así se traduciría la inversión del 80 % de cierre de brechas institucionales del SGP, "
+            "empezando por las dimensiones con el promedio más bajo:"
+        )
+        tabla_inv = doc.add_table(rows=1, cols=3)
+        tabla_inv.style = "Light Grid Accent 1"
+        for celda, texto in zip(tabla_inv.rows[0].cells, ["Dimensión (puntaje real)", "Inversión recomendada", "Canal SGP"]):
+            celda.text = texto
+            _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+            for parrafo in celda.paragraphs:
+                for run_enc in parrafo.runs:
+                    run_enc.bold = True
+                    run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        for etiqueta, inversion, canal in filas_inversion:
+            fila = tabla_inv.add_row().cells
+            run_e = fila[0].paragraphs[0].add_run(etiqueta)
+            run_e.bold = True
+            fila[1].text = inversion
+            fila[2].text = canal
+        _ajustar_tabla_docx(tabla_inv, anchos_cm=[4.5, 7.0, 3.5], tamano_fuente_pt=8.5)
+        _franjas_alternas_docx(tabla_inv)
+    else:
+        doc.add_paragraph(
+            "Esta entidad no reportó dimensiones con información suficiente para construir la "
+            "tabla dinámica de inversión — consulte el diagnóstico por dimensión de este mismo "
+            "informe."
+        )
+    nota_inv = doc.add_paragraph()
+    run_nota_inv = nota_inv.add_run(
+        "Nota metodológica: esta tabla se genera automáticamente a partir del diagnóstico real "
+        f"de {nombre_mostrar} en este informe — no es un ejemplo genérico."
+    )
+    run_nota_inv.italic = True
+    run_nota_inv.font.size = Pt(9)
+    run_nota_inv.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
+
+    # ---- 13. Protocolo PDT ----
+    doc.add_heading(f"13. Cómo validar esto contra el PDT de {nombre_mostrar}", level=2)
+    doc.add_paragraph(
+        "El SIIEAP no reemplaza al Plan de Desarrollo Territorial (PDT) — lo alimenta. "
+        "Protocolo antes de ejecutar cualquier inversión con estos recursos:"
+    )
+    for paso in [
+        "1. Ubicar el PDT vigente de la entidad (Ley 152 de 1994), que cubre el periodo de gobierno de 4 años en curso.",
+        "2. Revisar el Plan Plurianual de Inversiones del PDT: solo lo programado allí —o incorporado por modificación presupuestal— puede recibir estos recursos.",
+        "3. Cruzar cada brecha priorizada por el SIIEAP con el programa o subprograma del PDT que más se le parezca por objeto de gasto.",
+        "4. Donde no exista un programa correspondiente, tramitar su inclusión (ajuste al plan de acción anual) antes de comprometer recursos del incremento del SGP.",
+    ]:
+        doc.add_paragraph(paso, style="List Bullet")
+    p_honestidad = doc.add_paragraph()
+    run_honestidad = p_honestidad.add_run(
+        f"Honestidad metodológica: el SIIEAP no tiene acceso al texto real del PDT de "
+        f"{nombre_mostrar} — este es un protocolo de cruce, no una lectura ya hecha de un PDT "
+        "real. Para aplicarlo, la entidad debe usar su propio PDT vigente."
+    )
+    run_honestidad.italic = True
+
+    # ---- 14. ESAP YouTube ----
+    doc.add_heading("14. ESAP en YouTube: sesiones para conectarse", level=2)
+    for titulo, fuente, url in MARCO_YOUTUBE_ESAP:
+        p = doc.add_paragraph()
+        run_t = p.add_run(f"{titulo} — ")
+        run_t.bold = True
+        run_f = p.add_run(f"{fuente}. ")
+        run_f.italic = True
+        _agregar_hipervinculo_docx(p, url, url)
+
+    # ---- Advertencia de vigencia final ----
     p_vigencia = doc.add_paragraph()
     run_vig_t = p_vigencia.add_run("Advertencia de vigencia: ")
     run_vig_t.bold = True
     run_vig_t.font.color.rgb = RGBColor(0xB8, 0x5C, 0x00)
     p_vigencia.add_run(
-        "a la fecha de generación de este informe, el Proyecto de Ley Orgánica de "
-        "Competencias NO es ley de la República — está en trámite en el Congreso y su "
-        "articulado puede cambiar antes de la sanción presidencial, o el proyecto puede "
-        "no llegar a aprobarse. Solo el Acto Legislativo 3 de 2024 es, hoy, norma "
-        "constitucional vigente."
+        "a la fecha de generación de este informe, el Proyecto de Ley Orgánica de Competencias "
+        "NO es ley de la República — está en trámite en el Congreso y su articulado puede "
+        "cambiar antes de la sanción presidencial, o el proyecto puede no llegar a aprobarse. "
+        "Solo el Acto Legislativo 3 de 2024 es, hoy, norma constitucional vigente."
     )
 
 
-def _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2):
-    """Versión PDF (reportlab) de _agregar_marco_descentralizacion_docx."""
+def _agregar_hipervinculo_docx(paragraph, url, texto):
+    """Inserta un hipervínculo real y clicable dentro de un párrafo de python-docx."""
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+
+    part = paragraph.part
+    r_id = part.relate_to(
+        url, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+        is_external=True,
+    )
+    hyperlink = OxmlElement("w:hyperlink")
+    hyperlink.set(qn("r:id"), r_id)
+    new_run = OxmlElement("w:r")
+    rpr = OxmlElement("w:rPr")
+    color = OxmlElement("w:color")
+    color.set(qn("w:val"), "1F3864")
+    rpr.append(color)
+    underline = OxmlElement("w:u")
+    underline.set(qn("w:val"), "single")
+    rpr.append(underline)
+    new_run.append(rpr)
+    t = OxmlElement("w:t")
+    t.text = texto
+    new_run.append(t)
+    hyperlink.append(new_run)
+    paragraph._p.append(hyperlink)
+
+
+def _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=None, nombre_entidad=None):
+    """Versión PDF (reportlab) de _agregar_marco_descentralizacion_docx — el
+    Capítulo Especial de Descentralización COMPLETO, personalizado por entidad."""
     estilo_celda = ParagraphStyle("MarcoCelda", parent=estilo_normal, fontSize=8.2, leading=10.3)
     estilo_celda_b = ParagraphStyle("MarcoCeldaB", parent=estilo_celda, fontName="Helvetica-Bold")
     estilo_enc = ParagraphStyle("MarcoEnc", parent=estilo_celda, fontName="Helvetica-Bold", textColor=colors.white)
+    estilo_h3 = ParagraphStyle("MarcoH3", parent=estilo_h2, fontSize=12)
+    estilo_nota = ParagraphStyle("MarcoNota", parent=estilo_normal, fontSize=8.5, textColor=colors.HexColor("#666666"))
+    estilo_vigencia = ParagraphStyle("MarcoVigencia", parent=estilo_normal, textColor=colors.HexColor("#B85C00"))
+    estilo_link = ParagraphStyle("MarcoLink", parent=estilo_normal, textColor=colors.HexColor("#1F3864"))
 
     def _tabla_pdf(encabezados, filas_datos, anchos_cm, color_hex_enc=COLOR_INSTITUCIONAL, negrita_primera_col=False):
         filas = [[Paragraph(h, estilo_enc) for h in encabezados]]
@@ -1738,7 +2249,7 @@ def _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, esti
             fila_p = []
             for i, valor in enumerate(fila_datos):
                 estilo_usar = estilo_celda_b if (negrita_primera_col and i == 0) else estilo_celda
-                fila_p.append(Paragraph(valor, estilo_usar))
+                fila_p.append(Paragraph(str(valor), estilo_usar))
             filas.append(fila_p)
         tabla = Table(filas, colWidths=[a * cm for a in anchos_cm], repeatRows=1)
         estilo_tabla = [
@@ -1754,78 +2265,187 @@ def _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, esti
         tabla.setStyle(TableStyle(estilo_tabla))
         return tabla
 
-    estilo_nota = ParagraphStyle("MarcoNota", parent=estilo_normal, fontSize=8.5, textColor=colors.HexColor("#666666"), italic=True)
-    estilo_vigencia = ParagraphStyle("MarcoVigencia", parent=estilo_normal, textColor=colors.HexColor("#B85C00"))
-
     elementos.append(PageBreak())
-    elementos.append(Paragraph("Anexo: Marco de descentralización 2026-2030", estilos["Heading1"]))
+    elementos.append(Paragraph("Anexo: Capítulo Especial de Descentralización 2026-2030", estilos["Heading1"]))
     elementos.append(Paragraph(MARCO_DESCENTRALIZACION_INTRO, estilo_normal))
     elementos.append(Spacer(1, 8))
 
-    elementos.append(Paragraph("Línea de tiempo", estilo_h2))
+    elementos.append(Paragraph("1. Contexto: continuidad institucional, no personalismo", estilo_h2))
+    elementos.append(Paragraph(MARCO_ENCUADRE_METODOLOGICO, estilo_normal))
+    elementos.append(Paragraph(MARCO_CONTINUIDAD_7AGOSTO, estilo_normal))
+    for etiqueta, texto in MARCO_ARTICULOS_CP:
+        elementos.append(Paragraph(f"<b>{etiqueta}:</b> <i>{texto}</i>", estilo_normal))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("2. La Misión de Descentralización (2022-2024)", estilo_h2))
+    elementos.append(Spacer(1, 4))
+    elementos.append(_tabla_pdf(["Eje", "Objetivo"], list(MARCO_MISION_EJES), [7.0, 9.5], negrita_primera_col=True))
+    elementos.append(Spacer(1, 6))
+    elementos.append(Paragraph(MARCO_MISION_PROPUESTAS, estilo_normal))
+    elementos.append(Spacer(1, 8))
+    elementos.append(Paragraph("Cooperación multilateral y bilateral", estilo_h3))
+    elementos.append(Spacer(1, 4))
+    elementos.append(_tabla_pdf(["Organismo", "Rol documentado"], list(MARCO_COOPERACION), [4.5, 12.0], negrita_primera_col=True))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("3. Acto Legislativo 3 de 2024 (norma constitucional VIGENTE)", estilo_h2))
+    elementos.append(Paragraph(
+        "Modifica los arts. 356 y 357 C.P.; incrementa el SGP hasta 39,5 % de los ICN; ordena "
+        "que la Ley de Competencias distribuya esos recursos según capacidad institucional.",
+        estilo_normal,
+    ))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("4. Proyecto de Ley de Competencias (EN TRÁMITE, no vigente)", estilo_h2))
+    elementos.append(Paragraph(
+        "Objeto: fortalecer la autonomía y el desarrollo territorial mediante la asignación y "
+        "distribución de competencias y recursos entre la Nación y las entidades territoriales.",
+        estilo_normal,
+    ))
+    elementos.append(Spacer(1, 6))
+    elementos.append(Paragraph("Competencias de la Nación que dialogan con el SIIEAP (art. 15)", estilo_h3))
+    elementos.append(Spacer(1, 4))
+    filas_comp = [[n, c, v] for n, c, v in MARCO_COMPETENCIAS_NACION]
+    elementos.append(_tabla_pdf(["Núm.", "Competencia", "Vínculo con el SIIEAP"], filas_comp, [1.3, 6.7, 8.5]))
+    elementos.append(Spacer(1, 6))
+    elementos.append(Paragraph(
+        "El Título IV crea el Sistema de Autonomía y Descentralización Territorial (DAFP con "
+        "voz y voto en su Consejo Superior) y los programas de fortalecimiento institucional "
+        "(arts. 180-181). El Título V (art. 186) crea el Sistema Único de Información del SGP.",
+        estilo_normal,
+    ))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("5. Por qué esto es el momento del SIIEAP", estilo_h2))
+    elementos.append(Paragraph(
+        "El nuevo régimen convierte \"capacidad institucional\" en criterio legal de "
+        "clasificación territorial — exactamente lo que el IDI-MIPG ya mide.",
+        estilo_normal,
+    ))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("6. Matriz de correspondencia: 7 dimensiones IDI-MIPG", estilo_h2))
+    elementos.append(Spacer(1, 4))
+    filas_matriz = [[d, disp, ap] for d, disp, ap in MARCO_MATRIZ_DIMENSIONES]
+    elementos.append(_tabla_pdf(["Dimensión", "Disposición del nuevo marco", "Qué aporta el SIIEAP"], filas_matriz, [3.8, 5.5, 7.2], negrita_primera_col=True))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("7. Plan de implementación en tres niveles", estilo_h2))
+    for nivel, quien, accion in MARCO_PLAN_TRES_NIVELES:
+        elementos.append(Paragraph(f"<b>{nivel} ({quien}):</b> {accion}", estilo_normal))
+        elementos.append(Spacer(1, 4))
+    elementos.append(Spacer(1, 8))
+
+    elementos.append(Paragraph("8. Línea de tiempo", estilo_h2))
     elementos.append(Spacer(1, 4))
     filas_tl = [[f, h, s] for f, h, s in MARCO_DESCENTRALIZACION_TIMELINE]
-    elementos.append(_tabla_pdf(["Fecha", "Hito", "Qué significa"], filas_tl, [2.6, 4.8, 8.6], negrita_primera_col=False))
-    elementos.append(Spacer(1, 12))
+    elementos.append(_tabla_pdf(["Fecha", "Hito", "Qué significa"], filas_tl, [2.6, 4.8, 9.1]))
+    elementos.append(Spacer(1, 10))
 
-    elementos.append(Paragraph("El SGP hoy y la meta del 39,5 % (Acto Legislativo 3 de 2024, VIGENTE)", estilo_h2))
+    elementos.append(Paragraph("9. El SGP hoy y la meta del 39,5 %", estilo_h2))
     elementos.append(Paragraph(
-        "Distribución sectorial vigente del SGP (Ley 715 de 2001, sobre el 96 % que queda tras "
-        "el 4 % de Asignaciones Especiales):", estilo_normal,
+        "Distribución sectorial vigente del SGP (Ley 715 de 2001):", estilo_normal,
     ))
     elementos.append(Spacer(1, 4))
     elementos.append(_tabla_pdf(["Sector", "% del SGP sectorial"], list(MARCO_SGP_DISTRIBUCION), [9.0, 4.0]))
     elementos.append(Spacer(1, 6))
     elementos.append(Paragraph(
-        "<i>Meta: de 29,5 % a 39,5 % de los ICN, en 12 años desde el 1 de enero de 2027, en "
-        "incrementos anuales iguales (~0,83 pp/año). Línea base según el proyecto de Ley de "
-        "Competencias (dic. 2025).</i>", estilo_normal,
+        "<i>Meta: de 29,5 % a 39,5 % de los ICN, en 12 años desde 2027 (~0,83 pp/año).</i>", estilo_normal,
     ))
     elementos.append(Spacer(1, 8))
-    elementos.append(Paragraph("Cómo se reparte el crecimiento del SGP", estilos["Heading3"] if "Heading3" in estilos else estilo_h2))
+    elementos.append(Paragraph("Cómo se reparte el crecimiento del SGP", estilo_h3))
     elementos.append(Spacer(1, 4))
     elementos.append(_tabla_pdf(["Destino del incremento", "% del incremento"], list(MARCO_SGP_CRECIMIENTO), [10.0, 3.0], color_hex_enc="B9752A"))
     elementos.append(Spacer(1, 6))
     elementos.append(Paragraph(
-        "<b>El puente con el SIIEAP:</b> el Acto Legislativo 3 de 2024 ordena que el 80 % del "
-        "crecimiento del SGP se destine al cierre de brechas \"sociales, económicas E "
-        "INSTITUCIONALES\" — esa palabra conecta, por mandato constitucional, ese recurso con "
-        "exactamente lo que mide el IDI-MIPG y con las brechas que este informe ya diagnosticó.",
-        estilo_normal,
-    ))
-    elementos.append(Spacer(1, 12))
-
-    elementos.append(Paragraph("Categorización territorial: Ley 617 de 2000 y el nuevo régimen (en trámite)", estilo_h2))
-    elementos.append(Paragraph(
-        "La Ley 617 de 2000 usa 2 criterios (población e ingresos en SMLV) y clasifica al 92 % "
-        "de los municipios en categorías 5ª y 6ª. El proyecto de Ley de Competencias (art. 9) "
-        "propone 4 criterios adicionales, SIN derogar la Ley 617 — coexisten (art. 9, parág. 4):",
-        estilo_normal,
-    ))
-    elementos.append(Spacer(1, 4))
-    elementos.append(_tabla_pdf(["Criterio nuevo (desde 2027, en trámite)", "Qué mide"], list(MARCO_CATEGORIZACION_NUEVA), [6.5, 8.5]))
-    elementos.append(Spacer(1, 12))
-
-    elementos.append(Paragraph("Paralelo: Ley 617/2000, Ley 715/2001 (SGP) y Ley 2056/2020 (SGR — regalías)", estilo_h2))
-    elementos.append(Spacer(1, 4))
-    filas_par = [[a, b, c, d] for a, b, c, d in MARCO_PARALELO_LEYES]
-    elementos.append(_tabla_pdf(["Aspecto", "Ley 617/2000", "Ley 715/2001 (SGP)", "Ley 2056/2020 (SGR)"], filas_par, [3.4, 3.7, 3.7, 4.2], negrita_primera_col=True))
-    elementos.append(Spacer(1, 6))
-    elementos.append(Paragraph(
-        "La confusión más frecuente: creer que la reforma 2024-2027 también cambia las regalías. "
-        "No es así — son dos sistemas y dos artículos constitucionales distintos (356-357 para el "
-        "SGP, 360-361 para el SGR); el SGR sigue rigiéndose, sin cambios por esta reforma, por la "
-        "Ley 2056 de 2020 y el Decreto 1821 de 2020.", estilo_nota,
+        "<b>El puente con el SIIEAP:</b> el 80 % del crecimiento del SGP se destina al cierre "
+        "de brechas \"sociales, económicas E INSTITUCIONALES\" — el mismo dato que mide el "
+        "IDI-MIPG.", estilo_normal,
     ))
     elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("10. Categorización territorial: Ley 617 y el nuevo régimen", estilo_h2))
     elementos.append(Paragraph(
-        "<b>Advertencia de vigencia:</b> a la fecha de generación de este informe, el Proyecto de "
-        "Ley Orgánica de Competencias NO es ley de la República — está en trámite en el Congreso "
-        "y su articulado puede cambiar antes de la sanción presidencial, o el proyecto puede no "
-        "llegar a aprobarse. Solo el Acto Legislativo 3 de 2024 es, hoy, norma constitucional "
-        "vigente.", estilo_vigencia,
+        "La Ley 617 de 2000 usa 2 criterios y clasifica al 92 % de los municipios en categorías "
+        "5ª y 6ª. El proyecto de Ley de Competencias (art. 9) propone 4 criterios adicionales, "
+        "SIN derogar la Ley 617:", estilo_normal,
+    ))
+    elementos.append(Spacer(1, 4))
+    elementos.append(_tabla_pdf(["Criterio nuevo (desde 2027, en trámite)", "Qué mide"], list(MARCO_CATEGORIZACION_NUEVA), [6.5, 9.5]))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("11. Paralelo: Ley 617/2000, Ley 715/2001 (SGP) y Ley 2056/2020 (SGR)", estilo_h2))
+    elementos.append(Spacer(1, 4))
+    filas_par = [[a, b, c, d] for a, b, c, d in MARCO_PARALELO_LEYES]
+    elementos.append(_tabla_pdf(["Aspecto", "Ley 617/2000", "Ley 715/2001", "Ley 2056/2020"], filas_par, [3.4, 3.9, 3.9, 4.8], negrita_primera_col=True))
+    elementos.append(Spacer(1, 6))
+    elementos.append(Paragraph(
+        "La confusión más frecuente: creer que la reforma también cambia las regalías. No es "
+        "así — el SGR sigue rigiéndose por la Ley 2056 de 2020 y el Decreto 1821 de 2020.",
+        estilo_nota,
+    ))
+    elementos.append(Spacer(1, 10))
+
+    nombre_mostrar = nombre_entidad or (diag.entidad if diag is not None else "esta entidad")
+    elementos.append(Paragraph(f"12. En qué invertir esos recursos: brecha por brecha para {nombre_mostrar}", estilo_h2))
+    filas_inversion = _filas_inversion_brechas(diag)
+    if filas_inversion:
+        elementos.append(Paragraph(
+            f"Con base en el diagnóstico REAL de {nombre_mostrar} en este informe, así se "
+            "traduciría la inversión del 80 % de cierre de brechas institucionales del SGP, "
+            "empezando por las dimensiones con el promedio más bajo:", estilo_normal,
+        ))
+        elementos.append(Spacer(1, 4))
+        elementos.append(_tabla_pdf(["Dimensión (puntaje real)", "Inversión recomendada", "Canal SGP"], filas_inversion, [4.5, 7.5, 3.5], negrita_primera_col=True))
+    else:
+        elementos.append(Paragraph(
+            "Esta entidad no reportó dimensiones con información suficiente para la tabla "
+            "dinámica de inversión.", estilo_normal,
+        ))
+    elementos.append(Spacer(1, 4))
+    elementos.append(Paragraph(
+        f"<i>Nota metodológica: esta tabla se genera automáticamente a partir del diagnóstico "
+        f"real de {nombre_mostrar} — no es un ejemplo genérico.</i>", estilo_nota,
+    ))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph(f"13. Cómo validar esto contra el PDT de {nombre_mostrar}", estilo_h2))
+    elementos.append(Paragraph(
+        "El SIIEAP no reemplaza al Plan de Desarrollo Territorial (PDT) — lo alimenta. "
+        "Protocolo antes de ejecutar cualquier inversión:", estilo_normal,
+    ))
+    for paso in [
+        "1. Ubicar el PDT vigente de la entidad (Ley 152 de 1994).",
+        "2. Revisar el Plan Plurianual de Inversiones del PDT.",
+        "3. Cruzar cada brecha priorizada por el SIIEAP con el programa del PDT correspondiente.",
+        "4. Donde no exista programa, tramitar su inclusión antes de comprometer recursos.",
+    ]:
+        elementos.append(Paragraph(paso, estilo_normal))
+    elementos.append(Spacer(1, 4))
+    elementos.append(Paragraph(
+        f"<i>Honestidad metodológica: el SIIEAP no tiene acceso al texto real del PDT de "
+        f"{nombre_mostrar} — este es un protocolo de cruce, no una lectura ya hecha.</i>",
+        estilo_nota,
+    ))
+    elementos.append(Spacer(1, 10))
+
+    elementos.append(Paragraph("14. ESAP en YouTube: sesiones para conectarse", estilo_h2))
+    for titulo, fuente, url in MARCO_YOUTUBE_ESAP:
+        elementos.append(Paragraph(
+            f'<b>{titulo}</b> — <i>{fuente}</i>. <link href="{url}"><u>{url}</u></link>',
+            estilo_link,
+        ))
+        elementos.append(Spacer(1, 4))
+
+    elementos.append(Spacer(1, 8))
+    elementos.append(Paragraph(
+        "<b>Advertencia de vigencia:</b> a la fecha de generación de este informe, el Proyecto "
+        "de Ley Orgánica de Competencias NO es ley de la República — está en trámite y su "
+        "articulado puede cambiar, o el proyecto puede no llegar a aprobarse. Solo el Acto "
+        "Legislativo 3 de 2024 es, hoy, norma constitucional vigente.", estilo_vigencia,
     ))
     elementos.append(PageBreak())
+
 
 
 def _ajustar_tabla_docx(tabla, anchos_cm, tamano_fuente_pt=9.5):
@@ -1865,7 +2485,7 @@ _COLOR_HEX_POR_RIESGO = {
 # partir de las brechas reales de la entidad, garantizando que la conexión
 # con los 15 enfoques contemporáneos sea visible en TODOS los informes.
 POLITICA_A_ENFOQUE_Y_NORMA = {
-    "gestión estratégica del talento humano": ("Capacidades Estatales", "Ley 909 de 2004 (Sistema de Empleo Público); Decreto 1083 de 2015, Libro 2 (DUR Función Pública); Ley 1960 de 2019 (modifica la Ley 909, encargos y evaluación del desempeño); Decreto 2539 de 2005 (competencias laborales)"),
+    "gestión estratégica del talento humano": ("Capacidades Estatales", "Ley 909 de 2004 (Sistema de Empleo Público); Decreto 1083 de 2015, Libro 2, art. 2.2.4.5 (DUR Función Pública, compila las competencias laborales del derogado Decreto 2539/2005); Ley 1960 de 2019 (modifica la Ley 909, encargos y evaluación del desempeño)"),
     "integridad": ("Gobierno Abierto", "Ley 1712 de 2014; Ley 2013 de 2019 y Decreto 830 de 2021 (conflictos de interés); Decreto 648 de 2017 (adopta el Código de Integridad del Servicio Público); Ley 1474 de 2011 (Estatuto Anticorrupción)"),
     "planeación institucional": ("Administración Pública Basada en Evidencia", "Decreto 1499 de 2017, art. 2.2.22.3.2-3.3"),
     "gestión presupuestal y eficiencia del gasto": ("Capacidades Estatales", "Ley 610 de 2000, art. 1 (responsabilidad fiscal)"),
@@ -2215,6 +2835,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     _agregar_razon_de_ser_docx(doc, "tecnico")
 
     _agregar_glosario_docx(doc)
+    _agregar_normativa_politicas_docx(doc, diag=diag)
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
     _agregar_divisor_seccion_docx(doc, "1. Resumen ejecutivo", icono="📊")
@@ -2462,7 +3083,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     run_disc.italic = True
     run_disc.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
-    _agregar_marco_descentralizacion_docx(doc)
+    _agregar_marco_descentralizacion_docx(doc, diag=diag, nombre_entidad=nombre_entidad)
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -2598,6 +3219,7 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     elementos.extend(_razon_de_ser_pdf_flowables("tecnico"))
 
     _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2)
+    _agregar_normativa_politicas_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=diag)
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
     elementos.extend(_divisor_seccion_pdf("1. Resumen ejecutivo", icono="📊"))
@@ -2831,7 +3453,7 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     elementos.append(Paragraph("Nota metodológica", estilos["Heading2"]))
     elementos.append(Paragraph(DISCLAIMER_INFORME, estilo_cursiva))
 
-    _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2)
+    _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=diag, nombre_entidad=nombre_entidad)
 
     def _pie_de_pagina(canvas_pdf, doc_pdf):
         canvas_pdf.saveState()

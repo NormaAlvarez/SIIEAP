@@ -73,6 +73,8 @@ from backend.motores.generador_informe import (
     _agregar_marco_descentralizacion_pdf,
     _agregar_glosario_docx,
     _agregar_glosario_pdf,
+    _agregar_normativa_politicas_docx,
+    _agregar_normativa_politicas_pdf,
 )
 
 
@@ -400,6 +402,7 @@ def generar_informe_alcaldes_docx(
     _agregar_razon_de_ser_docx(doc, "ejecutivo")
 
     _agregar_glosario_docx(doc)
+    _agregar_normativa_politicas_docx(doc, diag=diag)
 
     # --- 1. Cómo está la entidad, dimensión por dimensión (semáforo) ---
     _titulo_seccion_docx(doc, 1, "Cómo está la entidad, dimensión por dimensión")
@@ -590,7 +593,7 @@ def generar_informe_alcaldes_docx(
     run_descargo.font.size = Pt(9)
     run_descargo.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
-    _agregar_marco_descentralizacion_docx(doc)
+    _agregar_marco_descentralizacion_docx(doc, diag=diag, nombre_entidad=nombre_entidad)
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -688,6 +691,7 @@ def generar_informe_alcaldes_pdf(
     elementos.extend(_razon_de_ser_pdf_flowables("ejecutivo"))
 
     _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2)
+    _agregar_normativa_politicas_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=diag)
 
     # --- 1. Semáforo por dimensión ---
     elementos.extend(_divisor_seccion_pdf(1, "Cómo está la entidad, dimensión por dimensión", estilos))
@@ -872,7 +876,7 @@ def generar_informe_alcaldes_pdf(
     elementos.append(Spacer(1, 6))
     elementos.append(Paragraph(DESCARGO_RESPONSABILIDAD_AMPLIADO, ParagraphStyle("DescargoAmpliadoAlc", parent=estilo_cursiva, fontSize=8.5)))
 
-    _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2)
+    _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=diag, nombre_entidad=nombre_entidad)
 
     doc.build(
         elementos,

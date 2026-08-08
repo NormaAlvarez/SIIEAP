@@ -66,6 +66,8 @@ from backend.motores.generador_informe import (
     _agregar_marco_descentralizacion_pdf,
     _agregar_glosario_docx,
     _agregar_glosario_pdf,
+    _agregar_normativa_politicas_docx,
+    _agregar_normativa_politicas_pdf,
 )
 
 
@@ -881,6 +883,7 @@ def generar_estudio_de_caso_docx(
     _agregar_razon_de_ser_docx(doc, "estudio_caso")
 
     _agregar_glosario_docx(doc)
+    _agregar_normativa_politicas_docx(doc, diag=diag)
 
     # 1. Descripción del problema público
     _agregar_divisor_seccion_docx(doc, "1. Descripción del problema público", icono="📝")
@@ -1223,7 +1226,7 @@ def generar_estudio_de_caso_docx(
     run_ia.italic = True
     run_ia.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
-    _agregar_marco_descentralizacion_docx(doc)
+    _agregar_marco_descentralizacion_docx(doc, diag=diag, nombre_entidad=nombre_entidad)
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -1291,6 +1294,7 @@ def generar_estudio_de_caso_pdf(
     elementos.extend(_razon_de_ser_pdf_flowables("estudio_caso"))
 
     _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2)
+    _agregar_normativa_politicas_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=diag)
 
     elementos.extend(_divisor_seccion_pdf("1. Descripción del problema público", icono="📝"))
     try:
@@ -1583,7 +1587,7 @@ def generar_estudio_de_caso_pdf(
         estilo_cursiva,
     ))
 
-    _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2)
+    _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=diag, nombre_entidad=nombre_entidad)
 
     doc.build(elementos)
     buffer.seek(0)
