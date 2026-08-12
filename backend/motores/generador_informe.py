@@ -32,6 +32,7 @@ Dependencias nuevas a agregar en requirements.txt:
 from __future__ import annotations
 
 import io
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -2685,6 +2686,181 @@ def _sombrear_celda(celda, color_hex: str) -> None:
     propiedades_celda.append(sombreado)
 
 
+def _parsear_bloques_markdown(texto: str) -> list[tuple[str, object]]:
+    """Convierte el markdown simple que produce motor_analisis_ia.py (encabezados
+    ``##``/``###``, tablas con ``|``, listas con ``-``/``*`` y negrita ``**texto**``)
+    en una lista de bloques estructurados que los renderizadores de docx y PDF
+    pueden dibujar como encabezados, tablas y párrafos reales — en vez de volcar
+    el texto crudo (con los símbolos ``#``, ``*`` y ``|`` literales) como hacía
+    antes ``analisis_ia_texto.split("\\n")``.
+
+    Devuelve una lista de tuplas ``(tipo, contenido)`` donde ``tipo`` es uno de
+    ``"heading"`` (contenido = ``(nivel, texto)``), ``"table"`` (contenido =
+    lista de filas, la primera es el encabezado), ``"bullet"`` (contenido =
+    texto del ítem) o ``"parrafo"`` (contenido = texto plano).
+    """
+    lineas = texto.split("\n")
+    bloques: list[tuple[str, object]] = []
+    i = 0
+    n = len(lineas)
+    patron_separador_tabla = re.compile(r"^\|?[\s:\-|]+\|?$")
+    patron_encabezado = re.compile(r"^(#{1,4})\s+(.*)$")
+    patron_bullet = re.compile(r"^[-*]\s+(.*)$")
+
+    while i < n:
+        linea = lineas[i].strip()
+        if not linea:
+            i += 1
+            continue
+
+        m_enc = patron_encabezado.match(linea)
+        if m_enc:
+            nivel = len(m_enc.group(1))
+            bloques.append(("heading", (nivel, m_enc.group(2).strip())))
+            i += 1
+            continue
+
+        if linea.startswith("|"):
+            filas_tabla: list[list[str]] = []
+            while i < n and lineas[i].strip().startswith("|"):
+                fila_cruda = lineas[i].strip()
+                if "-" in fila_cruda and patron_separador_tabla.match(fila_cruda):
+                    i += 1
+                    continue
+                celdas = [c.strip() for c in fila_cruda.strip("|").split("|")]
+                filas_tabla.append(celdas)
+                i += 1
+            if filas_tabla:
+                bloques.append(("table", filas_tabla))
+            continue
+
+        m_bullet = patron_bullet.match(linea)
+        if m_bullet and not linea.startswith("**"):
+            bloques.append(("bullet", m_bullet.group(1).strip()))
+            i += 1
+            continue
+
+        bloques.append(("parrafo", linea))
+        i += 1
+
+    return bloques
+
+
+_PATRON_NEGRITA = re.compile(r"(\*\*[^*]+\*\*)")
+
+
+def _agregar_texto_con_negrita_docx(paragraph, texto, tamano_fuente_pt=None, color_rgb=None, negrita_base=False):
+    """Agrega ``texto`` a un párrafo de python-docx, convirtiendo los tramos
+    ``**así**`` en runs en negrita (en vez de dejar los asteriscos literales)."""
+    partes = _PATRON_NEGRITA.split(texto)
+    for parte in partes:
+        if not parte:
+            continue
+        es_negrita = parte.startswith("**") and parte.endswith("**") and len(parte) > 4
+        run = paragraph.add_run(parte[2:-2] if es_negrita else parte)
+        run.bold = es_negrita or negrita_base
+        if tamano_fuente_pt:
+            run.font.size = Pt(tamano_fuente_pt)
+        if color_rgb:
+            run.font.color.rgb = color_rgb
+
+
+def _negrita_markdown_a_html_pdf(texto: str) -> str:
+    """Convierte ``**texto**`` a ``<b>texto</b>`` para que reportlab lo dibuje
+    en negrita real dentro de un ``Paragraph`` (en vez del asterisco literal)."""
+    return _PATRON_NEGRITA.sub(lambda m: f"<b>{m.group(0)[2:-2]}</b>", texto)
+
+
+def _agregar_texto_markdown_docx(doc, texto: str, nivel_encabezado_base: int = 2) -> None:
+    """Dibuja en ``doc`` el texto markdown generado por la IA como encabezados,
+    tablas y párrafos con formato real, en lugar de párrafos con los símbolos
+    ``##``, ``**`` y ``|`` sin interpretar."""
+    for tipo, contenido in _parsear_bloques_markdown(texto):
+        if tipo == "heading":
+            nivel_md, texto_h = contenido
+            nivel_doc = min(nivel_encabezado_base + (nivel_md - 1), 4)
+            doc.add_heading(texto_h, level=max(nivel_doc, 1))
+        elif tipo == "table":
+            filas = contenido
+            encabezado, *resto = filas
+            n_cols = len(encabezado)
+            if n_cols == 0:
+                continue
+            tabla = doc.add_table(rows=1, cols=n_cols)
+            tabla.style = "Light Grid Accent 1"
+            for idx_col in range(n_cols):
+                celda = tabla.rows[0].cells[idx_col]
+                p_celda = celda.paragraphs[0]
+                _agregar_texto_con_negrita_docx(
+                    p_celda, encabezado[idx_col], tamano_fuente_pt=9.5,
+                    color_rgb=RGBColor(0xFF, 0xFF, 0xFF), negrita_base=True,
+                )
+                _sombrear_celda(celda, COLOR_INSTITUCIONAL)
+            for fila_datos in resto:
+                celdas_fila = tabla.add_row().cells
+                for idx_col in range(n_cols):
+                    texto_celda = fila_datos[idx_col] if idx_col < len(fila_datos) else ""
+                    _agregar_texto_con_negrita_docx(celdas_fila[idx_col].paragraphs[0], texto_celda, tamano_fuente_pt=9)
+            ancho_col = round(17.0 / n_cols, 2)
+            _ajustar_tabla_docx(tabla, anchos_cm=[ancho_col] * n_cols, tamano_fuente_pt=9)
+            doc.add_paragraph()
+        elif tipo == "bullet":
+            p = doc.add_paragraph(style="List Bullet")
+            _agregar_texto_con_negrita_docx(p, contenido)
+        else:
+            p = doc.add_paragraph()
+            _agregar_texto_con_negrita_docx(p, contenido)
+
+
+def _texto_markdown_a_pdf_flowables(texto: str, estilo_normal, estilo_h2, estilo_h3=None):
+    """Versión para reportlab de ``_agregar_texto_markdown_docx``: devuelve una
+    lista de flowables (Paragraph/Table/Spacer) con encabezados, tablas y
+    negrita reales en vez de los símbolos markdown sin interpretar."""
+    if estilo_h3 is None:
+        estilo_h3 = ParagraphStyle("H3SIIEAP_md", parent=estilo_h2, fontSize=11.5, spaceBefore=8)
+    flowables = []
+    for tipo, contenido in _parsear_bloques_markdown(texto):
+        if tipo == "heading":
+            nivel_md, texto_h = contenido
+            estilo_usar = estilo_h2 if nivel_md <= 2 else estilo_h3
+            texto_html = texto_h.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            flowables.append(Paragraph(_negrita_markdown_a_html_pdf(texto_html), estilo_usar))
+        elif tipo == "table":
+            filas = contenido
+            encabezado, *resto = filas
+            n_cols = len(encabezado)
+            if n_cols == 0:
+                continue
+            def _celda(txt, encabezado_flag):
+                txt_html = txt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                txt_html = _negrita_markdown_a_html_pdf(txt_html)
+                estilo_celda = _ESTILO_CELDA_TABLA_PDF_ENCABEZADO if encabezado_flag else _ESTILO_CELDA_TABLA_PDF
+                return Paragraph(txt_html, estilo_celda)
+            datos = [[_celda(c, True) for c in encabezado]]
+            for fila_datos in resto:
+                fila_completa = [fila_datos[idx] if idx < len(fila_datos) else "" for idx in range(n_cols)]
+                datos.append([_celda(c, False) for c in fila_completa])
+            ancho_col = (17 * cm) / n_cols
+            tabla_pdf = Table(datos, hAlign="LEFT", colWidths=[ancho_col] * n_cols)
+            tabla_pdf.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(f"#{COLOR_INSTITUCIONAL}")),
+                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ]))
+            flowables.append(tabla_pdf)
+            flowables.append(Spacer(1, 6))
+        elif tipo == "bullet":
+            texto_html = contenido.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            flowables.append(Paragraph(f"•&nbsp;&nbsp;{_negrita_markdown_a_html_pdf(texto_html)}", estilo_normal))
+            flowables.append(Spacer(1, 2))
+        else:
+            texto_html = contenido.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            flowables.append(Paragraph(_negrita_markdown_a_html_pdf(texto_html), estilo_normal))
+            flowables.append(Spacer(1, 4))
+    return flowables
+
+
 # ---------------------------------------------------------------------------
 # Generación del .docx
 # ---------------------------------------------------------------------------
@@ -3070,9 +3246,7 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     )
     run_cita_riesgo.italic = True
     run_cita_riesgo.font.size = Pt(9.5)
-    for parrafo in analisis_ia_texto.split("\n"):
-        if parrafo.strip():
-            doc.add_paragraph(parrafo)
+    _agregar_texto_markdown_docx(doc, analisis_ia_texto)
 
     doc.add_page_break()
 
@@ -3442,11 +3616,7 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         estilo_cursiva,
     ))
     elementos.append(Spacer(1, 6))
-    for parrafo in analisis_ia_texto.split("\n"):
-        if parrafo.strip():
-            texto_escapado = parrafo.replace("&amp;", "&amp;amp;").replace("&lt;", "&amp;lt;").replace("&gt;", "&amp;gt;")
-            elementos.append(Paragraph(texto_escapado, estilo_normal))
-            elementos.append(Spacer(1, 4))
+    elementos.extend(_texto_markdown_a_pdf_flowables(analisis_ia_texto, estilo_normal, estilo_h2))
     elementos.append(PageBreak())
 
     # Disclaimer
