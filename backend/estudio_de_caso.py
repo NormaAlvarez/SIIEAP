@@ -70,6 +70,7 @@ from backend.motores.generador_informe import (
     _agregar_normativa_politicas_pdf,
     _agregar_texto_markdown_docx,
     _texto_markdown_a_pdf_flowables,
+    COLOR_INSTITUCIONAL,
 )
 
 
