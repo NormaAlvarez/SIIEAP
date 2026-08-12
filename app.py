@@ -282,11 +282,11 @@ with tab_real:
             st.caption(
                 "Compara esta entidad contra un grupo de referencia, usando el 'Grupo par' "
                 "oficial de Función Pública (ya calculado en el Excel) y, opcionalmente, la "
-                "subregión del departamento (disponible para Antioquia y Chocó). No inventa "
+                "subregión del departamento (disponible para Antioquia, Chocó y Santander). No inventa "
                 "cifras: todo sale de las columnas reales del archivo cargado arriba."
             )
             col_360_a, col_360_b, col_360_c = st.columns(3)
-            opciones_departamento = ["ANTIOQUIA", "CHOCÓ", "Otro (escribir abajo)"]
+            opciones_departamento = ["ANTIOQUIA", "CHOCÓ", "SANTANDER", "Otro (escribir abajo)"]
             departamento_elegido = col_360_a.selectbox(
                 "Departamento", opciones_departamento, key="departamento_360_select"
             )
