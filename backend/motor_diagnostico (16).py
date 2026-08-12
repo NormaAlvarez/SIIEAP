@@ -62,12 +62,6 @@ from backend.motores.generador_informe import (
     _agregar_razon_de_ser_docx,
     _toc_pdf_flowables,
     _razon_de_ser_pdf_flowables,
-    _agregar_marco_descentralizacion_docx,
-    _agregar_marco_descentralizacion_pdf,
-    _agregar_glosario_docx,
-    _agregar_glosario_pdf,
-    _agregar_normativa_politicas_docx,
-    _agregar_normativa_politicas_pdf,
 )
 
 
@@ -717,97 +711,6 @@ ANALISIS_FINANZAS_PUBLICAS_CIERRE = (
     "tres instrumentos, disponibles como plantillas oficiales de auditoría."
 )
 
-# Dimensiones IDI-MIPG con vínculo directo al proceso financiero/de control, tal como
-# las cita ANALISIS_FINANZAS_PUBLICAS_CIERRE. El impacto fijo por dimensión refleja el
-# tipo de consecuencia que cada una tiene sobre el proceso financiero: Control Interno
-# compromete directamente la responsabilidad disciplinaria/fiscal (impacto máximo),
-# mientras que Gestión para Resultados con Valores y Evaluación de Resultados
-# comprometen la calidad del gasto y la rendición de cuentas (impacto alto).
-_DIMENSIONES_MATRIZ_FINANCIERA = {
-    "Dimensión de Control Interno": 5,
-    "Dimensión Gestión para Resultados con Valores": 4,
-    "Dimensión de Evaluación de Resultados": 4,
-}
-
-# La matriz de riesgos y controles usa su propio vocabulario de 4 zonas
-# (Extrema/Alta/Moderada/Baja, según probabilidad × impacto), distinto del
-# vocabulario de 3 niveles (Alta/Media/Baja) que usa _color_hex_riesgo en el
-# resto del sistema — por eso tiene su propio mapa de color aquí.
-_COLOR_HEX_POR_ZONA_MATRIZ = {
-    "Extrema": "E6B0AA",
-    "Alta": "F5B7B1",
-    "Moderada": "FAD7A0",
-    "Baja": "A9DFBF",
-}
-
-
-def _filas_matriz_riesgos_financieros(diag, top_n: int = 6):
-    """Aplica la metodología descrita en ANALISIS_FINANZAS_PUBLICAS_COMPONENTES a las
-    brechas REALES del diagnóstico (diag.brechas), filtradas a las tres dimensiones que
-    el propio texto de cierre menciona (Control Interno, Gestión para Resultados con
-    Valores, Evaluación de Resultados). Convierte cada brecha en una fila de matriz de
-    riesgos y controles: probabilidad × impacto → zona de riesgo inherente, diseño del
-    control, efectividad de operación y riesgo residual — exactamente las cuatro
-    calificaciones que describe la Matriz de Riesgos y Controles del componente 1.
-
-    Devuelve una lista de tuplas:
-      (riesgo, probabilidad, impacto, zona_inherente, diseño, efectividad, residual)
-    """
-    if diag is None:
-        return []
-    brechas_financieras = [
-        b for b in diag.brechas if b.dimension in _DIMENSIONES_MATRIZ_FINANCIERA
-    ]
-    if not brechas_financieras:
-        return []
-    brechas_financieras = sorted(brechas_financieras, key=lambda b: b.puntaje)[:top_n]
-
-    filas = []
-    for b in brechas_financieras:
-        impacto = _DIMENSIONES_MATRIZ_FINANCIERA[b.dimension]
-        if b.puntaje < 15:
-            probabilidad = 5
-        elif b.puntaje < 30:
-            probabilidad = 4
-        elif b.puntaje < 45:
-            probabilidad = 3
-        else:
-            probabilidad = 2
-        producto = probabilidad * impacto
-        if producto >= 15:
-            zona_inherente = "Extrema"
-        elif producto >= 6:
-            zona_inherente = "Alta"
-        elif producto >= 3:
-            zona_inherente = "Moderada"
-        else:
-            zona_inherente = "Baja"
-
-        if b.puntaje < 20:
-            diseno = "Débil — control no documentado o inexistente"
-            efectividad = "No efectivo"
-        elif b.puntaje < 40:
-            diseno = "Parcial — existe pero sin segregación de funciones ni evidencia suficiente"
-            efectividad = "Parcialmente efectivo"
-        else:
-            diseno = "Adecuado en el diseño, débil en la operación"
-            efectividad = "Efectivo con hallazgos menores"
-
-        residual_por_zona = {
-            "Extrema": "Alta (persiste tras controles compensatorios)",
-            "Alta": "Moderada (persiste tras controles compensatorios)",
-            "Moderada": "Baja (persiste tras controles compensatorios)",
-            "Baja": "Baja",
-        }
-        riesgo_residual = residual_por_zona[zona_inherente]
-
-        nombre_riesgo = f"{b.codigo_indice} ({b.puntaje}) — {b.nombre_indice}"
-        filas.append((
-            nombre_riesgo, str(probabilidad), str(impacto), zona_inherente,
-            diseno, efectividad, riesgo_residual,
-        ))
-    return filas
-
 
 ESCENARIOS_PROSPECTIVOS_TITULO = (
     "Prospectiva: 5 escenarios de desarrollo territorial a partir del cierre de brechas "
@@ -973,9 +876,6 @@ def generar_estudio_de_caso_docx(
     _agregar_tabla_contenido_docx(doc)
     _agregar_razon_de_ser_docx(doc, "estudio_caso")
 
-    _agregar_glosario_docx(doc)
-    _agregar_normativa_politicas_docx(doc, diag=diag)
-
     # 1. Descripción del problema público
     _agregar_divisor_seccion_docx(doc, "1. Descripción del problema público", icono="📝")
     try:
@@ -1096,28 +996,40 @@ def generar_estudio_de_caso_docx(
     doc.add_heading(ESTADO_DEL_ARTE_TITULO, level=2)
     doc.add_paragraph(ESTADO_DEL_ARTE_INTRO)
     for titulo_indice, texto_indice in ESTADO_DEL_ARTE_INDICES:
-        p_ei = doc.add_paragraph()
-        run_ei = p_ei.add_run(f"{titulo_indice}. ")
+        p_ei_titulo = doc.add_paragraph()
+        p_ei_titulo.paragraph_format.space_before = Pt(10)
+        p_ei_titulo.paragraph_format.space_after = Pt(2)
+        run_ei = p_ei_titulo.add_run(titulo_indice)
         run_ei.bold = True
-        p_ei.add_run(texto_indice)
+        run_ei.font.size = Pt(12.5)
+        run_ei.font.color.rgb = RGBColor(0x1F, 0x4E, 0x79)
+        doc.add_paragraph(texto_indice)
 
     # 2.2 Institucionalidad del IDI-MIPG
     doc.add_heading(INSTITUCIONALIDAD_IDI_TITULO, level=2)
     doc.add_paragraph(INSTITUCIONALIDAD_IDI_INTRO)
     for titulo_i, texto_i in INSTITUCIONALIDAD_IDI:
-        p_i = doc.add_paragraph()
-        run_i = p_i.add_run(f"{titulo_i}. ")
+        p_i_titulo = doc.add_paragraph()
+        p_i_titulo.paragraph_format.space_before = Pt(10)
+        p_i_titulo.paragraph_format.space_after = Pt(2)
+        run_i = p_i_titulo.add_run(titulo_i)
         run_i.bold = True
-        p_i.add_run(texto_i)
+        run_i.font.size = Pt(12.5)
+        run_i.font.color.rgb = RGBColor(0x1F, 0x4E, 0x79)
+        doc.add_paragraph(texto_i)
 
     # 2.3 Marco de la reforma territorial en curso
     doc.add_heading(MARCO_REFORMA_TERRITORIAL_TITULO, level=2)
     doc.add_paragraph(MARCO_REFORMA_TERRITORIAL_INTRO)
     for titulo_r, texto_r in MARCO_REFORMA_TERRITORIAL:
-        p_r = doc.add_paragraph()
-        run_r = p_r.add_run(f"{titulo_r}. ")
+        p_r_titulo = doc.add_paragraph()
+        p_r_titulo.paragraph_format.space_before = Pt(10)
+        p_r_titulo.paragraph_format.space_after = Pt(2)
+        run_r = p_r_titulo.add_run(titulo_r)
         run_r.bold = True
-        p_r.add_run(texto_r)
+        run_r.font.size = Pt(12.5)
+        run_r.font.color.rgb = RGBColor(0x1F, 0x4E, 0x79)
+        doc.add_paragraph(texto_r)
 
     # 3. Fuentes de datos abiertos
     _agregar_divisor_seccion_docx(doc, "3. Fuentes de datos abiertos utilizadas y recomendadas", icono="🗂️")
@@ -1188,10 +1100,14 @@ def generar_estudio_de_caso_docx(
     _agregar_divisor_seccion_docx(doc, "5. " + FUNDAMENTO_JURIDICO_AMPLIADO_TITULO, icono="⚖️")
     doc.add_paragraph(FUNDAMENTO_JURIDICO_AMPLIADO_INTRO)
     for titulo_f, texto_f in FUNDAMENTO_JURIDICO_AMPLIADO:
-        p_f = doc.add_paragraph()
-        run_f = p_f.add_run(f"{titulo_f}. ")
+        p_f_titulo = doc.add_paragraph()
+        p_f_titulo.paragraph_format.space_before = Pt(10)
+        p_f_titulo.paragraph_format.space_after = Pt(2)
+        run_f = p_f_titulo.add_run(titulo_f)
         run_f.bold = True
-        p_f.add_run(texto_f)
+        run_f.font.size = Pt(12.5)
+        run_f.font.color.rgb = RGBColor(0x1F, 0x4E, 0x79)
+        doc.add_paragraph(texto_f)
 
     # 5.1 Análisis de Finanzas Públicas y Control Interno Financiero
     doc.add_page_break()
@@ -1204,50 +1120,14 @@ def generar_estudio_de_caso_docx(
     except Exception:
         pass
     for titulo_fin, texto_fin in ANALISIS_FINANZAS_PUBLICAS_COMPONENTES:
-        p_fin = doc.add_paragraph()
-        run_fin = p_fin.add_run(f"{titulo_fin}. ")
+        p_fin_titulo = doc.add_paragraph()
+        p_fin_titulo.paragraph_format.space_before = Pt(10)
+        p_fin_titulo.paragraph_format.space_after = Pt(2)
+        run_fin = p_fin_titulo.add_run(titulo_fin)
         run_fin.bold = True
-        p_fin.add_run(texto_fin)
-
-    # Matriz de riesgos y controles APLICADA a las brechas reales de esta entidad
-    # (no solo la metodología en abstracto) — ver docstring de
-    # _filas_matriz_riesgos_financieros.
-    filas_matriz_fin = _filas_matriz_riesgos_financieros(diag)
-    if filas_matriz_fin:
-        doc.add_heading("Matriz de riesgos y controles aplicada a las brechas de esta entidad", level=3)
-        doc.add_paragraph(
-            "A manera de ejemplo de aplicación concreta —no como sustituto del ejercicio "
-            "completo que debe hacer el equipo directivo—, se califican aquí, con la "
-            "metodología de probabilidad × impacto descrita arriba, las brechas detectadas "
-            "por SIIEAP en las tres dimensiones con vínculo directo al proceso financiero "
-            "(Control Interno, Gestión para Resultados con Valores y Evaluación de "
-            "Resultados)."
-        )
-        tabla_matriz_fin = doc.add_table(rows=1, cols=7)
-        tabla_matriz_fin.style = "Light Grid Accent 1"
-        encabezados_matriz_fin = [
-            "Riesgo (brecha SIIEAP)", "Prob.", "Imp.", "Zona (inherente)",
-            "Diseño del control", "Efectividad", "Riesgo residual",
-        ]
-        for celda, texto in zip(tabla_matriz_fin.rows[0].cells, encabezados_matriz_fin):
-            celda.text = texto
-            _sombrear_celda(celda, COLOR_INSTITUCIONAL)
-            for parrafo in celda.paragraphs:
-                for run_enc in parrafo.runs:
-                    run_enc.bold = True
-                    run_enc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
-        for fila_datos in filas_matriz_fin:
-            fila = tabla_matriz_fin.add_row().cells
-            for idx_col, valor in enumerate(fila_datos):
-                fila[idx_col].text = valor
-            _sombrear_celda(fila[3], _COLOR_HEX_POR_ZONA_MATRIZ.get(fila_datos[3], "FFFFFF"))
-        _ajustar_tabla_docx(
-            tabla_matriz_fin,
-            anchos_cm=[4.0, 1.0, 1.0, 2.2, 3.4, 2.5, 2.9],
-            tamano_fuente_pt=8,
-        )
-        doc.add_paragraph()
-
+        run_fin.font.size = Pt(12.5)
+        run_fin.font.color.rgb = RGBColor(0x1F, 0x4E, 0x79)
+        doc.add_paragraph(texto_fin)
     doc.add_paragraph(ANALISIS_FINANZAS_PUBLICAS_CIERRE)
 
     # 6. Recomendaciones oficiales de Función Pública vinculadas a las brechas
@@ -1293,17 +1173,6 @@ def generar_estudio_de_caso_docx(
         fila[3].text = f"Implementar acción correctiva alineada con {enfoque_pm} ({norma_pm}); ver detalle en recomendaciones de la sección 4 y 6."
         fila[4].text = "0-6 meses" if b.puntaje < 20 else ("6-18 meses" if b.puntaje < 45 else "18-36 meses")
         fila[5].text = "Líder de proceso / Jefe de Control Interno"
-    # Sin un ancho de columna explícito, Word puede repartir el espacio de
-    # forma pareja entre las 6 columnas sin importar cuánto texto tenga cada
-    # una — con columnas de texto largo (Observación, Acción correctiva) eso
-    # las deja demasiado angostas y el contenido se ve apretado o se sale de
-    # los márgenes de la página. _ajustar_tabla_docx fija anchos razonables
-    # y sincroniza también el tblGrid (ver su docstring).
-    _ajustar_tabla_docx(
-        tabla_pm,
-        anchos_cm=[1.0, 4.0, 3.3, 4.5, 2.2, 2.5],
-        tamano_fuente_pt=8.5,
-    )
 
     doc.add_paragraph()
     doc.add_heading("Indicadores de efectividad del Plan de Mejoramiento (desde resultados)", level=2)
@@ -1347,10 +1216,14 @@ def generar_estudio_de_caso_docx(
     _agregar_divisor_seccion_docx(doc, "8. " + ESCENARIOS_PROSPECTIVOS_TITULO, icono="🔮")
     doc.add_paragraph(ESCENARIOS_PROSPECTIVOS_INTRO)
     for titulo_esc, texto_esc in _construir_escenarios_prospectivos(nombre_entidad, diag, resultado_360):
-        p_esc = doc.add_paragraph()
-        run_esc = p_esc.add_run(f"{titulo_esc}. ")
+        p_esc_titulo = doc.add_paragraph()
+        p_esc_titulo.paragraph_format.space_before = Pt(10)
+        p_esc_titulo.paragraph_format.space_after = Pt(2)
+        run_esc = p_esc_titulo.add_run(titulo_esc)
         run_esc.bold = True
-        p_esc.add_run(texto_esc)
+        run_esc.font.size = Pt(12.5)
+        run_esc.font.color.rgb = RGBColor(0x1F, 0x4E, 0x79)
+        doc.add_paragraph(texto_esc)
 
     # 9. Nota de uso responsable de IA
     _agregar_divisor_seccion_docx(doc, "9. Nota de uso responsable de inteligencia artificial", icono="🤖")
@@ -1367,8 +1240,6 @@ def generar_estudio_de_caso_docx(
     )
     run_ia.italic = True
     run_ia.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
-
-    _agregar_marco_descentralizacion_docx(doc, diag=diag, nombre_entidad=nombre_entidad)
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -1402,6 +1273,10 @@ def generar_estudio_de_caso_pdf(
     estilo_h2 = ParagraphStyle("H2EC", parent=estilos["Heading2"], spaceBefore=12)
     estilo_normal = estilos["Normal"]
     estilo_cursiva = ParagraphStyle("CursivaEC", parent=estilos["Normal"], fontName="Helvetica-Oblique", textColor=colors.grey)
+    estilo_subtitulo_hito = ParagraphStyle(
+        "SubtituloHitoEC", parent=estilo_normal, fontName="Helvetica-Bold", fontSize=11.5,
+        textColor=colors.HexColor("#1F4E79"), spaceBefore=8, spaceAfter=2,
+    )
 
     idi_protagonista = idi_oficial if idi_oficial is not None else diag.idi_estimado
     hay_diferencia_idi = (
@@ -1434,9 +1309,6 @@ def generar_estudio_de_caso_pdf(
         "Nota de uso responsable de IA",
     ]))
     elementos.extend(_razon_de_ser_pdf_flowables("estudio_caso"))
-
-    _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2)
-    _agregar_normativa_politicas_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=diag)
 
     elementos.extend(_divisor_seccion_pdf("1. Descripción del problema público", icono="📝"))
     try:
@@ -1541,21 +1413,24 @@ def generar_estudio_de_caso_pdf(
     elementos.append(Paragraph(ESTADO_DEL_ARTE_INTRO, estilo_normal))
     elementos.append(Spacer(1, 6))
     for titulo_indice, texto_indice in ESTADO_DEL_ARTE_INDICES:
-        elementos.append(Paragraph(f"<b>{titulo_indice}.</b> {texto_indice}", estilo_normal))
+        elementos.append(Paragraph(titulo_indice, estilo_subtitulo_hito))
+        elementos.append(Paragraph(texto_indice, estilo_normal))
         elementos.append(Spacer(1, 8))
 
     elementos.append(Paragraph(INSTITUCIONALIDAD_IDI_TITULO, estilo_h2))
     elementos.append(Paragraph(INSTITUCIONALIDAD_IDI_INTRO, estilo_normal))
     elementos.append(Spacer(1, 4))
     for titulo_i, texto_i in INSTITUCIONALIDAD_IDI:
-        elementos.append(Paragraph(f"<b>{titulo_i}.</b> {texto_i}", estilo_normal))
+        elementos.append(Paragraph(titulo_i, estilo_subtitulo_hito))
+        elementos.append(Paragraph(texto_i, estilo_normal))
         elementos.append(Spacer(1, 6))
 
     elementos.append(Paragraph(MARCO_REFORMA_TERRITORIAL_TITULO, estilo_h2))
     elementos.append(Paragraph(MARCO_REFORMA_TERRITORIAL_INTRO, estilo_normal))
     elementos.append(Spacer(1, 4))
     for titulo_r, texto_r in MARCO_REFORMA_TERRITORIAL:
-        elementos.append(Paragraph(f"<b>{titulo_r}.</b> {texto_r}", estilo_normal))
+        elementos.append(Paragraph(titulo_r, estilo_subtitulo_hito))
+        elementos.append(Paragraph(texto_r, estilo_normal))
         elementos.append(Spacer(1, 6))
 
     elementos.append(Paragraph("3. Fuentes de datos abiertos utilizadas y recomendadas", estilo_h2))
@@ -1608,7 +1483,8 @@ def generar_estudio_de_caso_pdf(
     elementos.append(Paragraph(FUNDAMENTO_JURIDICO_AMPLIADO_INTRO, estilo_normal))
     elementos.append(Spacer(1, 6))
     for titulo_f, texto_f in FUNDAMENTO_JURIDICO_AMPLIADO:
-        elementos.append(Paragraph(f"<b>{titulo_f}.</b> {texto_f}", estilo_normal))
+        elementos.append(Paragraph(titulo_f, estilo_subtitulo_hito))
+        elementos.append(Paragraph(texto_f, estilo_normal))
         elementos.append(Spacer(1, 6))
     elementos.append(PageBreak())
 
@@ -1622,51 +1498,9 @@ def generar_estudio_de_caso_pdf(
     except Exception:
         pass
     for titulo_fin, texto_fin in ANALISIS_FINANZAS_PUBLICAS_COMPONENTES:
-        elementos.append(Paragraph(f"<b>{titulo_fin}.</b> {texto_fin}", estilo_normal))
+        elementos.append(Paragraph(titulo_fin, estilo_subtitulo_hito))
+        elementos.append(Paragraph(texto_fin, estilo_normal))
         elementos.append(Spacer(1, 6))
-
-    # Matriz de riesgos y controles APLICADA a las brechas reales de esta entidad
-    # (ver docstring de _filas_matriz_riesgos_financieros).
-    filas_matriz_fin = _filas_matriz_riesgos_financieros(diag)
-    if filas_matriz_fin:
-        elementos.append(Paragraph("Matriz de riesgos y controles aplicada a las brechas de esta entidad", estilo_h2))
-        elementos.append(Paragraph(
-            "A manera de ejemplo de aplicación concreta —no como sustituto del ejercicio "
-            "completo que debe hacer el equipo directivo—, se califican aquí, con la "
-            "metodología de probabilidad × impacto descrita arriba, las brechas detectadas "
-            "por SIIEAP en las tres dimensiones con vínculo directo al proceso financiero "
-            "(Control Interno, Gestión para Resultados con Valores y Evaluación de Resultados).",
-            estilo_normal,
-        ))
-        elementos.append(Spacer(1, 6))
-        datos_matriz_fin = [[
-            _celda_pdf("Riesgo (brecha SIIEAP)", encabezado=True),
-            _celda_pdf("Prob.", encabezado=True),
-            _celda_pdf("Imp.", encabezado=True),
-            _celda_pdf("Zona (inherente)", encabezado=True),
-            _celda_pdf("Diseño del control", encabezado=True),
-            _celda_pdf("Efectividad", encabezado=True),
-            _celda_pdf("Riesgo residual", encabezado=True),
-        ]]
-        colores_fila_matriz_fin = []
-        for fila_datos in filas_matriz_fin:
-            datos_matriz_fin.append([_celda_pdf(v) for v in fila_datos])
-            colores_fila_matriz_fin.append(_COLOR_HEX_POR_ZONA_MATRIZ.get(fila_datos[3], "FFFFFF"))
-        tabla_matriz_fin = Table(
-            datos_matriz_fin, hAlign="LEFT",
-            colWidths=[4.0 * cm, 1.0 * cm, 1.0 * cm, 2.2 * cm, 3.4 * cm, 2.5 * cm, 2.9 * cm],
-        )
-        estilo_matriz_fin = [
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ]
-        for i, color_zona in enumerate(colores_fila_matriz_fin, start=1):
-            estilo_matriz_fin.append(("BACKGROUND", (3, i), (3, i), colors.HexColor(f"#{color_zona}")))
-        tabla_matriz_fin.setStyle(TableStyle(estilo_matriz_fin))
-        elementos.append(tabla_matriz_fin)
-        elementos.append(Spacer(1, 8))
-
     elementos.append(Paragraph(ANALISIS_FINANZAS_PUBLICAS_CIERRE, estilo_normal))
     elementos.append(PageBreak())
 
@@ -1692,21 +1526,23 @@ def generar_estudio_de_caso_pdf(
         estilo_normal,
     ))
     elementos.append(Spacer(1, 6))
-    datos_pm = [[_celda_pdf("Ítem", encabezado=True), _celda_pdf("Observación/Hallazgo", encabezado=True), _celda_pdf("Acción correctiva", encabezado=True), _celda_pdf("Plazo", encabezado=True), _celda_pdf("Responsable", encabezado=True)]]
+    datos_pm = [["Ítem", "Observación/Hallazgo", "Acción correctiva", "Plazo", "Responsable"]]
     for i, b in enumerate(diag.brechas, start=1):
         enfoque_pm, norma_pm = _enfoque_y_norma_de_politica(b.politica)
         plazo_pm = "0-6 meses" if b.puntaje < 20 else ("6-18 meses" if b.puntaje < 45 else "18-36 meses")
         datos_pm.append([
-            _celda_pdf(str(i)),
-            _celda_pdf(f"{b.codigo_indice} ({b.puntaje}) — {b.nombre_indice}"),
-            _celda_pdf(f"Acción alineada con {enfoque_pm} ({norma_pm})"),
-            _celda_pdf(plazo_pm),
-            _celda_pdf("Líder de proceso / OCI"),
+            str(i),
+            f"{b.codigo_indice} ({b.puntaje}) — {b.nombre_indice}",
+            f"Acción alineada con {enfoque_pm} ({norma_pm})",
+            plazo_pm,
+            "Líder de proceso / OCI",
         ])
     if len(datos_pm) > 1:
         tabla_pm = Table(datos_pm, hAlign="LEFT", colWidths=[1.2 * cm, 5.5 * cm, 5.5 * cm, 2.3 * cm, 2.5 * cm])
         tabla_pm.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTSIZE", (0, 0), (-1, -1), 7),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ]))
@@ -1756,7 +1592,8 @@ def generar_estudio_de_caso_pdf(
     elementos.append(Paragraph(ESCENARIOS_PROSPECTIVOS_INTRO, estilo_normal))
     elementos.append(Spacer(1, 6))
     for titulo_esc, texto_esc in _construir_escenarios_prospectivos(nombre_entidad, diag, resultado_360):
-        elementos.append(Paragraph(f"<b>{titulo_esc}.</b> {texto_esc}", estilo_normal))
+        elementos.append(Paragraph(titulo_esc, estilo_subtitulo_hito))
+        elementos.append(Paragraph(texto_esc, estilo_normal))
         elementos.append(Spacer(1, 8))
 
     elementos.append(Paragraph("9. Nota de uso responsable de inteligencia artificial", estilo_h2))
@@ -1769,8 +1606,6 @@ def generar_estudio_de_caso_pdf(
         "complementada por el estudiante antes de su entrega.",
         estilo_cursiva,
     ))
-
-    _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, estilo_h2, diag=diag, nombre_entidad=nombre_entidad)
 
     doc.build(elementos)
     buffer.seek(0)
