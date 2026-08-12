@@ -243,6 +243,55 @@ with tab_real:
         if entidad_elegida and st.button("Generar diagnóstico", type="primary", key="btn_real"):
             entidad, idi_oficial, grupo_par = entidad_por_nombre_exacto(df, entidad_elegida)
             entidad.regimen_especial = tipo_regimen_especial_elegido
+            diag = diagnosticar(entidad)
+
+            cruce = None
+            total_recos_entidad = None
+            if "consolidado_cargado" in st.session_state:
+                recos = recomendaciones_de_entidad(st.session_state.consolidado_cargado, entidad_elegida)
+                if recos:
+                    cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
+                    total_recos_entidad = len(recos)
+            elif archivo_recos is not None:
+                try:
+                    recos = cargar_recomendaciones(archivo_recos)
+                    cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
+                    total_recos_entidad = len(recos)
+                except Exception as e:
+                    st.warning(f"No se pudieron leer las recomendaciones: {e}")
+
+            # Se guarda en session_state para que TODO lo que sigue (el propio
+            # diagnóstico, el Análisis 360 y sus resultados) sobreviva a los
+            # reruns que dispara Streamlit al tocar cualquier otro control
+            # (el selector de Departamento/Subregión, el botón "Calcular
+            # análisis 360", etc.). Antes, todo este bloque dependía del
+            # valor de un solo clic de st.button("Generar diagnóstico"), que
+            # vuelve a False en el siguiente rerun — por eso la pantalla
+            # "volvía" al formulario inicial al interactuar con el selector
+            # de departamento/provincia (o con cualquier otro control de esta
+            # sección, incluido "Calcular análisis 360" mismo).
+            st.session_state["resultado_real_actual"] = {
+                "entidad": entidad,
+                "idi_oficial": idi_oficial,
+                "grupo_par": grupo_par,
+                "diag": diag,
+                "cruce": cruce,
+                "total_recos_entidad": total_recos_entidad,
+                "etiqueta_regimen_elegida": etiqueta_regimen_elegida,
+                "tipo_regimen_especial_elegido": tipo_regimen_especial_elegido,
+            }
+
+        if "resultado_real_actual" in st.session_state:
+            _r = st.session_state["resultado_real_actual"]
+            entidad = _r["entidad"]
+            idi_oficial = _r["idi_oficial"]
+            grupo_par = _r["grupo_par"]
+            diag = _r["diag"]
+            cruce = _r["cruce"]
+            total_recos_entidad = _r["total_recos_entidad"]
+            etiqueta_regimen_elegida = _r["etiqueta_regimen_elegida"]
+            tipo_regimen_especial_elegido = _r["tipo_regimen_especial_elegido"]
+
             st.subheader(entidad.nombre)
             if not entidad.aplica_mipg_integral():
                 st.info(
@@ -254,26 +303,8 @@ with tab_real:
             st.caption(
                 f"Índices/políticas con información: {len(entidad.resultados) + len(entidad.resultados_politica_directa)} de 66"
             )
-            diag = diagnosticar(entidad)
-
-            cruce = None
-            total_recos_entidad = None
-            if "consolidado_cargado" in st.session_state:
-                recos = recomendaciones_de_entidad(st.session_state.consolidado_cargado, entidad_elegida)
-                if recos:
-                    cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
-                    total_recos_entidad = len(recos)
-                    st.caption(f"{len(recos)} recomendaciones encontradas en el consolidado para esta entidad.")
-                else:
-                    st.caption("Esta entidad no aparece en el consolidado de recomendaciones cargado.")
-            elif archivo_recos is not None:
-                try:
-                    recos = cargar_recomendaciones(archivo_recos)
-                    cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
-                    total_recos_entidad = len(recos)
-                    st.caption(f"{len(recos)} recomendaciones cargadas, {len(cruce)} brechas con recomendación vinculada.")
-                except Exception as e:
-                    st.warning(f"No se pudieron leer las recomendaciones: {e}")
+            if total_recos_entidad is not None:
+                st.caption(f"{total_recos_entidad} recomendaciones encontradas para esta entidad.")
 
             mostrar_diagnostico(diag, idi_oficial, grupo_par, cruce)
 
@@ -395,6 +426,10 @@ with tab_real:
             if cruce:
                 for lista in cruce.values():
                     texto_recos += "\n".join(lista) + "\n"
+            # Se preserva el ISVPT ya calculado (si lo hay) al reconstruir este
+            # diccionario en cada rerun, para que no se pierda justo después
+            # de calcularlo con el botón "Calcular análisis 360" de arriba.
+            _isvpt_previo = st.session_state.get("ultimo_diagnostico_real", {}).get("isvpt")
             st.session_state.ultimo_diagnostico_real = {
                 "nombre": entidad.nombre,
                 "diag": diag,
@@ -404,6 +439,7 @@ with tab_real:
                 "idi_oficial": idi_oficial,
                 "grupo_par": grupo_par,
                 "tipo_regimen_especial": tipo_regimen_especial_elegido,
+                "isvpt": _isvpt_previo,
             }
 
         if "ultimo_diagnostico_real" in st.session_state:
