@@ -1597,7 +1597,7 @@ def generar_estudio_de_caso_pdf(
         "metodológico, no dictamen definitivo.", estilo_cursiva,
     ))
     elementos.append(Spacer(1, 6))
-    elementos.extend(_texto_markdown_a_pdf_flowables(analisis_ia_texto, estilo_normal))
+    elementos.extend(_texto_markdown_a_pdf_flowables(analisis_ia_texto, estilo_normal, estilo_h2))
     elementos.append(PageBreak())
 
     elementos.extend(_divisor_seccion_pdf("5. " + FUNDAMENTO_JURIDICO_AMPLIADO_TITULO, icono="⚖️"))
