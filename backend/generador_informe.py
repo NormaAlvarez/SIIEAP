@@ -62,29 +62,6 @@ _ESTILO_CELDA_TABLA_PDF_ENCABEZADO = ParagraphStyle(
     "CeldaTablaPDFEncabezado", fontName="Helvetica-Bold", fontSize=8, leading=10,
     textColor=colors.white, wordWrap="CJK",
 )
-# Estilos para celdas de la tabla-resumen de portada (fondo azul institucional):
-# el texto va envuelto en Paragraph para que haga salto de línea DENTRO del
-# ancho de la columna, en vez de salirse de la celda como ocurría al usar
-# strings planos de reportlab (que no hacen wrap automático confiable).
-_ESTILO_PORTADA_HEADER_PDF = ParagraphStyle(
-    "PortadaHeaderPDF", fontName="Helvetica-Bold", fontSize=9.5, leading=11.5,
-    textColor=colors.white, alignment=1,  # 1 = centrado
-)
-_ESTILO_PORTADA_VALOR_PDF = ParagraphStyle(
-    "PortadaValorPDF", fontName="Helvetica-Bold", fontSize=14, leading=16,
-    textColor=colors.HexColor("#1F3864"), alignment=1,
-)
-
-
-def _celda_portada_pdf(texto: str, es_encabezado: bool):
-    """Envuelve el texto de una celda de la tabla-resumen de portada en un
-    Paragraph que sí respeta el ancho de columna (a diferencia de un string
-    plano), evitando que el texto se salga de la celda con fondo azul."""
-    estilo = _ESTILO_PORTADA_HEADER_PDF if es_encabezado else _ESTILO_PORTADA_VALOR_PDF
-    texto_html = (
-        str(texto).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br/>")
-    )
-    return Paragraph(texto_html, estilo)
 
 
 def _celda_pdf(texto, encabezado: bool = False, tamano_fuente: int | None = None):
@@ -2475,24 +2452,10 @@ def _agregar_marco_descentralizacion_pdf(elementos, estilos, estilo_normal, esti
 def _ajustar_tabla_docx(tabla, anchos_cm, tamano_fuente_pt=9.5):
     """Fija anchos de columna reales (no solo sugeridos) y un tamaño de letra
     más pequeño para toda la tabla, evitando que el texto se desborde de las
-    celdas.
-
-    python-docx requiere fijar el ancho en DOS lugares distintos para que
-    Word (y Google Docs, LibreOffice, etc.) lo respeten de forma consistente:
-      1. En cada celda de cada fila (``celda.width``, el ``tcW`` de la celda).
-      2. En la definición de columnas de la tabla (``tabla.columns[i].width``,
-         el ``tblGrid`` — la "regla" real de anchos que usan los renderizadores
-         de tablas con layout fijo).
-    Fijar solo (1), como se hacía antes, deja el ``tblGrid`` en sus anchos
-    automáticos originales; varios visores de Word usan ese ``tblGrid`` como
-    referencia de layout y el texto termina saliéndose de la celda hacia la
-    columna vecina, aunque la celda individual sí tenga el ancho correcto.
-    """
+    celdas — python-docx requiere fijar el ancho en CADA celda de CADA fila,
+    no solo en la tabla, para que Word lo respete de forma consistente."""
     tabla.autofit = False
     tabla.allow_autofit = False
-    for idx_col, ancho in enumerate(anchos_cm):
-        if idx_col < len(tabla.columns):
-            tabla.columns[idx_col].width = Cm(ancho)
     for fila in tabla.rows:
         for celda, ancho in zip(fila.cells, anchos_cm):
             celda.width = Cm(ancho)
@@ -2723,10 +2686,6 @@ def _sombrear_celda(celda, color_hex: str) -> None:
     propiedades_celda.append(sombreado)
 
 
-# ---------------------------------------------------------------------------
-# Generación del .docx
-# ---------------------------------------------------------------------------
-
 def _parsear_bloques_markdown(texto: str) -> list[tuple[str, object]]:
     """Convierte el markdown simple que produce motor_analisis_ia.py (encabezados
     ``##``/``###``, tablas con ``|``, listas con ``-``/``*`` y negrita ``**texto**``)
@@ -2902,6 +2861,10 @@ def _texto_markdown_a_pdf_flowables(texto: str, estilo_normal, estilo_h2, estilo
     return flowables
 
 
+# ---------------------------------------------------------------------------
+# Generación del .docx
+# ---------------------------------------------------------------------------
+
 def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt=None, resultado_360=None, idi_oficial=None, cruce_recomendaciones=None, total_recomendaciones_entidad=None, tipo_regimen_especial=None):
     """Devuelve un BytesIO con el informe técnico en formato Word (.docx).
 
@@ -2984,46 +2947,23 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     n_columnas_portada = 4 if total_recomendaciones is not None else 3
     tabla_portada = doc.add_table(rows=1, cols=n_columnas_portada)
     tabla_portada.style = "Light Grid Accent 1"
+    tabla_portada.autofit = False
+    tabla_portada.allow_autofit = False
     celdas_portada = tabla_portada.rows[0].cells
     etiqueta_idi = "IDI oficial (Función Pública)" if diag.aplica_mipg_integral else "Índice Control Interno (MECI)"
-    valores_celdas_portada = [
-        (etiqueta_idi, str(idi_protagonista)),
-        ("Nivel de riesgo global", str(nivel_riesgo_global)),
-        ("Brechas detectadas (dato exclusivo de este informe)", str(len(diag.brechas))),
-    ]
+    celdas_portada[0].text = f"{etiqueta_idi}\n{idi_protagonista}"
+    celdas_portada[1].text = f"Nivel de riesgo global\n{nivel_riesgo_global}"
+    celdas_portada[2].text = f"Brechas detectadas (dato exclusivo de este informe)\n{len(diag.brechas)}"
+    ancho_celda = Cm(4.2) if n_columnas_portada == 4 else Cm(5.5)
     if total_recomendaciones is not None:
-        valores_celdas_portada.append(("Recomendaciones oficiales FP", str(total_recomendaciones)))
-    ancho_celda_cm = 4.2 if n_columnas_portada == 4 else 5.5
-    for celda, (etiqueta, valor) in zip(celdas_portada, valores_celdas_portada):
-        # Etiqueta y valor van en PÁRRAFOS separados (no como un solo texto con
-        # "\n" embebido) para que el salto de línea sea explícito y confiable
-        # en cualquier visor de Word, no solo en los que interpretan bien "\n".
-        celda.text = ""
-        p_etiqueta = celda.paragraphs[0]
-        p_etiqueta.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_etiqueta = p_etiqueta.add_run(etiqueta)
-        run_etiqueta.bold = True
-        run_etiqueta.font.size = Pt(10)
-        p_valor = celda.add_paragraph()
-        p_valor.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_valor = p_valor.add_run(valor)
-        run_valor.bold = True
-        run_valor.font.size = Pt(16)
-    # _ajustar_tabla_docx fija el ancho en la celda Y en el tblGrid de la
-    # tabla (ver su docstring) — sin esto, el texto de esta tabla de portada
-    # se desbordaba visualmente sobre la celda vecina en varios visores de
-    # Word, aunque cada celda tuviera su ancho "correcto" asignado.
-    _ajustar_tabla_docx(
-        tabla_portada,
-        anchos_cm=[ancho_celda_cm] * n_columnas_portada,
-        tamano_fuente_pt=10,
-    )
-    # _ajustar_tabla_docx normaliza el tamaño de fuente de TODOS los runs a
-    # tamano_fuente_pt; se restaura aquí el tamaño mayor del valor numérico
-    # (el dato protagonista de cada columna) después de esa normalización.
-    for celda, (_etiqueta, _valor) in zip(celdas_portada, valores_celdas_portada):
-        for run_valor in celda.paragraphs[1].runs:
-            run_valor.font.size = Pt(16)
+        celdas_portada[3].text = f"Recomendaciones oficiales FP\n{total_recomendaciones}"
+    for celda in celdas_portada:
+        celda.width = ancho_celda
+        for parrafo in celda.paragraphs:
+            parrafo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for run_c in parrafo.runs:
+                run_c.bold = True
+                run_c.font.size = Pt(13)
 
     doc.add_paragraph()
     p_explica = doc.add_paragraph()
@@ -3385,28 +3325,27 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
 
     etiqueta_idi_pdf = "IDI oficial (Función Pública)" if diag.aplica_mipg_integral else "Índice Control Interno (MECI)"
     if total_recomendaciones is not None:
-        etiquetas_portada = [etiqueta_idi_pdf, "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)", "Recomendaciones oficiales FP"]
-        valores_portada = [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas)), str(total_recomendaciones)]
+        datos_tabla_portada = [
+            [etiqueta_idi_pdf, "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)", "Recomendaciones oficiales FP"],
+            [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas)), str(total_recomendaciones)],
+        ]
         anchos_portada = [4 * cm, 4 * cm, 4 * cm, 4.5 * cm]
     else:
-        etiquetas_portada = [etiqueta_idi_pdf, "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)"]
-        valores_portada = [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas))]
+        datos_tabla_portada = [
+            [etiqueta_idi_pdf, "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)"],
+            [str(idi_protagonista), nivel_riesgo_global, str(len(diag.brechas))],
+        ]
         anchos_portada = [5 * cm, 5 * cm, 5 * cm]
-    # Las celdas van envueltas en Paragraph (ver _celda_portada_pdf) para que el
-    # texto haga salto de línea dentro del ancho de columna en vez de salirse
-    # de la celda con fondo azul, como ocurría antes con strings planos.
-    datos_tabla_portada = [
-        [_celda_portada_pdf(t, es_encabezado=True) for t in etiquetas_portada],
-        [_celda_portada_pdf(v, es_encabezado=False) for v in valores_portada],
-    ]
     tabla_portada = Table(datos_tabla_portada, hAlign="CENTER", colWidths=anchos_portada)
     tabla_portada.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("FONTSIZE", (0, 1), (-1, 1), 14),
+        ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
     ]))
     elementos.append(tabla_portada)
     elementos.append(Spacer(1, 6))

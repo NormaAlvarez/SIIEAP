@@ -55,7 +55,6 @@ from backend.motores.generador_informe import (
     _ajustar_tabla_docx,
     _enfoque_y_norma_de_politica,
     _quintil_mipg,
-    _celda_portada_pdf,
     DESCARGO_RESPONSABILIDAD_AMPLIADO,
     _agregar_logos_docx,
     _logos_pdf_flowables,
@@ -657,24 +656,18 @@ def generar_informe_alcaldes_pdf(
     if total_recomendaciones is not None:
         encabezados.append("Recomendaciones oficiales FP")
         valores.append(str(total_recomendaciones))
-    # Encabezado y valores van envueltos en Paragraph (_celda_portada_pdf) para
-    # que el texto haga salto de línea DENTRO del ancho de columna — con
-    # strings planos, reportlab no ajusta de forma confiable y el texto largo
-    # (p. ej. "Brechas más críticas detectadas") se sale de la celda y se monta
-    # sobre la columna vecina.
-    datos_tabla = [
-        [_celda_portada_pdf(t, es_encabezado=True) for t in encabezados],
-        [_celda_portada_pdf(v, es_encabezado=False) for v in valores],
-    ]
+    datos_tabla = [encabezados, valores]
     anchos = [4.2 * cm] * n_columnas if n_columnas == 4 else [5.5 * cm] * n_columnas
     tabla_cifras = Table(datos_tabla, hAlign="CENTER", colWidths=anchos)
     estilo_tabla = [
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTSIZE", (0, 0), (-1, 0), 10),
+        ("FONTSIZE", (0, 1), (-1, 1), 16),
+        ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ("BACKGROUND", (1, 1), (1, 1), colors.HexColor(f"#{color_global}")),
     ]
     tabla_cifras.setStyle(TableStyle(estilo_tabla))
@@ -708,15 +701,17 @@ def generar_informe_alcaldes_pdf(
         estilo_normal,
     ))
     elementos.append(Spacer(1, 6))
-    datos_dim = [[_celda_pdf("Dimensión", encabezado=True), _celda_pdf("Puntaje (sobre 100)", encabezado=True), _celda_pdf("Semáforo", encabezado=True)]]
+    datos_dim = [["Dimensión", "Puntaje (sobre 100)", "Semáforo"]]
     colores_fila_dim = []
     for r in diag.resultados_por_dimension:
         color_dim, emoji_dim, texto_dim = _quintil_mipg(r.promedio)
-        datos_dim.append([_celda_pdf(r.nombre), _celda_pdf(str(r.promedio)), _celda_pdf(f"{emoji_dim} {texto_dim}")])
+        datos_dim.append([r.nombre, str(r.promedio), f"{emoji_dim} {texto_dim}"])
         colores_fila_dim.append(color_dim)
     tabla_dim = Table(datos_dim, hAlign="LEFT", colWidths=[9 * cm, 3.5 * cm, 3.5 * cm])
     estilo_tabla_dim = [
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
     ]
@@ -752,12 +747,14 @@ def generar_informe_alcaldes_pdf(
                 elementos.append(Spacer(1, 10))
         except Exception:
             pass
-        datos_top = [[_celda_pdf("Tema afectado", encabezado=True), _celda_pdf("Puntaje", encabezado=True), _celda_pdf("Área de gestión responsable", encabezado=True)]]
+        datos_top = [["Tema afectado", "Puntaje", "Área de gestión responsable"]]
         for b in top_brechas:
-            datos_top.append([_celda_pdf(b.nombre_indice), _celda_pdf(str(b.puntaje)), _celda_pdf(b.politica)])
+            datos_top.append([b.nombre_indice, str(b.puntaje), b.politica])
         tabla_top = Table(datos_top, hAlign="LEFT", colWidths=[8 * cm, 2.5 * cm, 6.5 * cm])
         estilo_tabla_top = [
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ]

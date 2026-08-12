@@ -68,6 +68,8 @@ from backend.motores.generador_informe import (
     _agregar_glosario_pdf,
     _agregar_normativa_politicas_docx,
     _agregar_normativa_politicas_pdf,
+    _agregar_texto_markdown_docx,
+    _texto_markdown_a_pdf_flowables,
 )
 
 
@@ -1178,9 +1180,7 @@ def generar_estudio_de_caso_docx(
         "de partida metodológico para la discusión académica, no un dictamen "
         "definitivo (ver nota de uso responsable de IA al final)."
     )
-    for parrafo in analisis_ia_texto.split("\n"):
-        if parrafo.strip():
-            doc.add_paragraph(parrafo)
+    _agregar_texto_markdown_docx(doc, analisis_ia_texto)
 
     doc.add_page_break()
 
@@ -1597,11 +1597,7 @@ def generar_estudio_de_caso_pdf(
         "metodológico, no dictamen definitivo.", estilo_cursiva,
     ))
     elementos.append(Spacer(1, 6))
-    for parrafo in analisis_ia_texto.split("\n"):
-        if parrafo.strip():
-            texto_escapado = parrafo.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            elementos.append(Paragraph(texto_escapado, estilo_normal))
-            elementos.append(Spacer(1, 4))
+    elementos.extend(_texto_markdown_a_pdf_flowables(analisis_ia_texto, estilo_normal, estilo_h2))
     elementos.append(PageBreak())
 
     elementos.extend(_divisor_seccion_pdf("5. " + FUNDAMENTO_JURIDICO_AMPLIADO_TITULO, icono="⚖️"))
