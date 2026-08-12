@@ -31,6 +31,10 @@ from backend.base_conocimiento.subregiones_choco import (
     subregion_de as _subregion_de_choco,
     todas_las_subregiones as _todas_las_subregiones_choco,
 )
+from backend.base_conocimiento.subregiones_santander import (
+    subregion_de as _subregion_de_santander,
+    todas_las_subregiones as _todas_las_subregiones_santander,
+)
 
 # Registro de departamentos con subregionalización disponible en el sistema.
 # Para agregar un nuevo departamento: crear backend/base_conocimiento/
@@ -50,6 +54,10 @@ REGISTRO_SUBREGIONES_POR_DEPARTAMENTO = {
     "CHOCÓ": {
         "subregion_de": _subregion_de_choco,
         "todas_las_subregiones": _todas_las_subregiones_choco,
+    },
+    "SANTANDER": {
+        "subregion_de": _subregion_de_santander,
+        "todas_las_subregiones": _todas_las_subregiones_santander,
     },
 }
 
