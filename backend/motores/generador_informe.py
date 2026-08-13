@@ -3234,6 +3234,13 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         run_nota_isvpt.italic = True
         run_nota_isvpt.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
+        if resultado_isvpt.nota_valor_extremo:
+            p_nota_extremo = doc.add_paragraph()
+            p_nota_extremo.paragraph_format.space_before = Pt(6)
+            run_nota_extremo = p_nota_extremo.add_run(resultado_isvpt.nota_valor_extremo)
+            run_nota_extremo.bold = True
+            run_nota_extremo.font.color.rgb = RGBColor(0xC0, 0x50, 0x00)
+
     doc.add_page_break()
 
     # Análisis integral IA
@@ -3605,6 +3612,15 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
             elementos.append(Spacer(1, 8))
 
         elementos.append(Paragraph(resultado_isvpt.nota_metodologica, estilo_cursiva))
+
+        if resultado_isvpt.nota_valor_extremo:
+            estilo_nota_extremo = ParagraphStyle(
+                "NotaExtremoISVPT", parent=estilo_normal,
+                textColor=colors.HexColor("#C05000"), fontName="Helvetica-Bold",
+                spaceBefore=6,
+            )
+            elementos.append(Paragraph(resultado_isvpt.nota_valor_extremo, estilo_nota_extremo))
+
         elementos.append(PageBreak())
 
     # Análisis integral IA
