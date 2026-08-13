@@ -1093,6 +1093,19 @@ def generar_estudio_de_caso_docx(
                 fila[0].text = dim
                 fila[1].text = str(valor)
 
+        doc.add_paragraph()
+        p_nota_isvpt_ec = doc.add_paragraph()
+        run_nota_isvpt_ec = p_nota_isvpt_ec.add_run(resultado_isvpt.nota_metodologica)
+        run_nota_isvpt_ec.italic = True
+        run_nota_isvpt_ec.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
+
+        if resultado_isvpt.nota_valor_extremo:
+            p_nota_extremo_ec = doc.add_paragraph()
+            p_nota_extremo_ec.paragraph_format.space_before = Pt(6)
+            run_nota_extremo_ec = p_nota_extremo_ec.add_run(resultado_isvpt.nota_valor_extremo)
+            run_nota_extremo_ec.bold = True
+            run_nota_extremo_ec.font.color.rgb = RGBColor(0xC0, 0x50, 0x00)
+
     # 2.1bis Estado del Arte Inicial: ecosistema de mediciones abiertas
     doc.add_page_break()
     doc.add_heading(ESTADO_DEL_ARTE_TITULO, level=2)
@@ -1535,6 +1548,17 @@ def generar_estudio_de_caso_pdf(
             ]))
             elementos.append(tabla_isvpt_ec)
         elementos.append(Spacer(1, 8))
+
+        elementos.append(Paragraph(resultado_isvpt.nota_metodologica, estilo_cursiva))
+
+        if resultado_isvpt.nota_valor_extremo:
+            estilo_nota_extremo_ec = ParagraphStyle(
+                "NotaExtremoISVPT_EC", parent=estilo_normal,
+                textColor=colors.HexColor("#C05000"), fontName="Helvetica-Bold",
+                spaceBefore=6,
+            )
+            elementos.append(Paragraph(resultado_isvpt.nota_valor_extremo, estilo_nota_extremo_ec))
+            elementos.append(Spacer(1, 6))
 
     elementos.append(PageBreak())
     elementos.append(Paragraph(ESTADO_DEL_ARTE_TITULO, estilo_h2))
