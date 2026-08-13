@@ -428,11 +428,20 @@ with tab_real:
                     texto_recos += "\n".join(lista) + "\n"
             # Se preservan las claves calculadas "a demanda" (ISVPT, análisis IA
             # y los documentos ya generados) al reconstruir este diccionario en
-            # cada rerun. Si no se preservaran, cada interacción (incluido
+            # cada rerun — pero SOLO si siguen correspondiendo a la MISMA
+            # entidad. Si no se preservaran nunca, cada interacción (incluido
             # hacer clic en cualquier botón de descarga) las borraría, y habría
-            # que volver a generar el análisis con IA (20-40 seg) y los 6
-            # documentos desde cero en cada descarga.
+            # que volver a generar el análisis con IA y los 6 documentos desde
+            # cero en cada descarga. Pero si se preservaran SIEMPRE sin
+            # verificar la entidad, al diagnosticar una entidad nueva se
+            # arrastrarían por error el ISVPT, el análisis IA y los documentos
+            # de la entidad ANTERIOR (bug real detectado: dos entidades
+            # distintas mostrando el mismo ISVPT y el mismo grupo de
+            # comparación, copiados de una a otra). Por eso: solo se preserva
+            # si "nombre" coincide con el de la entidad que se acaba de
+            # diagnosticar; si es una entidad distinta, se parte de cero.
             _anterior = st.session_state.get("ultimo_diagnostico_real", {})
+            _es_misma_entidad = _anterior.get("nombre") == entidad.nombre
             st.session_state.ultimo_diagnostico_real = {
                 "nombre": entidad.nombre,
                 "diag": diag,
@@ -442,10 +451,15 @@ with tab_real:
                 "idi_oficial": idi_oficial,
                 "grupo_par": grupo_par,
                 "tipo_regimen_especial": tipo_regimen_especial_elegido,
-                "isvpt": _anterior.get("isvpt"),
-                "analisis_ia": _anterior.get("analisis_ia"),
-                "docs_generados": _anterior.get("docs_generados"),
+                "isvpt": _anterior.get("isvpt") if _es_misma_entidad else None,
+                "analisis_ia": _anterior.get("analisis_ia") if _es_misma_entidad else None,
+                "docs_generados": _anterior.get("docs_generados") if _es_misma_entidad else None,
             }
+            if not _es_misma_entidad:
+                # Es una entidad distinta a la última diagnosticada en esta
+                # sesión: el Análisis 360 (y su ISVPT) calculado antes
+                # pertenecía a la entidad anterior y ya no aplica aquí.
+                st.session_state.pop("ultimo_analisis_360", None)
 
         if "ultimo_diagnostico_real" in st.session_state:
             st.markdown("---")
