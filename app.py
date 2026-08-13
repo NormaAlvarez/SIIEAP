@@ -270,6 +270,44 @@ with tab_real:
             # "volvía" al formulario inicial al interactuar con el selector
             # de departamento/provincia (o con cualquier otro control de esta
             # sección, incluido "Calcular análisis 360" mismo).
+            # Cálculo automático por defecto del Análisis 360 y el ISVPT,
+            # apenas se genera el diagnóstico — para CUALQUIER entidad, de
+            # cualquier municipio o departamento del país, sin depender de
+            # que alguien haga clic aparte en "Calcular análisis 360" (si no
+            # se hacía ese clic, el informe salía sin sección de ISVPT).
+            # Se usa como comparación por defecto el mismo Departamento y el
+            # mismo "Grupo par" oficial de Función Pública de la propia
+            # entidad — un campo que Función Pública ya asigna a TODAS las
+            # entidades del país (alcaldías, gobernaciones, etc.), por lo que
+            # este filtro por defecto funciona sin importar el departamento,
+            # tenga o no subregiones registradas en el sistema. Si el
+            # usuario quiere un grupo de comparación distinto (otra
+            # subregión, sin filtro de grupo par, etc.), puede seguir
+            # ajustándolo y recalculando manualmente más abajo — eso
+            # simplemente sobrescribe este valor por defecto.
+            resultado_360_auto = None
+            resultado_isvpt_auto = None
+            try:
+                _fila_geo = df[df["Entidad"].astype(str).str.strip() == entidad_elegida.strip()]
+                _departamento_entidad = (
+                    str(_fila_geo.iloc[0].get("Departamento", "")).strip() if len(_fila_geo) else ""
+                ) or None
+                if _departamento_entidad and grupo_par:
+                    resultado_360_auto = analizar_360(
+                        df, departamento=_departamento_entidad, grupo_par_contiene=grupo_par,
+                        entidad_referencia=entidad_elegida,
+                    )
+                    df_grupo_auto, _ = filtrar_grupo(
+                        df, departamento=_departamento_entidad, grupo_par_contiene=grupo_par,
+                    )
+                    resultado_isvpt_auto = calcular_isvpt(df_grupo_auto, entidad_referencia=entidad_elegida)
+            except Exception:
+                # El cálculo automático es un "mejor esfuerzo": si falla por
+                # cualquier razón (columna faltante, etc.), simplemente no se
+                # rellena por defecto y el usuario puede calcularlo manualmente
+                # más abajo — nunca debe romper la generación del diagnóstico.
+                pass
+
             st.session_state["resultado_real_actual"] = {
                 "entidad": entidad,
                 "idi_oficial": idi_oficial,
@@ -279,7 +317,11 @@ with tab_real:
                 "total_recos_entidad": total_recos_entidad,
                 "etiqueta_regimen_elegida": etiqueta_regimen_elegida,
                 "tipo_regimen_especial_elegido": tipo_regimen_especial_elegido,
+                "resultado_360_auto": resultado_360_auto,
+                "resultado_isvpt_auto": resultado_isvpt_auto,
             }
+            if resultado_360_auto is not None:
+                st.session_state.ultimo_analisis_360 = resultado_360_auto
 
         if "resultado_real_actual" in st.session_state:
             _r = st.session_state["resultado_real_actual"]
@@ -291,6 +333,8 @@ with tab_real:
             total_recos_entidad = _r["total_recos_entidad"]
             etiqueta_regimen_elegida = _r["etiqueta_regimen_elegida"]
             tipo_regimen_especial_elegido = _r["tipo_regimen_especial_elegido"]
+            resultado_360_auto = _r.get("resultado_360_auto")
+            resultado_isvpt_auto = _r.get("resultado_isvpt_auto")
 
             st.subheader(entidad.nombre)
             if not entidad.aplica_mipg_integral():
@@ -316,6 +360,15 @@ with tab_real:
                 "subregión del departamento (disponible para Antioquia, Chocó y Santander). No inventa "
                 "cifras: todo sale de las columnas reales del archivo cargado arriba."
             )
+            if resultado_isvpt_auto is not None and resultado_isvpt_auto.isvpt_entidad_referencia is not None:
+                st.caption(
+                    f"✅ Ya se calculó automáticamente un grupo de comparación por defecto "
+                    f"(Departamento + Grupo par oficial '{grupo_par}', {resultado_isvpt_auto.n_entidades} "
+                    "entidades) y su ISVPT — visible más abajo, junto al diagnóstico, y ya incluido en "
+                    "los informes descargables. Si prefiere otro grupo de comparación (p. ej. una "
+                    "subregión específica), ajústelo aquí abajo y haga clic en 'Calcular análisis 360' "
+                    "para reemplazarlo."
+                )
             col_360_a, col_360_b, col_360_c = st.columns(3)
             opciones_departamento = ["ANTIOQUIA", "CHOCÓ", "SANTANDER", "Otro (escribir abajo)"]
             departamento_elegido = col_360_a.selectbox(
@@ -442,6 +495,14 @@ with tab_real:
             # diagnosticar; si es una entidad distinta, se parte de cero.
             _anterior = st.session_state.get("ultimo_diagnostico_real", {})
             _es_misma_entidad = _anterior.get("nombre") == entidad.nombre
+            # Si es una entidad nueva, se parte del ISVPT calculado
+            # automáticamente por defecto (arriba, con Departamento + Grupo
+            # par de la propia entidad) — así el informe SIEMPRE trae una
+            # sección de ISVPT, sin depender de un clic manual aparte. Si el
+            # usuario ya había calculado uno manualmente para esta MISMA
+            # entidad (con un filtro más específico, como subregión), ese se
+            # respeta y no se pisa con el automático.
+            _isvpt_por_defecto = _anterior.get("isvpt") if _es_misma_entidad else resultado_isvpt_auto
             st.session_state.ultimo_diagnostico_real = {
                 "nombre": entidad.nombre,
                 "diag": diag,
@@ -451,14 +512,16 @@ with tab_real:
                 "idi_oficial": idi_oficial,
                 "grupo_par": grupo_par,
                 "tipo_regimen_especial": tipo_regimen_especial_elegido,
-                "isvpt": _anterior.get("isvpt") if _es_misma_entidad else None,
+                "isvpt": _isvpt_por_defecto,
                 "analisis_ia": _anterior.get("analisis_ia") if _es_misma_entidad else None,
                 "docs_generados": _anterior.get("docs_generados") if _es_misma_entidad else None,
             }
-            if not _es_misma_entidad:
+            if not _es_misma_entidad and resultado_360_auto is None:
                 # Es una entidad distinta a la última diagnosticada en esta
-                # sesión: el Análisis 360 (y su ISVPT) calculado antes
-                # pertenecía a la entidad anterior y ya no aplica aquí.
+                # sesión, y no se pudo calcular un Análisis 360 automático
+                # por defecto (p. ej. faltó Departamento o Grupo par): el
+                # Análisis 360 (y su ISVPT) calculado antes pertenecía a la
+                # entidad anterior y ya no aplica aquí.
                 st.session_state.pop("ultimo_analisis_360", None)
 
         if "ultimo_diagnostico_real" in st.session_state:
