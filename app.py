@@ -457,10 +457,25 @@ with tab_real:
                 "prospectiva orientada a valor público. Se genera SOLO para la entidad ya diagnosticada arriba, "
                 "una vez por clic — no se ejecuta en bloque para otras entidades."
             )
+            _n_brechas_ia = len(st.session_state.ultimo_diagnostico_real["diag"].brechas)
+            if _n_brechas_ia <= 10:
+                _mensaje_espera_ia = f"Generando análisis con IA ({_n_brechas_ia} brechas — normalmente 20-40 segundos)..."
+            elif _n_brechas_ia <= 20:
+                _mensaje_espera_ia = (
+                    f"Generando análisis con IA ({_n_brechas_ia} brechas — puede tardar 1-2 minutos, "
+                    "el sistema pide continuar automáticamente si la respuesta se corta, para no "
+                    "entregar el análisis incompleto). No cierre ni recargue la página."
+                )
+            else:
+                _mensaje_espera_ia = (
+                    f"Generando análisis con IA ({_n_brechas_ia} brechas — puede tardar 3-5 minutos, "
+                    "ya que con tantas brechas el sistema necesita varias continuaciones automáticas "
+                    "para desarrollarlas TODAS sin cortar el análisis). No cierre ni recargue la página."
+                )
             if st.button("Generar análisis integral con IA", key="btn_ia"):
                 try:
                     from backend.motores.motor_analisis_ia import generar_analisis_integral
-                    with st.spinner("Generando análisis con IA (puede tardar 20-40 segundos)..."):
+                    with st.spinner(_mensaje_espera_ia):
                         datos = st.session_state.ultimo_diagnostico_real
                         resultado = generar_analisis_integral(
                             datos["nombre"], datos["diag"], datos["texto_recos"]
