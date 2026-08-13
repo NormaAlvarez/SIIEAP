@@ -459,18 +459,18 @@ with tab_real:
             )
             _n_brechas_ia = len(st.session_state.ultimo_diagnostico_real["diag"].brechas)
             if _n_brechas_ia <= 10:
-                _mensaje_espera_ia = f"Generando análisis con IA ({_n_brechas_ia} brechas — normalmente 20-40 segundos)..."
+                _mensaje_espera_ia = f"Generando análisis con IA ({_n_brechas_ia} brechas — normalmente 1-2 minutos)..."
             elif _n_brechas_ia <= 20:
                 _mensaje_espera_ia = (
-                    f"Generando análisis con IA ({_n_brechas_ia} brechas — puede tardar 1-2 minutos, "
-                    "el sistema pide continuar automáticamente si la respuesta se corta, para no "
-                    "entregar el análisis incompleto). No cierre ni recargue la página."
+                    f"Generando análisis con IA ({_n_brechas_ia} brechas — puede tardar 3-6 minutos, "
+                    "ya que hay que desarrollar el ciclo completo de riesgo para cada brecha). "
+                    "No cierre ni recargue la página."
                 )
             else:
                 _mensaje_espera_ia = (
-                    f"Generando análisis con IA ({_n_brechas_ia} brechas — puede tardar 3-5 minutos, "
-                    "ya que con tantas brechas el sistema necesita varias continuaciones automáticas "
-                    "para desarrollarlas TODAS sin cortar el análisis). No cierre ni recargue la página."
+                    f"Generando análisis con IA ({_n_brechas_ia} brechas — puede tardar 6-10 minutos, "
+                    "ya que con tantas brechas el texto a generar es largo y la generación tiene un "
+                    "ritmo fijo, sin importar cuántas llamadas se necesiten). No cierre ni recargue la página."
                 )
             if st.button("Generar análisis integral con IA", key="btn_ia"):
                 try:
