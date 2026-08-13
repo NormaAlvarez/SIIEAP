@@ -40,17 +40,24 @@ from anthropic import Anthropic
 
 MODELO = "claude-sonnet-4-6"
 
-# Tokens de salida por cada llamada individual a la API. No es el límite
-# total del análisis: si la respuesta se corta por este límite, se seguirá
-# pidiendo continuación (ver MAX_CONTINUACIONES) hasta completar el texto.
-MAX_TOKENS_POR_LLAMADA = 16000
+# Tokens de salida por cada llamada individual a la API. Sonnet 4.6 soporta
+# hasta 64.000 tokens de salida en una sola llamada — se usa un margen de
+# seguridad por debajo de ese tope. Usar un límite alto aquí (en vez de uno
+# bajo con más continuaciones) importa por dos razones: (1) cada llamada de
+# continuación reenvía TODA la conversación anterior como entrada, lo que
+# suma latencia y costo de tokens de entrada en cada ronda; y (2) el tiempo
+# real de generación está determinado por la velocidad de salida del modelo
+# (aprox. 56 tokens/segundo) multiplicada por los tokens que efectivamente
+# hacían falta — dividir esa misma cantidad en más llamadas no la reduce,
+# solo agrega rondas de ida y vuelta innecesarias.
+MAX_TOKENS_POR_LLAMADA = 60000
 
 # Tope de seguridad de continuaciones encadenadas, para evitar un bucle
 # indefinido (y un costo/tiempo de espera indefinidos) si algo saliera mal.
-# Con este tope, el análisis puede llegar hasta MAX_TOKENS_POR_LLAMADA *
-# (MAX_CONTINUACIONES + 1) tokens de salida en total — suficiente incluso
-# para entidades con 30-40+ brechas detectadas.
-MAX_CONTINUACIONES = 6
+# Con MAX_TOKENS_POR_LLAMADA ya alto, la gran mayoría de entidades —incluso
+# con 30+ brechas— deberían terminar en una sola llamada; este tope cubre
+# el caso extremo de una entidad con un número de brechas fuera de lo común.
+MAX_CONTINUACIONES = 2
 
 PLANTILLA_SISTEMA = """Eres un analista experto en Administración Pública colombiana y en \
 gestión integral del riesgo bajo el marco de Función Pública (MIPG, Guía para la Gestión \
@@ -252,12 +259,23 @@ def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_k
     fragmentos = []
 
     for _intento in range(MAX_CONTINUACIONES + 1):
-        respuesta = cliente.messages.create(
+        # Se usa client.messages.stream(...) en vez de .create(...) porque,
+        # con MAX_TOKENS_POR_LLAMADA tan alto, una generación que realmente
+        # use varios miles de tokens puede tardar varios minutos — y la API
+        # de Anthropic EXIGE streaming para operaciones que puedan superar
+        # los 10 minutos (si no, rechaza la solicitud con el error
+        # "Streaming is required for operations that may take longer than
+        # 10 minutes"). stream.get_final_message() espera a que termine el
+        # streaming y devuelve el mismo objeto Message que .create(),
+        # así que el resto de la lógica de abajo no cambia.
+        with cliente.messages.stream(
             model=MODELO,
             max_tokens=MAX_TOKENS_POR_LLAMADA,
             system=PLANTILLA_SISTEMA,
             messages=mensajes,
-        )
+        ) as stream:
+            respuesta = stream.get_final_message()
+
         fragmento = "".join(bloque.text for bloque in respuesta.content if hasattr(bloque, "text"))
         fragmentos.append(fragmento)
 
