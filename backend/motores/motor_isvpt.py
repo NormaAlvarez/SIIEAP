@@ -57,6 +57,68 @@ class ResultadoISVPT:
     posicion_entidad_referencia: int | None  # 1 = el mejor del grupo
     nota_metodologica: str = field(default=NOTA_METODOLOGICA_ISVPT)
 
+    @property
+    def nota_valor_extremo(self) -> str | None:
+        """Aclaración específica para cuando el ISVPT (o alguno de sus
+        subíndices) sale en 0.0 o 1.0 exactos — el caso que más se presta a
+        malinterpretarse como "la entidad no tiene nada bien" o "la entidad
+        no tiene nada mal", cuando en realidad solo describe su posición
+        DENTRO del grupo de comparación elegido. Devuelve None si el valor
+        no es extremo (no hace falta la aclaración) o si no hay datos.
+
+        Se calcula aquí, una sola vez, para que los tres informes (Técnico,
+        Estudio de Caso, Ejecutivo) puedan mostrar exactamente la misma
+        explicación en vez de tener el texto repetido y potencialmente
+        desincronizado en cada motor de generación de documentos.
+        """
+        if self.isvpt_entidad_referencia is None or not self.subindices_por_dimension_entidad:
+            return None
+
+        dimensiones_en_minimo = [d for d, v in self.subindices_por_dimension_entidad.items() if v == 0.0]
+        dimensiones_en_maximo = [d for d, v in self.subindices_por_dimension_entidad.items() if v == 1.0]
+
+        if self.isvpt_entidad_referencia == 0.0:
+            return (
+                f"⚠️ Este 0.0 NO significa que la entidad no tenga nada bien — significa que, "
+                f"de las {self.n_entidades} entidades de ESTE grupo de comparación específico, "
+                f"esta entidad tuvo el puntaje más bajo en {'todas las dimensiones evaluadas' if len(dimensiones_en_minimo) == len(self.subindices_por_dimension_entidad) else 'las dimensiones señaladas'} "
+                "(el mínimo de cada dimensión siempre se normaliza a 0.0, sin importar qué tan alto o "
+                "bajo sea ese puntaje en términos absolutos). Es una posición RELATIVA a un grupo "
+                "concreto, casi siempre compuesto por entidades con desempeño destacado — no una "
+                "calificación de que la gestión de la entidad esté en cero. Consulte el IDI oficial "
+                "(cifra absoluta, no relativa) para la magnitud real del desempeño, y considere repetir "
+                "este ejercicio con un grupo de comparación más amplio si busca una lectura menos extrema."
+            )
+        if self.isvpt_entidad_referencia == 1.0:
+            return (
+                f"✔️ Este 1.0 significa que, de las {self.n_entidades} entidades de ESTE grupo de "
+                "comparación específico, esta entidad tuvo el puntaje más alto — no que su gestión "
+                "sea perfecta en términos absolutos (el máximo de cada dimensión siempre se normaliza "
+                "a 1.0). Es una posición RELATIVA a ese grupo puntual: un grupo de comparación más "
+                "exigente podría arrojar un resultado distinto. Consulte el IDI oficial (cifra "
+                "absoluta) para la magnitud real del desempeño."
+            )
+        if dimensiones_en_minimo or dimensiones_en_maximo:
+            partes = []
+            if dimensiones_en_minimo:
+                partes.append(
+                    f"el puntaje más bajo del grupo en {len(dimensiones_en_minimo)} de "
+                    f"{len(self.subindices_por_dimension_entidad)} dimensiones ({', '.join(dimensiones_en_minimo)})"
+                )
+            if dimensiones_en_maximo:
+                partes.append(
+                    f"el puntaje más alto del grupo en {len(dimensiones_en_maximo)} de "
+                    f"{len(self.subindices_por_dimension_entidad)} dimensiones ({', '.join(dimensiones_en_maximo)})"
+                )
+            return (
+                "⚠️ Nota sobre los subíndices en 0.0 y/o 1.0 de la tabla anterior: la entidad tuvo "
+                + " y ".join(partes)
+                + f" DENTRO de su grupo de comparación específico ({self.n_entidades} entidades) — no "
+                "un puntaje absoluto de cero o perfecto. El mínimo y el máximo del grupo siempre se "
+                "normalizan a 0.0 y 1.0 respectivamente, sin importar la magnitud real del puntaje."
+            )
+        return None
+
 
 def _normalizar_minmax(serie: pd.Series) -> pd.Series:
     """Normaliza una serie entre 0 y 1. Si no hay variación (max == min),
