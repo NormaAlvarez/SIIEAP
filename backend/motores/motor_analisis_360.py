@@ -19,6 +19,7 @@ No inventa ninguna cifra: todo sale de las columnas reales del archivo.
 """
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 
 import pandas as pd
@@ -125,6 +126,15 @@ def cargar_resultados(ruta_o_archivo, nombre_hoja: str) -> pd.DataFrame:
     return df
 
 
+def _normalizar_texto_libre(texto: str) -> str:
+    """Quita tildes/mayúsculas para comparar texto libre sin que un acento
+    faltante (p.ej. escribir 'ALCALDIA' en vez de 'ALCALDÍA' al filtrar por
+    Grupo par) haga que el filtro no encuentre ninguna entidad en silencio."""
+    texto = str(texto).strip().upper()
+    texto = unicodedata.normalize("NFKD", texto)
+    return "".join(c for c in texto if not unicodedata.combining(c))
+
+
 def filtrar_grupo(
     df: pd.DataFrame,
     departamento: str | None = None,
@@ -141,7 +151,9 @@ def filtrar_grupo(
     partes_filtro = []
 
     if departamento:
-        filtrado = filtrado[filtrado["Departamento"].astype(str).str.upper() == departamento.upper()]
+        filtrado = filtrado[
+            filtrado["Departamento"].astype(str).map(_normalizar_texto_libre) == _normalizar_texto_libre(departamento)
+        ]
         partes_filtro.append(f"Departamento={departamento}")
 
     if subregion:
@@ -152,7 +164,9 @@ def filtrar_grupo(
 
     if grupo_par_contiene:
         filtrado = filtrado[
-            filtrado["Grupo par"].astype(str).str.upper().str.contains(grupo_par_contiene.upper(), na=False)
+            filtrado["Grupo par"].astype(str).map(_normalizar_texto_libre).str.contains(
+                _normalizar_texto_libre(grupo_par_contiene), na=False
+            )
         ]
         partes_filtro.append(f"Grupo par contiene '{grupo_par_contiene}'")
 
