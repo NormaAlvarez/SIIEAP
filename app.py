@@ -426,10 +426,13 @@ with tab_real:
             if cruce:
                 for lista in cruce.values():
                     texto_recos += "\n".join(lista) + "\n"
-            # Se preserva el ISVPT ya calculado (si lo hay) al reconstruir este
-            # diccionario en cada rerun, para que no se pierda justo después
-            # de calcularlo con el botón "Calcular análisis 360" de arriba.
-            _isvpt_previo = st.session_state.get("ultimo_diagnostico_real", {}).get("isvpt")
+            # Se preservan las claves calculadas "a demanda" (ISVPT, análisis IA
+            # y los documentos ya generados) al reconstruir este diccionario en
+            # cada rerun. Si no se preservaran, cada interacción (incluido
+            # hacer clic en cualquier botón de descarga) las borraría, y habría
+            # que volver a generar el análisis con IA (20-40 seg) y los 6
+            # documentos desde cero en cada descarga.
+            _anterior = st.session_state.get("ultimo_diagnostico_real", {})
             st.session_state.ultimo_diagnostico_real = {
                 "nombre": entidad.nombre,
                 "diag": diag,
@@ -439,7 +442,9 @@ with tab_real:
                 "idi_oficial": idi_oficial,
                 "grupo_par": grupo_par,
                 "tipo_regimen_especial": tipo_regimen_especial_elegido,
-                "isvpt": _isvpt_previo,
+                "isvpt": _anterior.get("isvpt"),
+                "analisis_ia": _anterior.get("analisis_ia"),
+                "docs_generados": _anterior.get("docs_generados"),
             }
 
         if "ultimo_diagnostico_real" in st.session_state:
@@ -470,6 +475,33 @@ with tab_real:
                     )
 
             if st.session_state.ultimo_diagnostico_real.get("analisis_ia"):
+                datos_informe = st.session_state.ultimo_diagnostico_real
+
+                # Los 6 documentos (docx+pdf de los 3 informes) son costosos de
+                # generar (tablas, gráficas). Antes se regeneraban en CADA
+                # rerun de Streamlit —incluido cada clic en un botón de
+                # descarga— porque st.download_button necesita los bytes ya
+                # calculados para poder dibujarse. Aquí se cachean y solo se
+                # regeneran cuando cambia algo real (nuevo análisis IA, nuevo
+                # cálculo de Análisis 360/ISVPT); de lo contrario se reusan
+                # los bytes ya generados, sin recalcular nada.
+                _firma_actual = (
+                    id(datos_informe.get("analisis_ia")),
+                    id(st.session_state.get("ultimo_analisis_360")),
+                    id(datos_informe.get("isvpt")),
+                )
+                _cache = datos_informe.get("docs_generados")
+                if _cache and _cache.get("firma") == _firma_actual:
+                    _docs = _cache["bytes"]
+                else:
+                    _docs = {}
+
+                def _generar_si_falta(clave, funcion):
+                    """Genera (y cachea) el documento solo si no está ya en _docs."""
+                    if clave not in _docs:
+                        _docs[clave] = funcion().getvalue()
+                    return _docs[clave]
+
                 st.markdown("---")
                 st.markdown("### 📄 Informe técnico descargable")
                 st.caption(
@@ -478,12 +510,11 @@ with tab_real:
                     "el análisis integral con IA ya generado arriba, en un solo archivo "
                     "descargable para entregar como evidencia de ejecución del sistema."
                 )
-                datos_informe = st.session_state.ultimo_diagnostico_real
                 col_docx, col_pdf = st.columns(2)
                 try:
                     from backend.motores.generador_informe import generar_reporte_docx, generar_reporte_pdf
 
-                    docx_buffer = generar_reporte_docx(
+                    docx_bytes = _generar_si_falta("docx_tecnico", lambda: generar_reporte_docx(
                         datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"],
                         resultado_isvpt=datos_informe.get("isvpt"),
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
@@ -491,16 +522,16 @@ with tab_real:
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
                         tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
-                    )
+                    ))
                     col_docx.download_button(
                         "⬇️ Descargar informe en Word (.docx)",
-                        data=docx_buffer,
+                        data=docx_bytes,
                         file_name=f"informe_{datos_informe['nombre'].replace(' ', '_')}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         key="descarga_docx",
                     )
 
-                    pdf_buffer = generar_reporte_pdf(
+                    pdf_bytes = _generar_si_falta("pdf_tecnico", lambda: generar_reporte_pdf(
                         datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"],
                         resultado_isvpt=datos_informe.get("isvpt"),
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
@@ -508,10 +539,10 @@ with tab_real:
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
                         tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
-                    )
+                    ))
                     col_pdf.download_button(
                         "⬇️ Descargar informe en PDF",
-                        data=pdf_buffer,
+                        data=pdf_bytes,
                         file_name=f"informe_{datos_informe['nombre'].replace(' ', '_')}.pdf",
                         mime="application/pdf",
                         key="descarga_pdf",
@@ -531,7 +562,7 @@ with tab_real:
                 )
                 col_ec_docx, col_ec_pdf = st.columns(2)
                 try:
-                    docx_buffer_ec = generar_estudio_de_caso_docx(
+                    docx_bytes_ec = _generar_si_falta("docx_estudio_caso", lambda: generar_estudio_de_caso_docx(
                         datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"],
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
@@ -539,16 +570,16 @@ with tab_real:
                         idi_oficial=datos_informe.get("idi_oficial"),
                         departamento=st.session_state.get("departamento_360_actual"),
                         tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
-                    )
+                    ))
                     col_ec_docx.download_button(
                         "⬇️ Descargar Estudio de Caso (.docx)",
-                        data=docx_buffer_ec,
+                        data=docx_bytes_ec,
                         file_name=f"estudio_de_caso_{datos_informe['nombre'].replace(' ', '_')}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         key="descarga_ec_docx",
                     )
 
-                    pdf_buffer_ec = generar_estudio_de_caso_pdf(
+                    pdf_bytes_ec = _generar_si_falta("pdf_estudio_caso", lambda: generar_estudio_de_caso_pdf(
                         datos_informe["nombre"], datos_informe["diag"], datos_informe["analisis_ia"],
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
@@ -556,10 +587,10 @@ with tab_real:
                         idi_oficial=datos_informe.get("idi_oficial"),
                         departamento=st.session_state.get("departamento_360_actual"),
                         tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
-                    )
+                    ))
                     col_ec_pdf.download_button(
                         "⬇️ Descargar Estudio de Caso (PDF)",
-                        data=pdf_buffer_ec,
+                        data=pdf_bytes_ec,
                         file_name=f"estudio_de_caso_{datos_informe['nombre'].replace(' ', '_')}.pdf",
                         mime="application/pdf",
                         key="descarga_ec_pdf",
@@ -585,7 +616,7 @@ with tab_real:
                 )
                 col_alc_docx, col_alc_pdf = st.columns(2)
                 try:
-                    docx_buffer_alc = generar_informe_alcaldes_docx(
+                    docx_bytes_alc = _generar_si_falta("docx_ejecutivo", lambda: generar_informe_alcaldes_docx(
                         datos_informe["nombre"], datos_informe["diag"],
                         resultado_isvpt=datos_informe.get("isvpt"),
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
@@ -593,16 +624,16 @@ with tab_real:
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
                         tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
-                    )
+                    ))
                     col_alc_docx.download_button(
                         "⬇️ Descargar Informe Ejecutivo (.docx)",
-                        data=docx_buffer_alc,
+                        data=docx_bytes_alc,
                         file_name=f"informe_ejecutivo_{datos_informe['nombre'].replace(' ', '_')}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         key="descarga_alc_docx",
                     )
 
-                    pdf_buffer_alc = generar_informe_alcaldes_pdf(
+                    pdf_bytes_alc = _generar_si_falta("pdf_ejecutivo", lambda: generar_informe_alcaldes_pdf(
                         datos_informe["nombre"], datos_informe["diag"],
                         resultado_isvpt=datos_informe.get("isvpt"),
                         resultado_360=st.session_state.get("ultimo_analisis_360"),
@@ -610,16 +641,21 @@ with tab_real:
                         cruce_recomendaciones=datos_informe.get("cruce"),
                         total_recomendaciones_entidad=datos_informe.get("total_recos_entidad"),
                         tipo_regimen_especial=datos_informe.get("tipo_regimen_especial"),
-                    )
+                    ))
                     col_alc_pdf.download_button(
                         "⬇️ Descargar Informe Ejecutivo (PDF)",
-                        data=pdf_buffer_alc,
+                        data=pdf_bytes_alc,
                         file_name=f"informe_ejecutivo_{datos_informe['nombre'].replace(' ', '_')}.pdf",
                         mime="application/pdf",
                         key="descarga_alc_pdf",
                     )
                 except Exception as e:
                     st.error(f"No se pudo generar el Informe Ejecutivo: {e}")
+
+                # Se guarda el caché de los 6 documentos junto con la "firma"
+                # que describe con qué datos se generaron, para reusarlos sin
+                # recalcular mientras nada relevante cambie.
+                datos_informe["docs_generados"] = {"firma": _firma_actual, "bytes": _docs}
     else:
         st.info("Suba un archivo para habilitar el selector de entidades.")
 
