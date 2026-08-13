@@ -20,6 +20,17 @@ explícito que es una interpretación de IA a partir de datos secundarios
 con la información real y el contexto interno/externo de su entidad.
 
 Requiere una variable de entorno o st.secrets con ANTHROPIC_API_KEY.
+
+Nota de trazabilidad (corrección): el prompt exige desarrollar TODAS las
+brechas detectadas, sin recortar, en varias secciones (técnica, jurídica,
+financiera, riesgo). Para entidades con muchas brechas (20-30+), ese
+desarrollo completo no cabe en una sola respuesta del modelo, sin importar
+qué tan alto se ponga max_tokens — el límite siempre se puede volver a
+alcanzar con una entidad todavía más grande. Por eso, en vez de solo subir
+el límite, `generar_analisis_integral` ahora detecta cuándo la respuesta
+se cortó por límite de tokens (`stop_reason == "max_tokens"`) y le pide al
+modelo que continúe exactamente donde quedó, encadenando fragmentos hasta
+completar el análisis (o hasta un tope de seguridad de continuaciones).
 """
 from __future__ import annotations
 
@@ -28,6 +39,18 @@ import os
 from anthropic import Anthropic
 
 MODELO = "claude-sonnet-4-6"
+
+# Tokens de salida por cada llamada individual a la API. No es el límite
+# total del análisis: si la respuesta se corta por este límite, se seguirá
+# pidiendo continuación (ver MAX_CONTINUACIONES) hasta completar el texto.
+MAX_TOKENS_POR_LLAMADA = 16000
+
+# Tope de seguridad de continuaciones encadenadas, para evitar un bucle
+# indefinido (y un costo/tiempo de espera indefinidos) si algo saliera mal.
+# Con este tope, el análisis puede llegar hasta MAX_TOKENS_POR_LLAMADA *
+# (MAX_CONTINUACIONES + 1) tokens de salida en total — suficiente incluso
+# para entidades con 30-40+ brechas detectadas.
+MAX_CONTINUACIONES = 6
 
 PLANTILLA_SISTEMA = """Eres un analista experto en Administración Pública colombiana y en \
 gestión integral del riesgo bajo el marco de Función Pública (MIPG, Guía para la Gestión \
@@ -167,6 +190,16 @@ Mejoramiento Prospectivo por fases orientado a valor público (literal 7), (8) P
 orientada a valor público (cierre breve, distinto del plan de mejoramiento, con visión de \
 futuro deseable para la entidad)."""
 
+_INSTRUCCION_CONTINUAR = (
+    "Tu respuesta anterior se cortó por límite de longitud, a mitad del texto. "
+    "Continúa EXACTAMENTE donde quedaste, palabra por palabra, sin repetir nada de lo "
+    "ya escrito, sin reiniciar ninguna sección desde el principio, sin agregar saludos, "
+    "introducciones ni resúmenes de lo anterior. Retoma la frase u oración exactamente en "
+    "el punto donde se cortó y sigue desarrollando el resto de las brechas, políticas y "
+    "secciones que aún faltan, con el mismo nivel de detalle y siguiendo todas las reglas "
+    "del mensaje de sistema original."
+)
+
 
 def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto):
     lineas = [f"# Diagnóstico real de: {nombre_entidad}", ""]
@@ -194,10 +227,16 @@ def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto):
 
 def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_key=None):
     """
-    Llama a la API de Claude UNA vez, para ESTA entidad. No se debe invocar
-    en bucle sobre muchas entidades sin que el usuario lo pida explícitamente
-    para cada una (evita costos inesperados y mantiene el principio de
-    'análisis a demanda, no por bloques').
+    Llama a la API de Claude para ESTA entidad. No se debe invocar en bucle
+    sobre muchas entidades sin que el usuario lo pida explícitamente para
+    cada una (evita costos inesperados y mantiene el principio de 'análisis
+    a demanda, no por bloques').
+
+    Si la respuesta se corta por límite de tokens antes de cubrir todas las
+    brechas exigidas por el prompt (algo esperable en entidades con muchas
+    brechas: 20, 30 o más), se piden automáticamente continuaciones
+    encadenadas — hasta MAX_CONTINUACIONES veces — para completar el
+    análisis en vez de entregarlo cortado a mitad de una sección.
     """
     api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
@@ -209,10 +248,41 @@ def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_k
     cliente = Anthropic(api_key=api_key)
     mensaje_usuario = construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto)
 
-    respuesta = cliente.messages.create(
-        model=MODELO,
-        max_tokens=16000,
-        system=PLANTILLA_SISTEMA,
-        messages=[{"role": "user", "content": mensaje_usuario}],
-    )
-    return "".join(bloque.text for bloque in respuesta.content if hasattr(bloque, "text"))
+    mensajes = [{"role": "user", "content": mensaje_usuario}]
+    fragmentos = []
+
+    for _intento in range(MAX_CONTINUACIONES + 1):
+        respuesta = cliente.messages.create(
+            model=MODELO,
+            max_tokens=MAX_TOKENS_POR_LLAMADA,
+            system=PLANTILLA_SISTEMA,
+            messages=mensajes,
+        )
+        fragmento = "".join(bloque.text for bloque in respuesta.content if hasattr(bloque, "text"))
+        fragmentos.append(fragmento)
+
+        if respuesta.stop_reason != "max_tokens":
+            # Terminó de forma natural (o por otra razón que no es "se acabó
+            # el espacio"): el análisis está completo.
+            break
+
+        # Se cortó por límite de tokens: se encadena la respuesta parcial
+        # como turno del asistente y se pide que continúe exactamente
+        # donde quedó, en la siguiente vuelta del bucle.
+        mensajes.append({"role": "assistant", "content": fragmento})
+        mensajes.append({"role": "user", "content": _INSTRUCCION_CONTINUAR})
+    else:
+        # Se agotaron las continuaciones permitidas sin que el modelo
+        # terminara por sí solo. Es un caso extremo (entidad con un número
+        # muy grande de brechas); se entrega igualmente todo lo generado
+        # hasta el momento, con un aviso al final para que quede explícito
+        # que puede faltar la cola de la última sección.
+        fragmentos.append(
+            "\n\n> ⚠️ Aviso automático: el análisis alcanzó el límite de "
+            f"{MAX_CONTINUACIONES} continuaciones automáticas antes de "
+            "terminar por sí solo (entidad con un número muy alto de "
+            "brechas). Es posible que la última sección quede incompleta. "
+            "Si es el caso, avise para ampliar el límite de continuaciones."
+        )
+
+    return "".join(fragmentos)
