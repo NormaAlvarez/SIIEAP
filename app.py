@@ -64,6 +64,53 @@ OPCIONES_REGIMEN_ESPECIAL = {
     "Organización Electoral (Registraduría, Consejo Nacional Electoral)": REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
 }
 
+
+def _sugerir_regimen_especial(fila_entidad) -> str | None:
+    """Sugiere (adivina) el régimen especial correcto a partir de columnas
+    reales del Excel oficial de Función Pública — "Tipo Formulario",
+    "Naturaleza Jurídica" y "Clasificación orgánica" —, para preseleccionar
+    el valor correcto en el selector y que no dependa de que alguien se
+    acuerde de elegirlo manualmente (ese olvido es justo lo que hacía que
+    entidades MECI-only, como el Senado, se evaluaran por error con el MIPG
+    íntegro). Nunca es definitivo ni oculta el selector: el usuario siempre
+    puede cambiarlo. Devuelve None si "Tipo Formulario" no es "MECI" (no hace
+    falta régimen especial) o si no hay suficiente certeza sobre cuál
+    categoría específica aplica — en ese caso se deja el valor por defecto y
+    es responsabilidad del usuario revisarlo y elegirlo a mano.
+    """
+    if fila_entidad is None or not len(fila_entidad):
+        return None
+    fila = fila_entidad.iloc[0]
+    tipo_formulario = str(fila.get("Tipo Formulario", "")).strip().upper()
+    if tipo_formulario != "MECI":
+        return None  # Reporta MIPG completo: no hace falta régimen especial.
+
+    naturaleza = str(fila.get("Naturaleza Jurídica", "")).strip().upper()
+    clasificacion = str(fila.get("Clasificación orgánica", "")).strip().upper()
+    nombre_entidad = str(fila.get("Entidad", "")).strip().upper()
+
+    if naturaleza == "ENTE UNIVERSITARIO AUTÓNOMO":
+        return REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA
+    if "CONTRALORÍA" in naturaleza or "CONTRALORIA" in naturaleza:
+        return REGIMEN_ESPECIAL_ORGANO_CONTROL
+    if "PERSONERÍA" in naturaleza or "PERSONERIA" in naturaleza:
+        return REGIMEN_ESPECIAL_PERSONERIA
+    if naturaleza in ("CONCEJO MUNICIPAL", "ASAMBLEA DEPARTAMENTAL"):
+        return REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA
+    if "BANCO DE LA REPÚBLICA" in naturaleza or "BANCO DE LA REPUBLICA" in nombre_entidad:
+        return REGIMEN_ESPECIAL_BANCO_REPUBLICA
+    if "CORPORACION AUTONOMA" in nombre_entidad or "CORPORACIÓN AUTÓNOMA" in nombre_entidad:
+        return REGIMEN_ESPECIAL_CORPORACION_AUTONOMA
+    if clasificacion == "RAMA LEGISLATIVA":
+        return REGIMEN_ESPECIAL_RAMA_LEGISLATIVA
+    if clasificacion == "RAMA JUDICIAL":
+        return REGIMEN_ESPECIAL_RAMA_JUDICIAL
+    if clasificacion == "ORGANIZACIÓN ELECTORAL":
+        return REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL
+    if clasificacion == "ORGANOS DE CONTROL":
+        return REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL
+    return None  # No hay suficiente certeza: se deja para elección manual.
+
 st.set_page_config(page_title="SIIEAP — Diagnóstico IDI-MIPG", layout="wide")
 
 
@@ -233,19 +280,51 @@ with tab_real:
                 type=["xlsx"], key="archivo_recos",
             )
 
+        # Se sugiere (preselecciona) el régimen especial correcto a partir de
+        # columnas reales del Excel oficial ("Tipo Formulario", "Naturaleza
+        # Jurídica", "Clasificación orgánica") — así el usuario no depende de
+        # acordarse de elegirlo manualmente cada vez (ese olvido es lo que
+        # causaba que entidades MECI-only, como el Senado, se evaluaran por
+        # error con el MIPG íntegro). Sigue siendo 100% editable: es solo el
+        # valor con el que arranca el selector para esta entidad puntual.
+        _regimen_sugerido = None
+        if entidad_elegida:
+            _fila_regimen = df[df["Entidad"].astype(str).str.strip() == entidad_elegida.strip()]
+            _regimen_sugerido = _sugerir_regimen_especial(_fila_regimen)
+
+        _etiquetas_regimen = list(OPCIONES_REGIMEN_ESPECIAL.keys())
+        _indice_por_defecto = 0
+        if _regimen_sugerido:
+            for _i, _etq in enumerate(_etiquetas_regimen):
+                if OPCIONES_REGIMEN_ESPECIAL[_etq] == _regimen_sugerido:
+                    _indice_por_defecto = _i
+                    break
+
         etiqueta_regimen_elegida = st.selectbox(
             "Tipo de entidad (régimen especial MIPG/MECI)",
-            list(OPCIONES_REGIMEN_ESPECIAL.keys()),
-            key="tipo_regimen_especial_select",
+            _etiquetas_regimen,
+            index=_indice_por_defecto,
+            # La clave incluye la entidad para que, al cambiar de entidad, el
+            # selector vuelva a partir de la sugerencia recién calculada para
+            # ESA entidad, en vez de arrastrar la última selección manual de
+            # una entidad distinta.
+            key=f"tipo_regimen_especial_select_{entidad_elegida}",
             help=(
                 "Si la entidad NO pertenece a la Rama Ejecutiva (universidades autónomas, "
-                "órganos de control territoriales, Banco de la República, Corporaciones "
-                "Autónomas Regionales), el MIPG no le aplica en su integralidad — solo la "
-                "política de Control Interno (MECI). Selecciónelo aquí para que los 3 "
-                "informes incluyan la nota jurídica correcta (art. 40 Ley 489/1998 y "
-                "Decreto 1499/2017) en vez de leer las demás dimensiones como brechas."
+                "órganos de control, Rama Legislativa/Judicial, Organización Electoral, "
+                "Banco de la República, Corporaciones Autónomas Regionales), el MIPG no le "
+                "aplica en su integralidad — solo la política de Control Interno (MECI). "
+                "El sistema intenta preseleccionar la categoría correcta a partir del "
+                "archivo oficial, pero SIEMPRE verifique que sea la adecuada antes de "
+                "generar el diagnóstico."
             ),
         )
+        if _regimen_sugerido:
+            st.caption(
+                f"ℹ️ Se preseleccionó automáticamente '{_etiquetas_regimen[_indice_por_defecto]}' "
+                "a partir del 'Tipo Formulario' y la 'Naturaleza Jurídica' de esta entidad en "
+                "el archivo oficial. Verifique que sea correcto antes de continuar."
+            )
         tipo_regimen_especial_elegido = OPCIONES_REGIMEN_ESPECIAL[etiqueta_regimen_elegida]
 
         if entidad_elegida and st.button("Generar diagnóstico", type="primary", key="btn_real"):
