@@ -24,6 +24,10 @@ REGIMEN_ESPECIAL_PERSONERIA = "personeria"
 REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA = "concejo_asamblea"
 REGIMEN_ESPECIAL_BANCO_REPUBLICA = "banco_republica"
 REGIMEN_ESPECIAL_CORPORACION_AUTONOMA = "corporacion_autonoma_regional"
+REGIMEN_ESPECIAL_RAMA_LEGISLATIVA = "rama_legislativa"  # Senado, Cámara de Representantes
+REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL = "organo_control_nacional"  # Procuraduría, Contraloría General, Defensoría, Auditoría General
+REGIMEN_ESPECIAL_RAMA_JUDICIAL = "rama_judicial"  # Fiscalía, Consejo Superior de la Judicatura, Medicina Legal
+REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL = "organizacion_electoral"  # Registraduría, Consejo Nacional Electoral
 
 # Categorías que NO están obligadas al MIPG íntegro (solo MECI/Control Interno)
 ENTIDADES_MECI_UNICAMENTE = frozenset({
@@ -33,6 +37,10 @@ ENTIDADES_MECI_UNICAMENTE = frozenset({
     REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA,
     REGIMEN_ESPECIAL_BANCO_REPUBLICA,
     REGIMEN_ESPECIAL_CORPORACION_AUTONOMA,
+    REGIMEN_ESPECIAL_RAMA_LEGISLATIVA,
+    REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL,
+    REGIMEN_ESPECIAL_RAMA_JUDICIAL,
+    REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
 })
 
 
