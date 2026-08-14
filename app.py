@@ -37,6 +37,10 @@ from backend.motores.generador_informe import (
     REGIMEN_ESPECIAL_CORPORACION_AUTONOMA,
     REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA,
     REGIMEN_ESPECIAL_PERSONERIA,
+    REGIMEN_ESPECIAL_RAMA_LEGISLATIVA,
+    REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL,
+    REGIMEN_ESPECIAL_RAMA_JUDICIAL,
+    REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
 )
 from backend.base_conocimiento.subregiones_antioquia import todas_las_subregiones
 
@@ -47,13 +51,17 @@ RUTA_AUTO_RECOMENDACIONES = CARPETA_DATA / "recomendaciones_consolidado.json"
 RUTA_AUTO_RECOMENDACIONES_GZ = CARPETA_DATA / "recomendaciones_consolidado.json.gz"
 
 OPCIONES_REGIMEN_ESPECIAL = {
-    "Rama Ejecutiva — MIPG íntegro aplica (alcaldías, gobernaciones, EICE, ESE...)": REGIMEN_ESPECIAL_NINGUNO,
+    "Rama Ejecutiva — MIPG íntegro aplica (alcaldías, gobernaciones, EICE, ESE, ministerios...)": REGIMEN_ESPECIAL_NINGUNO,
     "Ente universitario autónomo (ej. Universidad de Antioquia)": REGIMEN_ESPECIAL_UNIVERSIDAD_AUTONOMA,
     "Contraloría territorial (departamental/municipal/distrital)": REGIMEN_ESPECIAL_ORGANO_CONTROL,
     "Personería municipal o distrital": REGIMEN_ESPECIAL_PERSONERIA,
     "Concejo municipal o Asamblea departamental": REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA,
     "Banco de la República": REGIMEN_ESPECIAL_BANCO_REPUBLICA,
     "Corporación Autónoma Regional": REGIMEN_ESPECIAL_CORPORACION_AUTONOMA,
+    "Rama Legislativa (Senado, Cámara de Representantes)": REGIMEN_ESPECIAL_RAMA_LEGISLATIVA,
+    "Órgano de control nacional (Procuraduría, Contraloría General, Defensoría, Auditoría General)": REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL,
+    "Rama Judicial (Fiscalía, Consejo Superior de la Judicatura, Medicina Legal)": REGIMEN_ESPECIAL_RAMA_JUDICIAL,
+    "Organización Electoral (Registraduría, Consejo Nacional Electoral)": REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
 }
 
 st.set_page_config(page_title="SIIEAP — Diagnóstico IDI-MIPG", layout="wide")
@@ -292,7 +300,26 @@ with tab_real:
                 _departamento_entidad = (
                     str(_fila_geo.iloc[0].get("Departamento", "")).strip() if len(_fila_geo) else ""
                 ) or None
-                if _departamento_entidad and grupo_par:
+                # Para entidades del nivel NACIONAL (Senado, DAPRE, Ministerios,
+                # Procuraduría, etc.), Función Pública ya asigna un "Grupo par"
+                # que empieza con "NACIÓN" (p. ej. "NACIÓN - MIPG" o "NACIÓN -
+                # MECI") — esa clasificación YA ES el grupo de comparación
+                # completo y correcto a nivel país. Si además se filtrara por
+                # Departamento, se excluirían por error pares legítimos cuya
+                # sede simplemente no está en Bogotá (p. ej. universidades
+                # públicas regionales o Corporaciones Autónomas Regionales,
+                # que también reportan solo MECI) — reduciendo el grupo de
+                # comparación de forma arbitraria y ajena al criterio real de
+                # Función Pública. Por eso, para estas entidades, el filtro
+                # automático usa SOLO el Grupo par, sin Departamento.
+                _es_entidad_nacional = bool(grupo_par) and grupo_par.strip().upper().startswith("NACIÓN")
+                if _es_entidad_nacional:
+                    resultado_360_auto = analizar_360(
+                        df, grupo_par_contiene=grupo_par, entidad_referencia=entidad_elegida,
+                    )
+                    df_grupo_auto, _ = filtrar_grupo(df, grupo_par_contiene=grupo_par)
+                    resultado_isvpt_auto = calcular_isvpt(df_grupo_auto, entidad_referencia=entidad_elegida)
+                elif _departamento_entidad and grupo_par:
                     resultado_360_auto = analizar_360(
                         df, departamento=_departamento_entidad, grupo_par_contiene=grupo_par,
                         entidad_referencia=entidad_elegida,
