@@ -627,6 +627,10 @@ REGIMEN_ESPECIAL_BANCO_REPUBLICA = "banco_republica"
 REGIMEN_ESPECIAL_CORPORACION_AUTONOMA = "corporacion_autonoma_regional"
 REGIMEN_ESPECIAL_CONCEJO_ASAMBLEA = "concejo_asamblea"
 REGIMEN_ESPECIAL_PERSONERIA = "personeria"
+REGIMEN_ESPECIAL_RAMA_LEGISLATIVA = "rama_legislativa"
+REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL = "organo_control_nacional"
+REGIMEN_ESPECIAL_RAMA_JUDICIAL = "rama_judicial"
+REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL = "organizacion_electoral"
 
 _CATALOGO_REGIMEN_ESPECIAL = {
     REGIMEN_ESPECIAL_NINGUNO: {
@@ -722,6 +726,68 @@ _CATALOGO_REGIMEN_ESPECIAL = {
             "política 19, dimensión 7, desarrollada a través del MECI). Las demás 18 "
             "políticas se implementan solo en la medida en que le sean aplicables por su "
             "propia normativa sectorial."
+        ),
+    },
+    REGIMEN_ESPECIAL_RAMA_LEGISLATIVA: {
+        "nombre": "Rama Legislativa (Congreso de la República)",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad hace parte de la Rama Legislativa del Poder Público (Senado de "
+            "la República o Cámara de Representantes, arts. 113 y 114 de la Constitución "
+            "Política) y, por tanto, no hace parte de la Rama Ejecutiva. El Modelo "
+            "Integrado de Planeación y Gestión (MIPG), como sistema de gestión propio de "
+            "la administración pública ejecutiva (Decreto 1499 de 2017), no le aplica en "
+            "su integralidad: en el catálogo oficial de Función Pública, esta entidad "
+            "reporta únicamente la política de Control Interno (Ley 87 de 1993 — política "
+            "19, dimensión 7 del MIPG, desarrollada a través del MECI, formulario "
+            "'MECI', no 'MIPG'). Cualquier lectura de brecha en las demás dimensiones que "
+            "aparezca en este informe debe leerse con esa salvedad: no es un "
+            "incumplimiento del MIPG, porque el MIPG íntegro no le es exigible por su "
+            "naturaleza constitucional."
+        ),
+    },
+    REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL: {
+        "nombre": "Órgano de control del nivel nacional",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad es un órgano de control del nivel nacional (Procuraduría "
+            "General de la Nación, Contraloría General de la República, Defensoría del "
+            "Pueblo o Auditoría General de la República — arts. 117, 118, 119, 267 y 268 "
+            "de la Constitución Política), con autonomía administrativa y presupuestal "
+            "propia, distinta de la Rama Ejecutiva. En el catálogo oficial de Función "
+            "Pública, esta entidad reporta únicamente la política de Control Interno (Ley "
+            "87 de 1993 — política 19, dimensión 7 del MIPG, desarrollada a través del "
+            "MECI, formulario 'MECI', no 'MIPG'). Cualquier lectura de brecha en las "
+            "demás dimensiones que aparezca en este informe debe leerse con esa salvedad."
+        ),
+    },
+    REGIMEN_ESPECIAL_RAMA_JUDICIAL: {
+        "nombre": "Rama Judicial",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad hace parte de la Rama Judicial del Poder Público (p. ej. "
+            "Fiscalía General de la Nación, Consejo Superior de la Judicatura o Instituto "
+            "Nacional de Medicina Legal y Ciencias Forenses — art. 116 de la Constitución "
+            "Política), con autonomía frente a la Rama Ejecutiva. En el catálogo oficial "
+            "de Función Pública, esta entidad reporta únicamente la política de Control "
+            "Interno (Ley 87 de 1993 — política 19, dimensión 7 del MIPG, desarrollada a "
+            "través del MECI, formulario 'MECI', no 'MIPG'). Cualquier lectura de brecha "
+            "en las demás dimensiones que aparezca en este informe debe leerse con esa "
+            "salvedad."
+        ),
+    },
+    REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL: {
+        "nombre": "Organización Electoral",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad hace parte de la Organización Electoral (Registraduría "
+            "Nacional del Estado Civil o Consejo Nacional Electoral — art. 120 de la "
+            "Constitución Política), un órgano autónomo e independiente de las tres "
+            "ramas del poder público. En el catálogo oficial de Función Pública, esta "
+            "entidad reporta únicamente la política de Control Interno (Ley 87 de 1993 — "
+            "política 19, dimensión 7 del MIPG, desarrollada a través del MECI, "
+            "formulario 'MECI', no 'MIPG'). Cualquier lectura de brecha en las demás "
+            "dimensiones que aparezca en este informe debe leerse con esa salvedad."
         ),
     },
 }
