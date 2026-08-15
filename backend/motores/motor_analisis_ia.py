@@ -232,7 +232,7 @@ def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto):
     return "\n".join(lineas)
 
 
-def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_key=None):
+def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_key=None, on_texto_parcial=None):
     """
     Llama a la API de Claude para ESTA entidad. No se debe invocar en bucle
     sobre muchas entidades sin que el usuario lo pida explícitamente para
@@ -244,6 +244,14 @@ def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_k
     brechas: 20, 30 o más), se piden automáticamente continuaciones
     encadenadas — hasta MAX_CONTINUACIONES veces — para completar el
     análisis en vez de entregarlo cortado a mitad de una sección.
+
+    on_texto_parcial (opcional): función que se llama repetidamente con el
+    texto acumulado hasta el momento (str), a medida que va llegando por
+    streaming. Sin esto, una generación larga (varios minutos) no envía
+    NINGÚN dato al navegador hasta que termina por completo — lo cual puede
+    hacer que la conexión entre el navegador y Streamlit se corte por
+    inactividad antes de que la respuesta esté lista. Con esto, la interfaz
+    puede mostrar avance en vivo, lo que además mantiene la conexión activa.
     """
     api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
@@ -257,6 +265,7 @@ def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_k
 
     mensajes = [{"role": "user", "content": mensaje_usuario}]
     fragmentos = []
+    texto_acumulado_total = ""
 
     for _intento in range(MAX_CONTINUACIONES + 1):
         # Se usa client.messages.stream(...) en vez de .create(...) porque,
@@ -265,15 +274,19 @@ def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_k
         # de Anthropic EXIGE streaming para operaciones que puedan superar
         # los 10 minutos (si no, rechaza la solicitud con el error
         # "Streaming is required for operations that may take longer than
-        # 10 minutes"). stream.get_final_message() espera a que termine el
-        # streaming y devuelve el mismo objeto Message que .create(),
-        # así que el resto de la lógica de abajo no cambia.
+        # 10 minutes"). Además, leer stream.text_stream (en vez de saltar
+        # directo a get_final_message()) permite reportar avance en vivo
+        # mediante on_texto_parcial mientras el texto va llegando.
         with cliente.messages.stream(
             model=MODELO,
             max_tokens=MAX_TOKENS_POR_LLAMADA,
             system=PLANTILLA_SISTEMA,
             messages=mensajes,
         ) as stream:
+            if on_texto_parcial is not None:
+                for delta in stream.text_stream:
+                    texto_acumulado_total += delta
+                    on_texto_parcial(texto_acumulado_total)
             respuesta = stream.get_final_message()
 
         fragmento = "".join(bloque.text for bloque in respuesta.content if hasattr(bloque, "text"))
