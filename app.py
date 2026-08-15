@@ -222,7 +222,9 @@ with st.sidebar:
     else:
         st.success(f"{len(st.session_state.consolidado_cargado)} entidades ya cargadas en memoria.")
 
-tab_real, tab_manual = st.tabs(["📊 Cargar entidad real (Excel oficial)", "✍️ Captura manual"])
+tab_real, tab_manual, tab_lotes = st.tabs([
+    "📊 Cargar entidad real (Excel oficial)", "✍️ Captura manual", "🗂️ Modo por lotes",
+])
 
 # ----------------------------------------------------------------------
 # MODO 1: cargar entidad real desde el Excel oficial de Función Pública
@@ -658,12 +660,28 @@ with tab_real:
             if st.button("Generar análisis integral con IA", key="btn_ia"):
                 try:
                     from backend.motores.motor_analisis_ia import generar_analisis_integral
-                    with st.spinner(_mensaje_espera_ia):
-                        datos = st.session_state.ultimo_diagnostico_real
-                        resultado = generar_analisis_integral(
-                            datos["nombre"], datos["diag"], datos["texto_recos"]
-                        )
-                    st.markdown(resultado)
+                    st.caption(_mensaje_espera_ia)
+                    # Se muestra el texto EN VIVO, a medida que va llegando por
+                    # streaming, en vez de un spinner ciego: además de dejar
+                    # ver que sigue avanzando, esto mantiene la conexión con
+                    # el navegador activa durante los varios minutos que
+                    # puede tardar una entidad con muchas brechas — sin esto,
+                    # el navegador no recibe NADA hasta el final y la conexión
+                    # puede cortarse por inactividad antes de terminar.
+                    marcador_texto_en_vivo = st.empty()
+                    _ultimo_largo_mostrado = [0]
+
+                    def _mostrar_avance(texto_parcial):
+                        if len(texto_parcial) - _ultimo_largo_mostrado[0] >= 200:
+                            marcador_texto_en_vivo.markdown(texto_parcial + " ▌")
+                            _ultimo_largo_mostrado[0] = len(texto_parcial)
+
+                    datos = st.session_state.ultimo_diagnostico_real
+                    resultado = generar_analisis_integral(
+                        datos["nombre"], datos["diag"], datos["texto_recos"],
+                        on_texto_parcial=_mostrar_avance,
+                    )
+                    marcador_texto_en_vivo.markdown(resultado)
                     st.session_state.ultimo_diagnostico_real["analisis_ia"] = resultado
                 except Exception as e:
                     st.error(
@@ -908,3 +926,345 @@ with tab_manual:
             )
             diag = diagnosticar(entidad)
             mostrar_diagnostico(diag)
+
+
+# ----------------------------------------------------------------------
+# MODO 3: generación por lotes — varias entidades, sin intervención manual
+# entidad por entidad. Usa la MISMA API key ya configurada en los Secrets
+# de esta app (nunca sale de aquí). Diseñado para poder detenerse y
+# reanudar: cada entidad ya generada se guarda en session_state y se
+# omite si se vuelve a correr, y se procesa un número acotado de
+# entidades por clic para no dejar la conexión bloqueada por horas.
+# ----------------------------------------------------------------------
+with tab_lotes:
+    import io
+    import re
+    import time
+    import zipfile
+
+    st.markdown(
+        "Genera automáticamente los 3 informes (6 archivos: docx + PDF de cada uno) "
+        "para una lista de entidades, sin repetir el proceso manual una por una."
+    )
+    st.warning(
+        "⏱️ **Tiempos reales, sin exagerar:** cada entidad necesita su propio análisis "
+        "con IA (1 a 10+ minutos, según su número de brechas) — no hay forma de "
+        "acelerar eso, es el mismo límite de velocidad de generación de texto que ya "
+        "vimos antes. Con 102 entidades, el total puede sumar varias HORAS. Por eso "
+        "este modo procesa **una tanda acotada por clic** (usted decide cuántas) y "
+        "recuerda lo que ya generó, para que pueda ir y volver en varias sesiones sin "
+        "perder el avance ni repetir entidades ya hechas."
+    )
+
+    fuentes_lotes = []
+    if RUTA_AUTO_NACION.exists():
+        fuentes_lotes.append(("Nacion", RUTA_AUTO_NACION))
+    if RUTA_AUTO_TERRITORIO.exists():
+        fuentes_lotes.append(("Territorio", RUTA_AUTO_TERRITORIO))
+
+    if "df_combinado_lotes" not in st.session_state and fuentes_lotes:
+        with st.spinner("Cargando Nación + Territorio para el modo por lotes..."):
+            import pandas as pd
+            partes = []
+            for hoja, ruta in fuentes_lotes:
+                try:
+                    partes.append(cargar_hoja(ruta, hoja))
+                except Exception as e:
+                    st.warning(f"No se pudo cargar {ruta.name} ({hoja}): {e}")
+            if partes:
+                st.session_state.df_combinado_lotes = pd.concat(partes, ignore_index=True)
+
+    df_lotes = st.session_state.get("df_combinado_lotes")
+    if df_lotes is None:
+        st.error(
+            "No se encontraron data/resultados_nacion.xlsx ni data/resultados_territorio.xlsx. "
+            "El modo por lotes busca cada entidad en ambos archivos combinados, para no "
+            "tener que saber de antemano si es una entidad territorial o nacional."
+        )
+    else:
+        st.caption(f"Buscando entidades entre {len(df_lotes)} registros combinados (Nación + Territorio).")
+
+        st.markdown("#### 1. Lista de entidades")
+        archivo_lista = st.file_uploader(
+            "Suba un .docx con una tabla de entidades (como el que ya me compartió), o pegue "
+            "la lista abajo — una entidad por línea.",
+            type=["docx"], key="archivo_lista_lotes",
+        )
+        texto_lista_default = ""
+        if archivo_lista is not None:
+            try:
+                from docx import Document as DocxDocument
+                doc_lista = DocxDocument(archivo_lista)
+                nombres_extraidos = []
+                for t in doc_lista.tables:
+                    for fila in t.rows[1:]:  # se salta el encabezado
+                        celdas = [c.text.strip() for c in fila.cells]
+                        if len(celdas) >= 2 and celdas[1]:
+                            nombres_extraidos.append(celdas[1])
+                        elif len(celdas) == 1 and celdas[0]:
+                            nombres_extraidos.append(celdas[0])
+                if nombres_extraidos:
+                    texto_lista_default = "\n".join(nombres_extraidos)
+                    st.success(f"Se extrajeron {len(nombres_extraidos)} entidades del .docx.")
+                else:
+                    st.warning("No se encontró una tabla reconocible en el .docx — pegue la lista a mano abajo.")
+            except Exception as e:
+                st.warning(f"No se pudo leer el .docx ({e}) — pegue la lista a mano abajo.")
+
+        texto_lista = st.text_area(
+            "Lista de entidades (una por línea)", value=texto_lista_default, height=200,
+            key="texto_lista_lotes",
+        )
+        nombres_lote = [n.strip() for n in texto_lista.split("\n") if n.strip()]
+
+        if nombres_lote:
+            st.caption(f"{len(nombres_lote)} entidades en la lista.")
+
+            st.markdown("#### 2. Confirmar cada entidad contra el archivo oficial")
+            st.caption(
+                "Los nombres de la lista rara vez coinciden letra por letra con el archivo "
+                "oficial (ej. 'Municipio de San Jerónimo' vs. 'ALCALDIA DE SAN JERONIMO'). "
+                "Para las coincidencias EXACTAS se confirma solo; para todo lo demás, elija "
+                "usted la correcta de una lista de candidatas — nunca se adivina en silencio, "
+                "porque un emparejamiento equivocado generaría el informe de OTRA entidad."
+            )
+            nombres_oficiales_lotes = sorted(set(df_lotes["Entidad"].astype(str).str.strip()))
+
+            PALABRAS_VACIAS_EMPAREJE = {
+                "DE", "DEL", "LA", "EL", "LOS", "LAS", "Y", "SAS", "SA", "ESP", "ESE", "EICE", "SD",
+                "EMPRESA", "EMPRESAS", "SERVICIOS", "PUBLICOS", "PUBLICA", "PUBLICAS", "SOCIAL", "ESTADO",
+                "MUNICIPIO", "MUNICIPAL", "ALCALDIA", "HOSPITAL", "INSTITUTO", "INSTITUCION", "UNIVERSITARIA",
+                "CONTRALORIA", "PERSONERIA", "CONCEJO", "ASAMBLEA", "DEPARTAMENTAL", "DEPARTAMENTO", "REGIONAL",
+                "LOCAL", "CAMU", "CENTRO", "SALUD", "SOCIEDAD", "ADMINISTRATIVO", "CORPORACION", "UNIDAD",
+            }
+
+            def _normalizar_empareje(t):
+                t = t.strip().upper()
+                return "".join(c for c in __import__("unicodedata").normalize("NFKD", t) if not __import__("unicodedata").combining(c))
+
+            def _tokenizar_empareje(t):
+                t = _normalizar_empareje(t)
+                t = __import__("re").sub(r"[^A-Z0-9\s]", " ", t)
+                return set(p for p in t.split() if p and p not in PALABRAS_VACIAS_EMPAREJE)
+
+            def _es_coincidencia_exacta(pedido, oficial):
+                return _normalizar_empareje(pedido) == _normalizar_empareje(oficial)
+
+            def _top_candidatas(nombre_pedido, top_n=8):
+                tokens_pedido = _tokenizar_empareje(nombre_pedido)
+                puntajes = []
+                for oficial in nombres_oficiales_lotes:
+                    tokens_of = _tokenizar_empareje(oficial)
+                    if not tokens_pedido or not tokens_of:
+                        continue
+                    interseccion = tokens_pedido & tokens_of
+                    union = tokens_pedido | tokens_of
+                    score = len(interseccion) / len(union) if union else 0
+                    if score > 0:
+                        puntajes.append((score, oficial))
+                puntajes.sort(key=lambda x: (-x[0], len(x[1])))
+                return puntajes[:top_n]
+
+            if st.session_state.get("_nombres_lote_previo") != nombres_lote:
+                st.session_state["_nombres_lote_previo"] = nombres_lote
+                st.session_state.confirmaciones_lotes = {}
+                for n in nombres_lote:
+                    exacta = next((o for o in nombres_oficiales_lotes if _es_coincidencia_exacta(n, o)), None)
+                    st.session_state.confirmaciones_lotes[n] = exacta  # None si no hay coincidencia exacta
+
+            exactas = {n: m for n, m in st.session_state.confirmaciones_lotes.items() if m}
+            pendientes_confirmar = [n for n, m in st.session_state.confirmaciones_lotes.items() if not m]
+
+            st.success(f"✅ {len(exactas)} coincidencia(s) exacta(s), confirmadas automáticamente.")
+
+            if pendientes_confirmar:
+                st.warning(f"⚠️ {len(pendientes_confirmar)} entidad(es) necesitan que usted elija la correcta:")
+                for n in pendientes_confirmar:
+                    candidatas = _top_candidatas(n)
+                    opciones = ["— Sin coincidencia clara, omitir esta entidad —"] + [c[1] for c in candidatas]
+                    etiquetas_score = {c[1]: c[0] for c in candidatas}
+                    seleccion = st.selectbox(
+                        f"'{n}' →",
+                        opciones,
+                        key=f"select_empareje_{n}",
+                        format_func=lambda o: o if o not in etiquetas_score else f"{o}  (similitud {etiquetas_score[o]:.0%})",
+                    )
+                    if seleccion != opciones[0]:
+                        st.session_state.confirmaciones_lotes[n] = seleccion
+
+            with st.expander(f"Ver los {len(nombres_lote)} emparejamientos actuales"):
+                for n, m in st.session_state.confirmaciones_lotes.items():
+                    st.caption(f"✅ '{n}' → **{m}**" if m else f"⏳ '{n}' → aún sin confirmar")
+
+            entidades_validas = [m for m in st.session_state.confirmaciones_lotes.values() if m]
+
+            st.markdown("#### 3. Generar")
+            if "lote_completadas" not in st.session_state:
+                st.session_state.lote_completadas = {}  # nombre -> {clave_archivo: bytes}
+            if "lote_fallidas" not in st.session_state:
+
+                st.session_state.lote_fallidas = {}  # nombre -> motivo
+
+            ya_hechas = [e for e in entidades_validas if e in st.session_state.lote_completadas]
+            pendientes = [
+                e for e in entidades_validas
+                if e not in st.session_state.lote_completadas and e not in st.session_state.lote_fallidas
+            ]
+            st.info(
+                f"✅ {len(ya_hechas)} ya generadas en esta sesión · "
+                f"⏳ {len(pendientes)} pendientes · "
+                f"❌ {len(st.session_state.lote_fallidas)} fallidas"
+            )
+
+            cuantas_procesar = st.number_input(
+                "¿Cuántas entidades procesar en esta corrida?",
+                min_value=1, max_value=max(len(pendientes), 1),
+                value=min(3, max(len(pendientes), 1)), step=1,
+            )
+
+            if st.button("▶️ Procesar esta tanda", type="primary", disabled=not pendientes):
+                from backend.motores.motor_analisis_ia import generar_analisis_integral
+                from backend.motores.generador_informe import generar_reporte_docx, generar_reporte_pdf
+
+                tanda = pendientes[: int(cuantas_procesar)]
+                marcador_progreso = st.empty()
+                marcador_avance_ia = st.empty()
+
+                for idx_entidad, nombre_of in enumerate(tanda, start=1):
+                    marcador_progreso.info(
+                        f"Procesando {idx_entidad} de {len(tanda)} de esta tanda: **{nombre_of}**"
+                    )
+                    try:
+                        t0 = time.time()
+                        fila = df_lotes[df_lotes["Entidad"].astype(str).str.strip() == nombre_of]
+                        entidad, idi_oficial, grupo_par = entidad_por_nombre_exacto(df_lotes, nombre_of)
+                        regimen_sug = _sugerir_regimen_especial(fila) or REGIMEN_ESPECIAL_NINGUNO
+                        entidad.regimen_especial = regimen_sug
+                        diag = diagnosticar(entidad)
+
+                        cruce, total_recos = None, None
+                        if "consolidado_cargado" in st.session_state:
+                            recos = recomendaciones_de_entidad(st.session_state.consolidado_cargado, nombre_of)
+                            if recos:
+                                cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
+                                total_recos = len(recos)
+
+                        # ISVPT/Análisis 360 automático (Departamento+Grupo par,
+                        # o solo Grupo par si es una entidad de nivel nacional).
+                        resultado_360, resultado_isvpt = None, None
+                        try:
+                            depto_ent = str(fila.iloc[0].get("Departamento", "")).strip() or None
+                            es_nacional = bool(grupo_par) and grupo_par.strip().upper().startswith("NACIÓN")
+                            if es_nacional:
+                                resultado_360 = analizar_360(df_lotes, grupo_par_contiene=grupo_par, entidad_referencia=nombre_of)
+                                df_grupo, _ = filtrar_grupo(df_lotes, grupo_par_contiene=grupo_par)
+                            elif depto_ent and grupo_par:
+                                resultado_360 = analizar_360(df_lotes, departamento=depto_ent, grupo_par_contiene=grupo_par, entidad_referencia=nombre_of)
+                                df_grupo, _ = filtrar_grupo(df_lotes, departamento=depto_ent, grupo_par_contiene=grupo_par)
+                            else:
+                                df_grupo = None
+                            if df_grupo is not None:
+                                resultado_isvpt = calcular_isvpt(df_grupo, entidad_referencia=nombre_of)
+                        except Exception:
+                            pass  # mejor esfuerzo, como en el modo individual
+
+                        texto_recos = ""
+                        if cruce:
+                            for lista in cruce.values():
+                                texto_recos += "\n".join(lista) + "\n"
+
+                        def _avance(texto_parcial, _nombre=nombre_of):
+                            marcador_avance_ia.caption(
+                                f"IA escribiendo para {_nombre}... ({len(texto_parcial)} caracteres, "
+                                f"{int(time.time() - t0)}s transcurridos)"
+                            )
+
+                        analisis_ia = generar_analisis_integral(
+                            nombre_of, diag, texto_recos, on_texto_parcial=_avance,
+                        )
+
+                        archivos_entidad = {}
+                        docx_t = generar_reporte_docx(
+                            nombre_of, diag, analisis_ia, resultado_isvpt=resultado_isvpt,
+                            resultado_360=resultado_360, idi_oficial=idi_oficial,
+                            cruce_recomendaciones=cruce, total_recomendaciones_entidad=total_recos,
+                            tipo_regimen_especial=regimen_sug,
+                        )
+                        archivos_entidad["informe_tecnico.docx"] = docx_t.getvalue()
+                        pdf_t = generar_reporte_pdf(
+                            nombre_of, diag, analisis_ia, resultado_isvpt=resultado_isvpt,
+                            resultado_360=resultado_360, idi_oficial=idi_oficial,
+                            cruce_recomendaciones=cruce, total_recomendaciones_entidad=total_recos,
+                            tipo_regimen_especial=regimen_sug,
+                        )
+                        archivos_entidad["informe_tecnico.pdf"] = pdf_t.getvalue()
+
+                        docx_ec = generar_estudio_de_caso_docx(
+                            nombre_of, diag, analisis_ia, cruce_recomendaciones=cruce,
+                            resultado_360=resultado_360, resultado_isvpt=resultado_isvpt,
+                            idi_oficial=idi_oficial, departamento=depto_ent,
+                            tipo_regimen_especial=regimen_sug,
+                        )
+                        archivos_entidad["estudio_de_caso.docx"] = docx_ec.getvalue()
+                        pdf_ec = generar_estudio_de_caso_pdf(
+                            nombre_of, diag, analisis_ia, cruce_recomendaciones=cruce,
+                            resultado_360=resultado_360, resultado_isvpt=resultado_isvpt,
+                            idi_oficial=idi_oficial, departamento=depto_ent,
+                            tipo_regimen_especial=regimen_sug,
+                        )
+                        archivos_entidad["estudio_de_caso.pdf"] = pdf_ec.getvalue()
+
+                        docx_ej = generar_informe_alcaldes_docx(
+                            nombre_of, diag, resultado_isvpt=resultado_isvpt,
+                            resultado_360=resultado_360, idi_oficial=idi_oficial,
+                            cruce_recomendaciones=cruce, total_recomendaciones_entidad=total_recos,
+                            tipo_regimen_especial=regimen_sug,
+                        )
+                        archivos_entidad["informe_ejecutivo.docx"] = docx_ej.getvalue()
+                        pdf_ej = generar_informe_alcaldes_pdf(
+                            nombre_of, diag, resultado_isvpt=resultado_isvpt,
+                            resultado_360=resultado_360, idi_oficial=idi_oficial,
+                            cruce_recomendaciones=cruce, total_recomendaciones_entidad=total_recos,
+                            tipo_regimen_especial=regimen_sug,
+                        )
+                        archivos_entidad["informe_ejecutivo.pdf"] = pdf_ej.getvalue()
+
+                        st.session_state.lote_completadas[nombre_of] = archivos_entidad
+                        st.session_state.lote_fallidas.pop(nombre_of, None)
+                    except Exception as e:
+                        st.session_state.lote_fallidas[nombre_of] = str(e)
+
+                marcador_progreso.success(f"Tanda de {len(tanda)} entidades terminada.")
+                marcador_avance_ia.empty()
+                st.rerun()
+
+            if st.session_state.lote_fallidas:
+                with st.expander(f"❌ {len(st.session_state.lote_fallidas)} entidad(es) fallida(s) — ver motivo"):
+                    for n, motivo in st.session_state.lote_fallidas.items():
+                        st.caption(f"**{n}**: {motivo}")
+                        if st.button(f"🔁 Reintentar '{n}'", key=f"reintentar_{n}"):
+                            st.session_state.lote_fallidas.pop(n, None)
+                            st.rerun()
+
+            if st.session_state.lote_completadas:
+                st.markdown("#### 4. Descargar lo generado hasta ahora")
+                st.caption(
+                    f"Puede descargar el .zip en cualquier momento con lo que ya esté listo — "
+                    f"no hace falta esperar a que las {len(entidades_validas)} entidades terminen."
+                )
+                buffer_zip = io.BytesIO()
+                with zipfile.ZipFile(buffer_zip, "w", zipfile.ZIP_DEFLATED) as zf:
+                    for nombre_ent, archivos in st.session_state.lote_completadas.items():
+                        carpeta = re.sub(r"[^\w\s-]", "", nombre_ent).strip().replace(" ", "_")
+                        for nombre_archivo, contenido in archivos.items():
+                            zf.writestr(f"{carpeta}/{nombre_archivo}", contenido)
+                st.download_button(
+                    f"⬇️ Descargar .zip ({len(st.session_state.lote_completadas)} entidades, "
+                    f"{len(st.session_state.lote_completadas) * 6} archivos)",
+                    data=buffer_zip.getvalue(),
+                    file_name="informes_SIIEAP_lote.zip",
+                    mime="application/zip",
+                )
+        else:
+            st.caption("Pegue o suba la lista de entidades para comenzar.")
+
