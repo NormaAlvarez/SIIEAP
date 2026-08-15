@@ -1102,8 +1102,11 @@ with tab_lotes:
             if "lote_completadas" not in st.session_state:
                 st.session_state.lote_completadas = {}  # nombre -> {clave_archivo: bytes}
             if "lote_fallidas" not in st.session_state:
-
                 st.session_state.lote_fallidas = {}  # nombre -> motivo
+            if "lote_objetivo" not in st.session_state:
+                st.session_state.lote_objetivo = 0
+            if "lote_procesadas_en_corrida" not in st.session_state:
+                st.session_state.lote_procesadas_en_corrida = 0
 
             ya_hechas = [e for e in entidades_validas if e in st.session_state.lote_completadas]
             pendientes = [
@@ -1116,24 +1119,55 @@ with tab_lotes:
                 f"❌ {len(st.session_state.lote_fallidas)} fallidas"
             )
 
-            cuantas_procesar = st.number_input(
-                "¿Cuántas entidades procesar en esta corrida?",
-                min_value=1, max_value=max(len(pendientes), 1),
-                value=min(3, max(len(pendientes), 1)), step=1,
+            # ¿Hay una tanda en curso? Se considera "en curso" mientras queden
+            # entidades pendientes por procesar EN ESTA corrida y falten por
+            # completar el objetivo pedido.
+            corrida_activa = (
+                st.session_state.lote_objetivo > 0
+                and st.session_state.lote_procesadas_en_corrida < st.session_state.lote_objetivo
+                and pendientes
             )
 
-            if st.button("▶️ Procesar esta tanda", type="primary", disabled=not pendientes):
-                from backend.motores.motor_analisis_ia import generar_analisis_integral
-                from backend.motores.generador_informe import generar_reporte_docx, generar_reporte_pdf
+            if not corrida_activa:
+                cuantas_procesar = st.number_input(
+                    "¿Cuántas entidades procesar en esta corrida?",
+                    min_value=1, max_value=max(len(pendientes), 1),
+                    value=min(3, max(len(pendientes), 1)), step=1,
+                )
+                if st.button("▶️ Procesar esta tanda", type="primary", disabled=not pendientes):
+                    st.session_state.lote_objetivo = int(cuantas_procesar)
+                    st.session_state.lote_procesadas_en_corrida = 0
+                    st.rerun()
+            else:
+                # IMPORTANTE: aquí se procesa UNA SOLA entidad por cada
+                # ejecución del script, y al terminar se llama st.rerun()
+                # para encadenar con la siguiente — en vez de recorrer TODA
+                # la tanda dentro de un único bucle bloqueante. Procesar
+                # varias entidades seguidas sin ningún "respiro" entre ellas
+                # tiene el mismo riesgo de desconexión por inactividad que
+                # ya se resolvió para una sola entidad, pero multiplicado:
+                # si la conexión se cae procesando la entidad 2 de 5, TODO
+                # el resto de la tanda se pierde en silencio (sin error
+                # visible), aunque la entidad 1 sí haya quedado guardada.
+                # Con un rerun por entidad, cada ejecución del script está
+                # acotada al tiempo de UNA sola entidad, y el navegador
+                # tiene la oportunidad de reconectarse limpiamente entre
+                # una y otra.
+                nombre_of = pendientes[0]
+                col_prog, col_stop = st.columns([4, 1])
+                col_prog.info(
+                    f"Procesando {st.session_state.lote_procesadas_en_corrida + 1} de "
+                    f"{st.session_state.lote_objetivo} de esta corrida: **{nombre_of}**"
+                )
+                if col_stop.button("⏸️ Detener"):
+                    st.session_state.lote_objetivo = 0
+                    st.session_state.lote_procesadas_en_corrida = 0
+                    st.rerun()
+                else:
+                    from backend.motores.motor_analisis_ia import generar_analisis_integral
+                    from backend.motores.generador_informe import generar_reporte_docx, generar_reporte_pdf
 
-                tanda = pendientes[: int(cuantas_procesar)]
-                marcador_progreso = st.empty()
-                marcador_avance_ia = st.empty()
-
-                for idx_entidad, nombre_of in enumerate(tanda, start=1):
-                    marcador_progreso.info(
-                        f"Procesando {idx_entidad} de {len(tanda)} de esta tanda: **{nombre_of}**"
-                    )
+                    marcador_avance_ia = st.empty()
                     try:
                         t0 = time.time()
                         fila = df_lotes[df_lotes["Entidad"].astype(str).str.strip() == nombre_of]
@@ -1152,6 +1186,7 @@ with tab_lotes:
                         # ISVPT/Análisis 360 automático (Departamento+Grupo par,
                         # o solo Grupo par si es una entidad de nivel nacional).
                         resultado_360, resultado_isvpt = None, None
+                        depto_ent = None
                         try:
                             depto_ent = str(fila.iloc[0].get("Departamento", "")).strip() or None
                             es_nacional = bool(grupo_par) and grupo_par.strip().upper().startswith("NACIÓN")
@@ -1234,9 +1269,8 @@ with tab_lotes:
                     except Exception as e:
                         st.session_state.lote_fallidas[nombre_of] = str(e)
 
-                marcador_progreso.success(f"Tanda de {len(tanda)} entidades terminada.")
-                marcador_avance_ia.empty()
-                st.rerun()
+                    st.session_state.lote_procesadas_en_corrida += 1
+                    st.rerun()
 
             if st.session_state.lote_fallidas:
                 with st.expander(f"❌ {len(st.session_state.lote_fallidas)} entidad(es) fallida(s) — ver motivo"):
