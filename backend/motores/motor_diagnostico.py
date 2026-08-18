@@ -1,0 +1,246 @@
+"""Motor de Diagnóstico Institucional.
+
+Toma los resultados oficiales de una entidad (ResultadoIndice por índice IDI)
+y el catálogo oficial (dimensión -> política -> índice) y produce:
+
+  - promedio por dimensión y por política
+  - listado de brechas (índices por debajo de un umbral)
+  - priorización simple (Alta/Media/Baja) por dimensión
+
+No inventa datos: si la entidad no reportó un índice, ese índice
+simplemente no participa en el promedio (se documenta como faltante).
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from backend.base_conocimiento.catalogo import dimensiones
+from backend.modelos.entidades import Entidad
+
+UMBRAL_BRECHA = 60.0  # por debajo de esto (escala 0-100 FURAG) se considera brecha
+
+
+@dataclass
+class ResultadoDimension:
+    codigo: str
+    nombre: str
+    promedio: float | None          # cálculo interno de SIIEAP (promedio de índices I01-I67)
+    n_indices_evaluados: int
+    n_indices_esperados: int
+    nivel_riesgo: str  # Alta / Media / Baja / Sin información
+    # CORRECCIÓN (agosto 2026): valor OFICIAL de esta dimensión, publicado
+    # por Función Pública en Resultados_vigXXXX_territorio.xlsx / _nacion.xlsx
+    # (columnas D1-D7). Antes de este cambio, ese dato oficial nunca se
+    # cargaba, así que los 3 informes mostraban 'promedio' (el cálculo
+    # interno) como si fuera la cifra oficial, y casi nunca coincidía con
+    # ella porque la metodología real de Función Pública no es un promedio
+    # simple de índices. None si Función Pública no publicó esta dimensión
+    # para la entidad (p.ej. régimen MECI) o si no se pasó el dato al
+    # diagnosticar la entidad.
+    promedio_oficial: float | None = None
+
+
+def valor_protagonista_dimension(r: "ResultadoDimension") -> float | None:
+    """La cifra que SIEMPRE debe mostrarse e imprimirse en los 3 informes
+    para una dimensión: el valor OFICIAL de Función Pública si está
+    disponible; si no, el cálculo interno de SIIEAP como único dato
+    disponible (igual criterio que ya se aplicaba al IDI general).
+    Úsese esta función en TODO punto de los generadores de informe que
+    hoy lea 'r.promedio' para mostrar, ordenar o colorear una dimensión —
+    nunca 'r.promedio' directamente, para no reintroducir el error de
+    agosto de 2026."""
+    return r.promedio_oficial if r.promedio_oficial is not None else r.promedio
+
+
+@dataclass
+class Brecha:
+    codigo_indice: str
+    nombre_indice: str
+    puntaje: float
+    dimension: str
+    politica: str
+    codigo_politica: str
+
+
+@dataclass
+class DiagnosticoInstitucional:
+    entidad: str
+    vigencia: int
+    resultados_por_dimension: list[ResultadoDimension]
+    brechas: list[Brecha]
+    idi_estimado: float | None  # promedio simple de dimensiones con información
+    aplica_mipg_integral: bool = True
+    regimen_especial: str | None = None
+
+
+def _nivel_riesgo(promedio: float | None) -> str:
+    if promedio is None:
+        return "Sin información"
+    if promedio < 50:
+        return "Alta"
+    if promedio < 75:
+        return "Media"
+    return "Baja"
+
+
+def _es_politica_control_interno(nombre_politica: str) -> bool:
+    """Identifica la política de Control Interno por NOMBRE, no por código
+    numérico — el número de política ha cambiado entre versiones del Manual
+    Operativo del MIPG (era la política 15 en la v5/2023, es la política 19
+    en la v6.1/2026), así que no es un identificador estable."""
+    return "control interno" in nombre_politica.strip().lower()
+
+
+def diagnosticar(
+    entidad: Entidad,
+    umbral_brecha: float = UMBRAL_BRECHA,
+    dimensiones_oficiales: dict[str, float] | None = None,
+) -> DiagnosticoInstitucional:
+    """
+    dimensiones_oficiales: {codigo_dimension ('D1'..'D7'): valor oficial},
+    tal como lo devuelve backend/base_conocimiento/cargar_resultados_oficiales.py.
+    Si se pasa, cada ResultadoDimension.promedio_oficial se llena con este
+    valor y ES la cifra que deben mostrar los 3 informes (ver
+    valor_protagonista_dimension). Si no se pasa (None), el comportamiento
+    es el mismo de antes: solo se muestra el cálculo interno.
+    """
+    catalogo_dim = dimensiones()
+    resultados_dim: list[ResultadoDimension] = []
+    brechas: list[Brecha] = []
+
+    aplica_integral = entidad.aplica_mipg_integral()
+    codigo_dimension_control_interno = None
+    # Entidades de régimen especial (universidades autónomas, órganos de
+    # control, Concejos/Asambleas, Banco de la República, Corporaciones
+    # Autónomas Regionales) solo están obligadas a la política de Control
+    # Interno (MECI) — art. 40 Ley 489/1998 y art. 2.2.22.3.4 Decreto
+    # 1499/2017. Si reportan datos en otras políticas de forma voluntaria,
+    # esos datos SÍ se muestran y SÍ entran al promedio de su dimensión
+    # (es información real, no hay razón para ocultarla), pero NO se
+    # marcan como "brecha" — no tiene sentido decirle a un Concejo o a una
+    # Personería que "debe corregir" algo que la norma no le exige.
+
+    for cod_dim, dim in catalogo_dim.items():
+        puntajes_dim: list[float] = []
+        indices_esperados = 0
+
+        for cod_pol, pol in dim["politicas"].items():
+            politica_aplica = aplica_integral or _es_politica_control_interno(pol["nombre"])
+
+            if not pol["indices"]:
+                # Política sin índices propios (p.ej. POL14): se usa su
+                # puntaje directo, si la entidad lo reportó.
+                indices_esperados += 1
+                directa = entidad.resultado_politica_directa_de(cod_pol)
+                if directa is None:
+                    continue
+                puntajes_dim.append(directa.puntaje)
+                if politica_aplica and directa.puntaje < umbral_brecha:
+                    brechas.append(
+                        Brecha(
+                            codigo_indice=cod_pol,
+                            nombre_indice=pol["nombre"],
+                            puntaje=directa.puntaje,
+                            dimension=dim["nombre"],
+                            politica=pol["nombre"],
+                            codigo_politica=cod_pol,
+                        )
+                    )
+                continue
+
+            for cod_idx, idx in pol["indices"].items():
+                indices_esperados += 1
+                resultado = entidad.resultado_de(cod_idx)
+                if resultado is None:
+                    continue
+                puntajes_dim.append(resultado.puntaje)
+                if politica_aplica and resultado.puntaje < umbral_brecha:
+                    brechas.append(
+                        Brecha(
+                            codigo_indice=cod_idx,
+                            nombre_indice=idx["nombre"],
+                            puntaje=resultado.puntaje,
+                            dimension=dim["nombre"],
+                            politica=pol["nombre"],
+                            codigo_politica=cod_pol,
+                        )
+                    )
+
+            # Respaldo: si el catálogo espera índices propios para esta
+            # política pero la entidad no reportó NINGUNO de ellos, se usa
+            # el agregado por política que sí publicó Función Pública
+            # (columna "POLxx Índice..." del archivo oficial). Es el caso
+            # típico de entidades MECI-only (Concejos, Personerías,
+            # Contralorías): Función Pública nunca les publica el
+            # desglose índice por índice, solo el agregado de la política.
+            indices_reportados_en_esta_politica = any(
+                entidad.resultado_de(cod_idx) is not None for cod_idx in pol["indices"]
+            )
+            if not indices_reportados_en_esta_politica:
+                directa = entidad.resultado_politica_directa_de(cod_pol)
+                if directa is not None:
+                    puntajes_dim.append(directa.puntaje)
+                    if politica_aplica and directa.puntaje < umbral_brecha:
+                        brechas.append(
+                            Brecha(
+                                codigo_indice=cod_pol,
+                                nombre_indice=pol["nombre"],
+                                puntaje=directa.puntaje,
+                                dimension=dim["nombre"],
+                                politica=pol["nombre"],
+                                codigo_politica=cod_pol,
+                            )
+                        )
+
+        promedio = sum(puntajes_dim) / len(puntajes_dim) if puntajes_dim else None
+        promedio_oficial = (dimensiones_oficiales or {}).get(cod_dim)
+        # El nivel de riesgo (Alta/Media/Baja) debe clasificarse sobre la
+        # cifra PROTAGONISTA (oficial si existe), no sobre el cálculo
+        # interno — si no, el semáforo de un informe podía no corresponder
+        # con el número oficial que el mismo informe mostraba al lado.
+        valor_para_riesgo = promedio_oficial if promedio_oficial is not None else promedio
+        resultados_dim.append(
+            ResultadoDimension(
+                codigo=cod_dim,
+                nombre=dim["nombre"],
+                promedio=round(promedio, 2) if promedio is not None else None,
+                n_indices_evaluados=len(puntajes_dim),
+                n_indices_esperados=indices_esperados,
+                nivel_riesgo=_nivel_riesgo(valor_para_riesgo),
+                promedio_oficial=round(promedio_oficial, 2) if promedio_oficial is not None else None,
+            )
+        )
+        if any(_es_politica_control_interno(pol["nombre"]) for pol in dim["politicas"].values()):
+            codigo_dimension_control_interno = cod_dim
+
+    if aplica_integral:
+        # MIPG íntegro: el IDI es el promedio de TODAS las dimensiones con
+        # información, tal como lo calcula y publica Función Pública.
+        promedios_validos = [r.promedio for r in resultados_dim if r.promedio is not None]
+        idi_estimado = round(sum(promedios_validos) / len(promedios_validos), 2) if promedios_validos else None
+    else:
+        # Régimen especial (MECI-only): NO existe un "IDI-MIPG" para estas
+        # entidades — Función Pública solo mide y publica el Índice de
+        # Control Interno. Promediarlo con otras políticas que la entidad
+        # reportó de forma voluntaria (transparencia, gestión documental,
+        # etc.) inflaría o desinflaría artificialmente la cifra oficial.
+        # Por eso aquí el "idi_estimado" es, para estas entidades,
+        # literalmente el promedio de la dimensión de Control Interno —
+        # el mismo dato que muestra el tablero MECI de Función Pública.
+        dim_control_interno = next(
+            (r for r in resultados_dim if r.codigo == codigo_dimension_control_interno),
+            None,
+        )
+        idi_estimado = dim_control_interno.promedio if dim_control_interno else None
+
+    brechas.sort(key=lambda b: b.puntaje)  # las más críticas primero
+
+    return DiagnosticoInstitucional(
+        entidad=entidad.nombre,
+        vigencia=entidad.vigencia,
+        resultados_por_dimension=resultados_dim,
+        brechas=brechas,
+        idi_estimado=idi_estimado,
+        aplica_mipg_integral=aplica_integral,
+        regimen_especial=entidad.regimen_especial,
+    )
