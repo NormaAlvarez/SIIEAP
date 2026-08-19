@@ -60,6 +60,20 @@ class Brecha:
     dimension: str
     politica: str
     codigo_politica: str
+    # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez tras auditoría
+    # de la Contraloría Distrital de Medellín): para entidades de régimen
+    # especial (MECI-only: Contralorías, Personerías, Concejos/Asambleas,
+    # universidades autónomas, CAR, Banco de la República), la política de
+    # Control Interno SÍ es exigencia legal (art. 40 Ley 489/1998), pero
+    # las demás políticas que la entidad reporte lo hacen de forma
+    # VOLUNTARIA — no hay obligación normativa de "corregirlas". Antes,
+    # estas brechas voluntarias ni siquiera se registraban (se perdían del
+    # todo); ahora SÍ se registran y se analizan (a petición explícita),
+    # pero marcadas con obligatoria=False para que el texto del informe
+    # no le exija a un Concejo o una Personería algo que la norma no le
+    # exige. obligatoria=True siempre para entidades con MIPG íntegro, y
+    # para la política de Control Interno en cualquier entidad.
+    obligatoria: bool = True
 
 
 @dataclass
@@ -83,6 +97,11 @@ class DiagnosticoInstitucional:
     # contenido_riesgo_auditoria.py, encontrado en auditoría de agosto
     # 2026: reportaba el puntaje de I48/I06 como si fuera el de POL15/POL02).
     politicas_oficiales: dict[str, float] | None = None
+    # Código de la política de Control Interno detectada en el catálogo
+    # (p.ej. 'POL19' en el Manual Operativo MIPG v6.1/2026; el número ha
+    # cambiado de versión en versión, por eso se detecta por nombre y se
+    # expone aquí ya resuelto). None si por algún motivo no se encontró.
+    codigo_politica_control_interno: str | None = None
 
 
 def _nivel_riesgo(promedio: float | None) -> str:
@@ -122,15 +141,26 @@ def diagnosticar(
 
     aplica_integral = entidad.aplica_mipg_integral()
     codigo_dimension_control_interno = None
+    codigo_politica_control_interno = None
     # Entidades de régimen especial (universidades autónomas, órganos de
     # control, Concejos/Asambleas, Banco de la República, Corporaciones
     # Autónomas Regionales) solo están obligadas a la política de Control
     # Interno (MECI) — art. 40 Ley 489/1998 y art. 2.2.22.3.4 Decreto
     # 1499/2017. Si reportan datos en otras políticas de forma voluntaria,
     # esos datos SÍ se muestran y SÍ entran al promedio de su dimensión
-    # (es información real, no hay razón para ocultarla), pero NO se
-    # marcan como "brecha" — no tiene sentido decirle a un Concejo o a una
-    # Personería que "debe corregir" algo que la norma no le exige.
+    # (es información real, no hay razón para ocultarla). CORRECCIÓN
+    # (agosto 2026, a petición de Norma Álvarez): antes esos datos NO se
+    # marcaban como "brecha" y por lo tanto desaparecían por completo de
+    # las tablas de Hallazgos, Riesgos y Plan de Mejoramiento — ninguna
+    # sección del informe llegaba a analizarlos, aunque la propia entidad
+    # sí tuviera recomendaciones oficiales vigentes de Función Pública en
+    # esas políticas (caso real: Contraloría Distrital de Medellín, con
+    # recomendaciones oficiales en 6 políticas más allá de Control
+    # Interno). Ahora SÍ se registran como Brecha y SÍ entran a esas
+    # tablas, pero con obligatoria=False, para que el texto del informe
+    # las analice sin decirle a un Concejo o una Personería que "debe"
+    # corregir algo que la norma no le exige — la exigencia legal, para
+    # régimen especial, es únicamente la política de Control Interno.
 
     for cod_dim, dim in catalogo_dim.items():
         puntajes_dim: list[float] = []
@@ -138,6 +168,8 @@ def diagnosticar(
 
         for cod_pol, pol in dim["politicas"].items():
             politica_aplica = aplica_integral or _es_politica_control_interno(pol["nombre"])
+            if _es_politica_control_interno(pol["nombre"]):
+                codigo_politica_control_interno = cod_pol
 
             if not pol["indices"]:
                 # Política sin índices propios (p.ej. POL14): se usa su
@@ -147,7 +179,7 @@ def diagnosticar(
                 if directa is None:
                     continue
                 puntajes_dim.append(directa.puntaje)
-                if politica_aplica and directa.puntaje < umbral_brecha:
+                if directa.puntaje < umbral_brecha:
                     brechas.append(
                         Brecha(
                             codigo_indice=cod_pol,
@@ -156,6 +188,7 @@ def diagnosticar(
                             dimension=dim["nombre"],
                             politica=pol["nombre"],
                             codigo_politica=cod_pol,
+                            obligatoria=politica_aplica,
                         )
                     )
                 continue
@@ -166,7 +199,7 @@ def diagnosticar(
                 if resultado is None:
                     continue
                 puntajes_dim.append(resultado.puntaje)
-                if politica_aplica and resultado.puntaje < umbral_brecha:
+                if resultado.puntaje < umbral_brecha:
                     brechas.append(
                         Brecha(
                             codigo_indice=cod_idx,
@@ -175,6 +208,7 @@ def diagnosticar(
                             dimension=dim["nombre"],
                             politica=pol["nombre"],
                             codigo_politica=cod_pol,
+                            obligatoria=politica_aplica,
                         )
                     )
 
@@ -192,7 +226,7 @@ def diagnosticar(
                 directa = entidad.resultado_politica_directa_de(cod_pol)
                 if directa is not None:
                     puntajes_dim.append(directa.puntaje)
-                    if politica_aplica and directa.puntaje < umbral_brecha:
+                    if directa.puntaje < umbral_brecha:
                         brechas.append(
                             Brecha(
                                 codigo_indice=cod_pol,
@@ -201,6 +235,7 @@ def diagnosticar(
                                 dimension=dim["nombre"],
                                 politica=pol["nombre"],
                                 codigo_politica=cod_pol,
+                                obligatoria=politica_aplica,
                             )
                         )
 
@@ -225,28 +260,6 @@ def diagnosticar(
         if any(_es_politica_control_interno(pol["nombre"]) for pol in dim["politicas"].values()):
             codigo_dimension_control_interno = cod_dim
 
-    if aplica_integral:
-        # MIPG íntegro: el IDI es el promedio de TODAS las dimensiones con
-        # información, tal como lo calcula y publica Función Pública.
-        promedios_validos = [r.promedio for r in resultados_dim if r.promedio is not None]
-        idi_estimado = round(sum(promedios_validos) / len(promedios_validos), 2) if promedios_validos else None
-    else:
-        # Régimen especial (MECI-only): NO existe un "IDI-MIPG" para estas
-        # entidades — Función Pública solo mide y publica el Índice de
-        # Control Interno. Promediarlo con otras políticas que la entidad
-        # reportó de forma voluntaria (transparencia, gestión documental,
-        # etc.) inflaría o desinflaría artificialmente la cifra oficial.
-        # Por eso aquí el "idi_estimado" es, para estas entidades,
-        # literalmente el promedio de la dimensión de Control Interno —
-        # el mismo dato que muestra el tablero MECI de Función Pública.
-        dim_control_interno = next(
-            (r for r in resultados_dim if r.codigo == codigo_dimension_control_interno),
-            None,
-        )
-        idi_estimado = dim_control_interno.promedio if dim_control_interno else None
-
-    brechas.sort(key=lambda b: b.puntaje)  # las más críticas primero
-
     # Puntaje oficial agregado por política, para TODAS las políticas que
     # la entidad reportó (tengan o no índices propios desglosados). Este
     # dato ya llega cargado en entidad.resultados_politica_directa (ver
@@ -258,6 +271,46 @@ def diagnosticar(
         r.codigo_politica: r.puntaje for r in entidad.resultados_politica_directa
     }
 
+    if aplica_integral:
+        # MIPG íntegro: el IDI es el promedio de TODAS las dimensiones con
+        # información, tal como lo calcula y publica Función Pública.
+        promedios_validos = [r.promedio for r in resultados_dim if r.promedio is not None]
+        idi_estimado = round(sum(promedios_validos) / len(promedios_validos), 2) if promedios_validos else None
+    else:
+        # Régimen especial (MECI-only): NO existe un "IDI-MIPG" para estas
+        # entidades — Función Pública solo mide y publica el Índice de
+        # Control Interno. Promediarlo con otras políticas que la entidad
+        # reportó de forma voluntaria (transparencia, gestión documental,
+        # etc.) inflaría o desinflaría artificialmente la cifra oficial.
+        #
+        # CORRECCIÓN (agosto 2026, hallazgo en auditoría de la Contraloría
+        # Distrital de Medellín): este valor debe ser el puntaje OFICIAL
+        # de la política de Control Interno (columna "POL19 Índice de
+        # Control Interno" u homóloga del archivo oficial — lo que
+        # realmente rinde la entidad en el FURAG), NO un recálculo interno
+        # promediando los índices i63-i67. Ambos números pueden diferir
+        # sustancialmente (caso real: promedio interno 86.14 vs. oficial
+        # 95.86) porque Función Pública no pondera esos índices con un
+        # simple promedio aritmético. Se usa politicas_oficiales primero;
+        # solo si la entidad no tiene ese dato oficial cargado (caso
+        # atípico) se cae de vuelta al cálculo interno como único dato
+        # disponible.
+        oficial_control_interno = (
+            politicas_oficiales.get(codigo_politica_control_interno)
+            if codigo_politica_control_interno
+            else None
+        )
+        if oficial_control_interno is not None:
+            idi_estimado = round(oficial_control_interno, 2)
+        else:
+            dim_control_interno = next(
+                (r for r in resultados_dim if r.codigo == codigo_dimension_control_interno),
+                None,
+            )
+            idi_estimado = dim_control_interno.promedio if dim_control_interno else None
+
+    brechas.sort(key=lambda b: b.puntaje)  # las más críticas primero
+
     return DiagnosticoInstitucional(
         entidad=entidad.nombre,
         vigencia=entidad.vigencia,
@@ -267,4 +320,5 @@ def diagnosticar(
         aplica_mipg_integral=aplica_integral,
         regimen_especial=entidad.regimen_especial,
         politicas_oficiales=politicas_oficiales,
+        codigo_politica_control_interno=codigo_politica_control_interno,
     )

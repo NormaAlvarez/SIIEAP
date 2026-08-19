@@ -86,7 +86,19 @@ def _subregion_de_municipio(municipio: str, departamento: str | None) -> str | N
 COLUMNAS_DIMENSION = [
     "D1 Talento Humano",
     "D2 Direcciona- miento Estratégico y Planeación",
-    "D3 Gestión para Resultados con Valores",
+    # CORRECCIÓN (agosto 2026, hallazgo incidental durante el arreglo del
+    # régimen especial): el nombre real de esta columna en el archivo
+    # oficial de Función Pública tiene DOBLE espacio entre "D3" y
+    # "Gestión" ("D3  Gestión para Resultados con Valores"). Con un solo
+    # espacio, el filtro `col in df.columns` de motor_isvpt.py y de
+    # analizar_360() nunca encontraba la columna, así que D3 se excluía en
+    # silencio del promedio de grupo de comparación y del ISVPT — para
+    # TODAS las entidades, no solo las de régimen especial. Los valores
+    # D1-D7 protagonistas que se muestran en los informes NO se vieron
+    # afectados (vienen de un módulo distinto, cargar_resultados_oficiales.py,
+    # que ya tenía el espacio correcto) — este bug solo afectaba el
+    # promedio de grupo/ISVPT, un análisis secundario.
+    "D3  Gestión para Resultados con Valores",
     "D4 Evaluación de Resultados",
     "D5 Información y Comunicación",
     "D6 Gestión del Conocimiento",

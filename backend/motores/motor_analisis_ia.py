@@ -38,6 +38,8 @@ import os
 
 from anthropic import Anthropic
 
+from backend.motores.motor_diagnostico import UMBRAL_BRECHA
+
 MODELO = "claude-sonnet-4-6"
 
 # Tokens de salida por cada llamada individual a la API. Sonnet 4.6 soporta
@@ -210,6 +212,10 @@ _INSTRUCCION_CONTINUAR = (
 
 def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto, idi_oficial=None):
     from backend.motores.motor_diagnostico import valor_protagonista_dimension
+
+    if not diag.aplica_mipg_integral:
+        return _construir_prompt_usuario_regimen_especial(nombre_entidad, diag, recomendaciones_texto)
+
     lineas = [f"# Diagnóstico real de: {nombre_entidad}", ""]
     idi_a_usar = idi_oficial if idi_oficial is not None else diag.idi_estimado
     etiqueta_idi = "IDI oficial (Función Pública)" if idi_oficial is not None else "IDI estimado (cálculo interno, sin dato oficial disponible)"
@@ -235,6 +241,116 @@ def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto, idi_of
     if recomendaciones_texto:
         lineas.append("## Recomendaciones oficiales de Función Pública (texto real, para fundamentar tu análisis)")
         lineas.append(recomendaciones_texto[:12000])  # límite razonable de contexto
+    else:
+        lineas.append("## No se cargaron recomendaciones oficiales para esta entidad.")
+    return "\n".join(lineas)
+
+
+def _construir_prompt_usuario_regimen_especial(nombre_entidad, diag, recomendaciones_texto):
+    """Prompt para entidades de régimen especial (MECI-only: Contralorías,
+    Personerías, Concejos/Asambleas, universidades autónomas, CAR, Banco de
+    la República — art. 40 Ley 489/1998, art. 2.2.22.3.4 Decreto 1499/2017).
+
+    CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez, tras auditoría
+    de la Contraloría Distrital de Medellín): la versión anterior de este
+    prompt (compartida con las entidades de MIPG íntegro) le entregaba al
+    modelo las 7 dimensiones D1-D7 —agrupando ahí puntajes de políticas que
+    la entidad reportó de forma voluntaria— diciéndole que USARA esos
+    valores como "el dato oficial o protagonista" y que calculara un
+    "IDI-MIPG"/"IDI estimado" a partir de ellos. El resultado eran informes
+    que se contradecían a sí mismos: por un lado advertían que para este
+    régimen "el resultado oficial corresponde únicamente a la Dimensión 7",
+    y dos párrafos más abajo presentaban un IDI y cuatro dimensiones
+    inventadas como si fueran datos reales de la entidad.
+
+    Esta versión, en cambio:
+      1. Presenta el índice de Control Interno (MECI) —lo único que estas
+         entidades realmente rinden en el FURAG de Función Pública— como
+         la única cifra protagonista/oficial, con el puntaje oficial de la
+         política (no un recálculo interno).
+      2. NO arma un IDI-MIPG ni agrupa nada en dimensiones D1-D7: cada
+         política que la entidad haya reportado adicionalmente (de forma
+         voluntaria, no exigida por la norma para este régimen) se lista
+         POR SEPARADO con su propio puntaje oficial.
+      3. Instruye explícitamente analizar esas políticas voluntarias en
+         riesgos, plan de mejoramiento y capítulo de auditoría (a petición
+         expresa: no deben desaparecer del informe), pero marcadas como
+         hallazgo informativo — no como incumplimiento normativo — ya que
+         la norma no se las exige a este tipo de entidad.
+    """
+    lineas = [f"# Diagnóstico real de: {nombre_entidad}", ""]
+    lineas.append(
+        "## RÉGIMEN ESPECIAL (MECI-only) — instrucciones OBLIGATORIAS y distintas a una entidad de MIPG íntegro"
+    )
+    lineas.append(
+        "Esta entidad NO está sujeta al Modelo Integrado de Planeación y Gestión (MIPG) en su "
+        "integralidad (art. 40 Ley 489/1998, art. 2.2.22.3.4 Decreto 1499/2017): solo está obligada "
+        "a la política de Control Interno (MECI). Es lo único que esta entidad realmente rinde en "
+        "el FURAG de Función Pública."
+    )
+    lineas.append(
+        "REGLAS ESTRICTAS que debes seguir en TODO el texto que redactes:\n"
+        "  a) NO existe un 'IDI-MIPG' ni un 'IDI estimado' para esta entidad. NUNCA calcules, "
+        "menciones ni insinúes una cifra de ese tipo, ni la sustituyas o compares con el índice de "
+        "Control Interno.\n"
+        "  b) NO agrupes puntajes de políticas en dimensiones 'D1', 'D2', 'D3', 'D5', etc. Esas "
+        "dimensiones NO están definidas oficialmente para este régimen — preséntalas SIEMPRE por "
+        "política individual (nombre de la política, no código de dimensión).\n"
+        "  c) La ÚNICA cifra que debes tratar como protagonista/oficial de desempeño de la entidad "
+        "es el índice de Control Interno (MECI) que se te da abajo. Dale énfasis explícito en la "
+        "introducción y en la conclusión: es lo que la entidad realmente rinde ante Función Pública.\n"
+        "  d) Las demás políticas reportadas son voluntarias (la norma no se las exige a este "
+        "régimen). SÍ debes analizarlas — inclúyelas en las secciones de riesgos, plan de "
+        "mejoramiento y capítulo de auditoría — pero acláralo explícitamente cada vez que las "
+        "menciones: son hallazgos informativos de buenas prácticas, no incumplimientos normativos."
+    )
+    lineas.append("")
+
+    meci_oficial = None
+    if diag.codigo_politica_control_interno:
+        meci_oficial = (diag.politicas_oficiales or {}).get(diag.codigo_politica_control_interno)
+    if meci_oficial is None:
+        meci_oficial = diag.idi_estimado  # respaldo si no hubiera dato oficial cargado
+
+    lineas.append(f"## Índice de Control Interno (MECI) — dato OFICIAL de Función Pública: {meci_oficial}")
+    lineas.append(
+        "Esta es la cifra protagonista de todo el informe para esta entidad. Úsala siempre igual, "
+        "sin recalcularla."
+    )
+    lineas.append("")
+
+    brechas_obligatorias = [b for b in diag.brechas if b.obligatoria]
+    brechas_voluntarias = [b for b in diag.brechas if not b.obligatoria]
+
+    lineas.append(f"## Índices de Control Interno por debajo de 60 puntos (brecha real y exigible): {len(brechas_obligatorias)}")
+    for b in brechas_obligatorias:
+        lineas.append(f"- {b.codigo_indice} ({b.puntaje}): {b.nombre_indice}")
+    lineas.append("")
+
+    lineas.append(
+        f"## Otras políticas reportadas voluntariamente por la entidad (NO exigidas a este régimen, "
+        f"analizar cada una por separado, sin agrupar): {len(brechas_voluntarias)} con puntaje bajo 60"
+    )
+    if brechas_voluntarias:
+        for b in brechas_voluntarias:
+            lineas.append(f"- {b.codigo_indice} ({b.puntaje}): {b.nombre_indice} — política: {b.politica}")
+    else:
+        lineas.append("(Ninguna política voluntaria reportada por esta entidad cae bajo 60 puntos.)")
+    lineas.append("")
+    if diag.politicas_oficiales:
+        otras_politicas_ok = {
+            cod: p for cod, p in diag.politicas_oficiales.items()
+            if cod != diag.codigo_politica_control_interno and p is not None and p >= UMBRAL_BRECHA
+        }
+        if otras_politicas_ok:
+            lineas.append("## Otras políticas reportadas con puntaje oficial saludable (>= 60, para contexto, sin agrupar):")
+            for cod, p in sorted(otras_politicas_ok.items()):
+                lineas.append(f"- {cod}: {p}")
+            lineas.append("")
+
+    if recomendaciones_texto:
+        lineas.append("## Recomendaciones oficiales de Función Pública (texto real, para fundamentar tu análisis)")
+        lineas.append(recomendaciones_texto[:12000])
     else:
         lineas.append("## No se cargaron recomendaciones oficiales para esta entidad.")
     return "\n".join(lineas)
