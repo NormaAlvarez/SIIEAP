@@ -208,13 +208,21 @@ _INSTRUCCION_CONTINUAR = (
 )
 
 
-def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto):
+def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto, idi_oficial=None):
+    from backend.motores.motor_diagnostico import valor_protagonista_dimension
     lineas = [f"# Diagnóstico real de: {nombre_entidad}", ""]
-    lineas.append(f"IDI estimado: {diag.idi_estimado}")
+    idi_a_usar = idi_oficial if idi_oficial is not None else diag.idi_estimado
+    etiqueta_idi = "IDI oficial (Función Pública)" if idi_oficial is not None else "IDI estimado (cálculo interno, sin dato oficial disponible)"
+    lineas.append(f"{etiqueta_idi}: {idi_a_usar}")
+    lineas.append(
+        "IMPORTANTE: usa SIEMPRE la cifra anterior como el IDI de la entidad en todo el "
+        "texto que redactes. No la recalcules ni la sustituyas por ningún otro número."
+    )
     lineas.append("")
-    lineas.append("## Resultado por dimensión")
+    lineas.append("## Resultado por dimensión (usa EXACTAMENTE estos valores, son el dato oficial u protagonista)")
     for r in diag.resultados_por_dimension:
-        lineas.append(f"- {r.codigo} {r.nombre}: promedio {r.promedio}, riesgo {r.nivel_riesgo} ({r.n_indices_evaluados}/{r.n_indices_esperados})")
+        valor_protagonista = valor_protagonista_dimension(r)
+        lineas.append(f"- {r.codigo} {r.nombre}: {valor_protagonista}, riesgo {r.nivel_riesgo} ({r.n_indices_evaluados}/{r.n_indices_esperados})")
     lineas.append("")
     lineas.append("## Brechas detectadas (< 60 puntos), ordenadas de más crítica a menos")
     lineas.append(
@@ -232,7 +240,7 @@ def construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto):
     return "\n".join(lineas)
 
 
-def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_key=None, on_texto_parcial=None):
+def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_key=None, on_texto_parcial=None, idi_oficial=None):
     """
     Llama a la API de Claude para ESTA entidad. No se debe invocar en bucle
     sobre muchas entidades sin que el usuario lo pida explícitamente para
@@ -261,7 +269,7 @@ def generar_analisis_integral(nombre_entidad, diag, recomendaciones_texto, api_k
         )
 
     cliente = Anthropic(api_key=api_key)
-    mensaje_usuario = construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto)
+    mensaje_usuario = construir_prompt_usuario(nombre_entidad, diag, recomendaciones_texto, idi_oficial=idi_oficial)
 
     mensajes = [{"role": "user", "content": mensaje_usuario}]
     fragmentos = []
