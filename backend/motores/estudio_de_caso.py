@@ -620,10 +620,17 @@ def _fecha_hoy_es():
     return f"{hoy.day} de {meses[hoy.month - 1]} de {hoy.year}"
 
 
-def _construir_contexto_local_regional_global(nombre_entidad, resultado_360, resultado_isvpt):
+def _construir_contexto_local_regional_global(nombre_entidad, resultado_360, resultado_isvpt, mostrar_isvpt=True):
     """Arma el texto del contexto institucional con enfoque local/regional/global,
     usando SOLO los resultados reales ya calculados por motor_analisis_360 y
-    motor_isvpt (si se proporcionaron). No inventa cifras nuevas."""
+    motor_isvpt (si se proporcionaron). No inventa cifras nuevas.
+
+    mostrar_isvpt: False para entidades de régimen especial (MECI-only),
+    donde la sección ISVPT completa se omite más abajo (ver
+    generar_estudio_de_caso_docx/pdf) porque normalizar 7 dimensiones que
+    Función Pública no publica para este régimen da un resultado sin
+    contenido informativo real — así este párrafo tampoco anuncia una
+    sección que luego no va a aparecer."""
     lineas = []
     lineas.append(
         f"El caso analizado — {nombre_entidad} — se sitúa simultáneamente en "
@@ -647,7 +654,7 @@ def _construir_contexto_local_regional_global(nombre_entidad, resultado_360, res
                 "de ese grupo, con un IDI oficial de "
                 f"{resultado_360.idi_entidad_referencia}."
             )
-    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None:
+    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None and mostrar_isvpt:
         lineas.append(
             "El Índice Sintético de Valor Público Territorial (ISVPT) de esta "
             "entidad dentro de su grupo de comparación se desarrolla en la "
@@ -988,9 +995,16 @@ def generar_estudio_de_caso_docx(
     except Exception:
         pass
     if diag.brechas:
+        if diag.aplica_mipg_integral:
+            etiqueta_idi_ec = f"IDI oficial de Función Pública: {idi_protagonista}"
+        else:
+            etiqueta_idi_ec = (
+                f"Índice de Control Interno (MECI) oficial de Función Pública: {idi_protagonista} "
+                f"— única política de obligatorio cumplimiento del régimen especial de esta entidad"
+            )
         doc.add_paragraph(
             f"A partir del diagnóstico real IDI-MIPG de {nombre_entidad} "
-            f"(IDI oficial de Función Pública: {idi_protagonista}), este estudio de caso "
+            f"({etiqueta_idi_ec}), este estudio de caso "
             f"identifica —con metodología propia y exclusiva de SIIEAP, no con una cifra "
             f"publicada por la Función Pública— {len(diag.brechas)} brechas de "
             "implementación por debajo del umbral de alerta metodológico interno del "
@@ -1057,11 +1071,11 @@ def generar_estudio_de_caso_docx(
 
     # 2. Contexto institucional (local, regional, global)
     _agregar_divisor_seccion_docx(doc, "2. Contexto institucional — enfoque local, regional y global", icono="🌍")
-    for linea in _construir_contexto_local_regional_global(nombre_entidad, resultado_360, resultado_isvpt):
+    for linea in _construir_contexto_local_regional_global(nombre_entidad, resultado_360, resultado_isvpt, mostrar_isvpt=diag.aplica_mipg_integral):
         doc.add_paragraph(linea)
 
     # 2bis. Índice Sintético de Valor Público Territorial (ISVPT) — novedad metodológica
-    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None:
+    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None and diag.aplica_mipg_integral:
         doc.add_heading("2.1 🎯 El Termómetro del Valor Público: Índice Sintético de Valor Público Territorial (ISVPT)", level=2)
         doc.add_paragraph(
             "Complementario al IDI oficial, este índice normaliza (min-max) las 7 "
@@ -1469,9 +1483,16 @@ def generar_estudio_de_caso_pdf(
     except Exception:
         pass
     if diag.brechas:
+        if diag.aplica_mipg_integral:
+            etiqueta_idi_ec_pdf = f"IDI oficial de Función Pública: {idi_protagonista}"
+        else:
+            etiqueta_idi_ec_pdf = (
+                f"Índice de Control Interno (MECI) oficial de Función Pública: {idi_protagonista} "
+                f"— única política de obligatorio cumplimiento del régimen especial de esta entidad"
+            )
         elementos.append(Paragraph(
-            f"A partir del diagnóstico real IDI-MIPG de {nombre_entidad} (IDI oficial de Función Pública: "
-            f"{idi_protagonista}), se identifican {len(diag.brechas)} brechas de "
+            f"A partir del diagnóstico real IDI-MIPG de {nombre_entidad} ({etiqueta_idi_ec_pdf}), "
+            f"se identifican {len(diag.brechas)} brechas de "
             "implementación por debajo del umbral esperado, entre ellas:",
             estilo_normal,
         ))
@@ -1522,11 +1543,11 @@ def generar_estudio_de_caso_pdf(
     elementos.append(Spacer(1, 8))
 
     elementos.extend(_divisor_seccion_pdf("2. Contexto institucional — enfoque local, regional y global", icono="🌍"))
-    for linea in _construir_contexto_local_regional_global(nombre_entidad, resultado_360, resultado_isvpt):
+    for linea in _construir_contexto_local_regional_global(nombre_entidad, resultado_360, resultado_isvpt, mostrar_isvpt=diag.aplica_mipg_integral):
         elementos.append(Paragraph(linea, estilo_normal))
         elementos.append(Spacer(1, 4))
 
-    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None:
+    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None and diag.aplica_mipg_integral:
         elementos.append(Paragraph("2.1 🎯 El Termómetro del Valor Público: Índice Sintético de Valor Público Territorial (ISVPT)", estilo_h2))
         elementos.append(Paragraph(
             "Complementario al IDI oficial, este índice normaliza (min-max) las 7 "
