@@ -13,6 +13,8 @@ aparte, siempre desde Territorio/Nación y el banco de recomendaciones —
 nunca se inventan aquí.
 """
 
+from backend.motores.motor_diagnostico import UMBRAL_BRECHA
+
 # --- Escalas oficiales de la Guía de Gestión Integral del Riesgo V7 ---
 ESCALA_PROBABILIDAD = [
     ("Muy Baja", "20%"),
@@ -183,8 +185,9 @@ def declaracion_ptep_adaptada(nombre_entidad: str, diag=None, cruce_recomendacio
     parafraseado (no copiado textual, por derechos de autor) del documento
     'Programa de Transparencia y Ética Pública 2025' de Función Pública, y
     adaptado con los datos reales de la entidad cuando están disponibles
-    (índice POL15 — Transparencia, índice POL02 — Integridad, y las
-    recomendaciones oficiales de esas dos políticas si hay brecha)."""
+    (puntaje OFICIAL agregado de POL15 — Transparencia e índice POL02 —
+    Integridad, tomado de diag.politicas_oficiales, y las recomendaciones
+    oficiales de esas dos políticas si hay brecha real en el agregado)."""
     secciones = []
 
     secciones.append((
@@ -262,23 +265,36 @@ def declaracion_ptep_adaptada(nombre_entidad: str, diag=None, cruce_recomendacio
     ))
 
     if diag is not None:
-        pol15 = next((r for r in diag.brechas if r.codigo_politica == 'POL15'), None)
-        pol02 = next((r for r in diag.brechas if r.codigo_politica == 'POL02'), None)
+        # CORRECCIÓN (agosto 2026): antes se buscaba en diag.brechas un
+        # registro con codigo_politica == 'POL15'/'POL02', pero diag.brechas
+        # son ÍNDICES INDIVIDUALES (I48, I06, etc.) que pertenecen a esa
+        # política — no el puntaje agregado de la política misma. Eso hacía
+        # que el informe mostrara, por ejemplo, "el índice POL15 tiene un
+        # puntaje oficial de 51.61" cuando 51.61 era en realidad el puntaje
+        # de I48 (Gestión de Riesgos de Corrupción) y el puntaje real de
+        # POL15 podía ser 69.57 (por encima del umbral, sin brecha real).
+        # Ahora se usa el puntaje oficial de política (diag.politicas_oficiales),
+        # que es la cifra que Función Pública publica para POL15/POL02 como tal.
+        politicas_of = diag.politicas_oficiales or {}
+        puntaje_pol15 = politicas_of.get('POL15')
+        puntaje_pol02 = politicas_of.get('POL02')
+        pol15 = puntaje_pol15 is not None and puntaje_pol15 < UMBRAL_BRECHA
+        pol02 = puntaje_pol02 is not None and puntaje_pol02 < UMBRAL_BRECHA
         cruce = cruce_recomendaciones or {}
         recs_transparencia = []
         for b in diag.brechas:
             if b.codigo_politica in ('POL15', 'POL02'):
                 recs_transparencia.extend(cruce.get(b.codigo_indice, [])[:1])
         texto_estado = (
-            f'{nombre_entidad} tiene {"una brecha detectada" if (pol15 or pol02) else "sin brecha detectada en este informe"} '
+            f'{nombre_entidad} {"tiene una brecha detectada" if (pol15 or pol02) else "no tiene brecha detectada en este informe"} '
             f'en los índices directamente relacionados con este Programa '
             f'(POL15 — Transparencia, Acceso a la Información y lucha contra la Corrupción'
             f'{", y POL02 — Integridad" if pol02 else ""}). '
         )
         if pol15:
-            texto_estado += f'El índice POL15 tiene un puntaje oficial de {pol15.puntaje} sobre 100, por debajo del umbral de 60 puntos. '
+            texto_estado += f'El índice POL15 tiene un puntaje oficial de {puntaje_pol15} sobre 100, por debajo del umbral de 60 puntos. '
         if pol02:
-            texto_estado += f'El índice POL02 (Integridad) tiene un puntaje oficial de {pol02.puntaje} sobre 100. '
+            texto_estado += f'El índice POL02 (Integridad) tiene un puntaje oficial de {puntaje_pol02} sobre 100, por debajo del umbral de 60 puntos. '
         if recs_transparencia:
             texto_estado += (
                 'Entre las recomendaciones oficiales de Función Pública específicas para esta entidad '
