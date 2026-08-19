@@ -408,28 +408,62 @@ def generar_informe_alcaldes_docx(
 
     # --- 1. Cómo está la entidad, dimensión por dimensión (semáforo) ---
     _titulo_seccion_docx(doc, 1, "Cómo está la entidad, dimensión por dimensión")
-    doc.add_paragraph(
-        "Cada dimensión agrupa un conjunto de temas de la gestión pública (talento "
-        "humano, planeación, contratación, servicio al ciudadano, entre otras). El "
-        "color indica qué tan urgente es la atención de la Alta Dirección en esa "
-        "dimensión."
-    )
-    tabla_dim = doc.add_table(rows=1, cols=3)
-    tabla_dim.style = "Light Grid Accent 1"
-    for celda, texto in zip(tabla_dim.rows[0].cells, ["Dimensión", "Puntaje (sobre 100)", "Semáforo"]):
-        celda.text = texto
-        for parrafo in celda.paragraphs:
-            for run_enc in parrafo.runs:
-                run_enc.bold = True
-    for r in diag.resultados_por_dimension:
+    if diag.aplica_mipg_integral:
+        doc.add_paragraph(
+            "Cada dimensión agrupa un conjunto de temas de la gestión pública (talento "
+            "humano, planeación, contratación, servicio al ciudadano, entre otras). El "
+            "color indica qué tan urgente es la atención de la Alta Dirección en esa "
+            "dimensión."
+        )
+        tabla_dim = doc.add_table(rows=1, cols=3)
+        tabla_dim.style = "Light Grid Accent 1"
+        for celda, texto in zip(tabla_dim.rows[0].cells, ["Dimensión", "Puntaje (sobre 100)", "Semáforo"]):
+            celda.text = texto
+            for parrafo in celda.paragraphs:
+                for run_enc in parrafo.runs:
+                    run_enc.bold = True
+        for r in diag.resultados_por_dimension:
+            fila = tabla_dim.add_row().cells
+            fila[0].text = f"{r.nombre}"
+            fila[1].text = str(valor_protagonista_dimension(r))
+            color_dim, emoji_dim, texto_dim = _quintil_mipg(valor_protagonista_dimension(r))
+            fila[2].text = f"{emoji_dim} {texto_dim}"
+            _sombrear_celda(fila[2], color_dim)
+        _bandear_filas_docx(tabla_dim)
+        _ajustar_tabla_docx(tabla_dim, anchos_cm=[9.0, 4.0, 4.0], tamano_fuente_pt=10.5)
+    else:
+        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): régimen
+        # especial no tiene dimensiones D1-D7 oficiales — se lista por
+        # política individual, con Control Interno (MECI) como la única
+        # obligatoria y protagonista.
+        doc.add_paragraph(
+            "Esta entidad es de régimen especial (MECI-only): la única política de "
+            "obligatorio cumplimiento es Control Interno. Las demás políticas que se "
+            "listan a continuación fueron reportadas de forma voluntaria por la entidad."
+        )
+        tabla_dim = doc.add_table(rows=1, cols=3)
+        tabla_dim.style = "Light Grid Accent 1"
+        for celda, texto in zip(tabla_dim.rows[0].cells, ["Política / Índice", "Puntaje (sobre 100)", "Semáforo"]):
+            celda.text = texto
+            for parrafo in celda.paragraphs:
+                for run_enc in parrafo.runs:
+                    run_enc.bold = True
         fila = tabla_dim.add_row().cells
-        fila[0].text = f"{r.nombre}"
-        fila[1].text = str(valor_protagonista_dimension(r))
-        color_dim, emoji_dim, texto_dim = _quintil_mipg(valor_protagonista_dimension(r))
-        fila[2].text = f"{emoji_dim} {texto_dim}"
-        _sombrear_celda(fila[2], color_dim)
-    _bandear_filas_docx(tabla_dim)
-    _ajustar_tabla_docx(tabla_dim, anchos_cm=[9.0, 4.0, 4.0], tamano_fuente_pt=10.5)
+        fila[0].text = "Control Interno (MECI) — obligatoria"
+        fila[1].text = str(diag.idi_estimado)
+        color_meci, emoji_meci, texto_meci = _quintil_mipg(diag.idi_estimado)
+        fila[2].text = f"{emoji_meci} {texto_meci}"
+        _sombrear_celda(fila[2], color_meci)
+        for b in diag.brechas:
+            if not b.obligatoria:
+                fila = tabla_dim.add_row().cells
+                fila[0].text = f"{b.politica} — {b.nombre_indice} (voluntaria)"
+                fila[1].text = str(b.puntaje)
+                color_b, emoji_b, texto_b = _quintil_mipg(b.puntaje)
+                fila[2].text = f"{emoji_b} {texto_b}"
+                _sombrear_celda(fila[2], color_b)
+        _bandear_filas_docx(tabla_dim)
+        _ajustar_tabla_docx(tabla_dim, anchos_cm=[9.0, 4.0, 4.0], tamano_fuente_pt=10.5)
 
     doc.add_paragraph()
     try:
@@ -705,40 +739,77 @@ def generar_informe_alcaldes_pdf(
 
     # --- 1. Semáforo por dimensión ---
     elementos.extend(_divisor_seccion_pdf(1, "Cómo está la entidad, dimensión por dimensión", estilos))
-    elementos.append(Paragraph(
-        "Cada dimensión agrupa un conjunto de temas de la gestión pública. El color "
-        "indica qué tan urgente es la atención de la Alta Dirección en esa dimensión.",
-        estilo_normal,
-    ))
-    elementos.append(Spacer(1, 6))
-    datos_dim = [["Dimensión", "Puntaje (sobre 100)", "Semáforo"]]
-    colores_fila_dim = []
-    for r in diag.resultados_por_dimension:
-        color_dim, emoji_dim, texto_dim = _quintil_mipg(valor_protagonista_dimension(r))
-        datos_dim.append([r.nombre, str(valor_protagonista_dimension(r)), f"{emoji_dim} {texto_dim}"])
-        colores_fila_dim.append(color_dim)
-    tabla_dim = Table(datos_dim, hAlign="LEFT", colWidths=[9 * cm, 3.5 * cm, 3.5 * cm])
-    estilo_tabla_dim = [
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTSIZE", (0, 0), (-1, -1), 10),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-    ]
-    for i, color_dim in enumerate(colores_fila_dim, start=1):
-        if i % 2 == 0:
-            estilo_tabla_dim.append(("BACKGROUND", (0, i), (1, i), colors.HexColor(f"#{COLOR_FRANJA_ALTERNA}")))
-        estilo_tabla_dim.append(("BACKGROUND", (2, i), (2, i), colors.HexColor(f"#{color_dim}")))
-    tabla_dim.setStyle(TableStyle(estilo_tabla_dim))
-    elementos.append(tabla_dim)
-    elementos.append(Spacer(1, 10))
-
-    try:
-        buffer_grafica_dim = generar_grafica_dimensiones(diag)
-        elementos.append(Image(buffer_grafica_dim, width=16 * cm, height=16 * cm * 0.5))
+    if diag.aplica_mipg_integral:
+        elementos.append(Paragraph(
+            "Cada dimensión agrupa un conjunto de temas de la gestión pública. El color "
+            "indica qué tan urgente es la atención de la Alta Dirección en esa dimensión.",
+            estilo_normal,
+        ))
+        elementos.append(Spacer(1, 6))
+        datos_dim = [["Dimensión", "Puntaje (sobre 100)", "Semáforo"]]
+        colores_fila_dim = []
+        for r in diag.resultados_por_dimension:
+            color_dim, emoji_dim, texto_dim = _quintil_mipg(valor_protagonista_dimension(r))
+            datos_dim.append([r.nombre, str(valor_protagonista_dimension(r)), f"{emoji_dim} {texto_dim}"])
+            colores_fila_dim.append(color_dim)
+        tabla_dim = Table(datos_dim, hAlign="LEFT", colWidths=[9 * cm, 3.5 * cm, 3.5 * cm])
+        estilo_tabla_dim = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]
+        for i, color_dim in enumerate(colores_fila_dim, start=1):
+            if i % 2 == 0:
+                estilo_tabla_dim.append(("BACKGROUND", (0, i), (1, i), colors.HexColor(f"#{COLOR_FRANJA_ALTERNA}")))
+            estilo_tabla_dim.append(("BACKGROUND", (2, i), (2, i), colors.HexColor(f"#{color_dim}")))
+        tabla_dim.setStyle(TableStyle(estilo_tabla_dim))
+        elementos.append(tabla_dim)
         elementos.append(Spacer(1, 10))
-    except Exception:
-        pass
+
+        try:
+            buffer_grafica_dim = generar_grafica_dimensiones(diag)
+            elementos.append(Image(buffer_grafica_dim, width=16 * cm, height=16 * cm * 0.5))
+            elementos.append(Spacer(1, 10))
+        except Exception:
+            pass
+    else:
+        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): régimen
+        # especial no tiene dimensiones D1-D7 oficiales — se lista por
+        # política individual, con Control Interno (MECI) como la única
+        # obligatoria y protagonista.
+        elementos.append(Paragraph(
+            "Esta entidad es de régimen especial (MECI-only): la única política de "
+            "obligatorio cumplimiento es Control Interno. Las demás políticas que se "
+            "listan a continuación fueron reportadas de forma voluntaria por la entidad.",
+            estilo_normal,
+        ))
+        elementos.append(Spacer(1, 6))
+        color_meci, emoji_meci, texto_meci = _quintil_mipg(diag.idi_estimado)
+        datos_dim = [["Política / Índice", "Puntaje (sobre 100)", "Semáforo"],
+                     ["Control Interno (MECI) — obligatoria", str(diag.idi_estimado), f"{emoji_meci} {texto_meci}"]]
+        colores_fila_dim = [color_meci]
+        for b in diag.brechas:
+            if not b.obligatoria:
+                color_b, emoji_b, texto_b = _quintil_mipg(b.puntaje)
+                datos_dim.append([f"{b.politica} — {b.nombre_indice} (voluntaria)", str(b.puntaje), f"{emoji_b} {texto_b}"])
+                colores_fila_dim.append(color_b)
+        tabla_dim = Table(datos_dim, hAlign="LEFT", colWidths=[9 * cm, 3.5 * cm, 3.5 * cm])
+        estilo_tabla_dim = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]
+        for i, color_dim in enumerate(colores_fila_dim, start=1):
+            if i % 2 == 0:
+                estilo_tabla_dim.append(("BACKGROUND", (0, i), (1, i), colors.HexColor(f"#{COLOR_FRANJA_ALTERNA}")))
+            estilo_tabla_dim.append(("BACKGROUND", (2, i), (2, i), colors.HexColor(f"#{color_dim}")))
+        tabla_dim.setStyle(TableStyle(estilo_tabla_dim))
+        elementos.append(tabla_dim)
+        elementos.append(Spacer(1, 10))
 
     # --- 2. Top brechas críticas ---
     elementos.extend(_divisor_seccion_pdf(2, "Los puntos que más necesitan atención ahora", estilos))

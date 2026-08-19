@@ -1906,9 +1906,24 @@ def _filas_inversion_brechas(diag, top_n=5):
     de la tabla 'en qué invertir, brecha por brecha' — dinámica por entidad,
     no un ejemplo fijo. Toma las dimensiones con peor promedio (excluyendo las
     que no tienen información) y las cruza con MARCO_INVERSION_POR_DIMENSION.
+
+    CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): para entidades
+    de régimen especial (MECI-only) no se agrupa por dimensiones D1-D7 —
+    no están definidas oficialmente para este régimen. En su lugar se usan
+    las políticas individuales con brecha (voluntarias u obligatoria de
+    Control Interno), cada una analizada por separado.
     """
     filas = []
     if diag is None:
+        return filas
+    if not diag.aplica_mipg_integral:
+        brechas_ordenadas = sorted(diag.brechas, key=lambda b: b.puntaje)[:top_n]
+        for b in brechas_ordenadas:
+            etiqueta = f"{b.politica} — {b.nombre_indice} ({b.puntaje:.2f})"
+            nota_exigibilidad = (
+                "obligatoria (Control Interno)" if b.obligatoria else "voluntaria, no exigida a este régimen"
+            )
+            filas.append((etiqueta, f"Fortalecimiento institucional en {b.politica} ({nota_exigibilidad})", "Cierre de brechas institucionales"))
         return filas
     dims_validas = [d for d in diag.resultados_por_dimension if valor_protagonista_dimension(d) is not None]
     dims_ordenadas = sorted(dims_validas, key=lambda d: valor_protagonista_dimension(d))[:top_n]
@@ -3111,20 +3126,45 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
             parrafos_resumen.append(
                 f"Esto la ubica en el percentil {resultado_360.percentil_entidad_referencia}% de su grupo."
             )
-    dims_criticas = sorted(diag.resultados_por_dimension, key=lambda r: (valor_protagonista_dimension(r) if valor_protagonista_dimension(r) is not None else 0))[:3]
-    if dims_criticas:
-        nombres_criticas = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_criticas)
-        parrafos_resumen.append(f"Las dimensiones más críticas son: {nombres_criticas}.")
-    dims_fuertes = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
-    if dims_fuertes:
-        nombres_fuertes = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_fuertes)
-        parrafos_resumen.append(f"Como fortaleza relativa, se destaca(n): {nombres_fuertes}.")
+    if diag.aplica_mipg_integral:
+        dims_criticas = sorted(diag.resultados_por_dimension, key=lambda r: (valor_protagonista_dimension(r) if valor_protagonista_dimension(r) is not None else 0))[:3]
+        if dims_criticas:
+            nombres_criticas = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_criticas)
+            parrafos_resumen.append(f"Las dimensiones más críticas son: {nombres_criticas}.")
+        dims_fuertes = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
+        if dims_fuertes:
+            nombres_fuertes = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_fuertes)
+            parrafos_resumen.append(f"Como fortaleza relativa, se destaca(n): {nombres_fuertes}.")
+        else:
+            parrafos_resumen.append(
+                "Ninguna dimensión alcanza el umbral de 60 puntos: el patrón de brechas simultáneas en "
+                "múltiples dimensiones sugiere una debilidad estructural de capacidad institucional "
+                "(Oszlak), más que fallas puntuales y aisladas de gestión."
+            )
     else:
-        parrafos_resumen.append(
-            "Ninguna dimensión alcanza el umbral de 60 puntos: el patrón de brechas simultáneas en "
-            "múltiples dimensiones sugiere una debilidad estructural de capacidad institucional "
-            "(Oszlak), más que fallas puntuales y aisladas de gestión."
-        )
+        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): para
+        # régimen especial NO se agrupan políticas en dimensiones D1-D7
+        # (no están definidas oficialmente para este régimen). Se reporta,
+        # sin agrupar, cuántas de las políticas que la entidad reportó
+        # voluntariamente (más allá de Control Interno) quedaron por
+        # debajo de 60 — cada una se desarrolla individualmente más
+        # adelante en el informe, en riesgos y plan de mejoramiento.
+        brechas_voluntarias_resumen = [b for b in diag.brechas if not b.obligatoria]
+        if brechas_voluntarias_resumen:
+            politicas_afectadas = sorted({b.politica for b in brechas_voluntarias_resumen})
+            parrafos_resumen.append(
+                f"Adicionalmente, de las políticas que la entidad reportó de forma voluntaria (no "
+                f"exigidas por la norma a este régimen especial), {len(politicas_afectadas)} "
+                f"presentan índices por debajo de 60 puntos: {', '.join(politicas_afectadas)}. "
+                "Se analizan de forma individual, sin agruparlas en dimensiones, en las secciones "
+                "de riesgos y plan de mejoramiento de este informe."
+            )
+        else:
+            parrafos_resumen.append(
+                "Las políticas adicionales que la entidad reportó de forma voluntaria (más allá de "
+                "Control Interno, que es la única exigida a este régimen especial) no presentan "
+                "índices por debajo de 60 puntos."
+            )
     if hay_diferencia_idi:
         parrafos_resumen.append(
             f"Nota metodológica: Función Pública reporta un IDI oficial de {idi_oficial} para esta "
@@ -3187,36 +3227,68 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     # Resultado real del diagnóstico
     _agregar_divisor_seccion_docx(doc, "Resultado del diagnóstico institucional (datos reales)", icono="📈")
     p_idi = doc.add_paragraph()
-    run_idi = p_idi.add_run(f"IDI estimado: {diag.idi_estimado}")
+    etiqueta_idi_seccion = "IDI estimado" if diag.aplica_mipg_integral else "Índice de Control Interno (MECI) oficial"
+    run_idi = p_idi.add_run(f"{etiqueta_idi_seccion}: {diag.idi_estimado}")
     run_idi.bold = True
     run_idi.font.size = Pt(14)
 
-    tabla = doc.add_table(rows=1, cols=4)
-    tabla.style = "Light Grid Accent 1"
-    encabezados = tabla.rows[0].cells
-    for celda, texto in zip(encabezados, ["Dimensión", "Promedio", "Riesgo", "Índices"]):
-        celda.text = texto
-        for parrafo in celda.paragraphs:
-            for run_enc in parrafo.runs:
-                run_enc.bold = True
+    if diag.aplica_mipg_integral:
+        tabla = doc.add_table(rows=1, cols=4)
+        tabla.style = "Light Grid Accent 1"
+        encabezados = tabla.rows[0].cells
+        for celda, texto in zip(encabezados, ["Dimensión", "Promedio", "Riesgo", "Índices"]):
+            celda.text = texto
+            for parrafo in celda.paragraphs:
+                for run_enc in parrafo.runs:
+                    run_enc.bold = True
 
-    for r in diag.resultados_por_dimension:
+        for r in diag.resultados_por_dimension:
+            fila = tabla.add_row().cells
+            fila[0].text = f"{r.codigo} {r.nombre}"
+            fila[1].text = str(valor_protagonista_dimension(r))
+            fila[2].text = str(r.nivel_riesgo)
+            fila[3].text = f"{r.n_indices_evaluados}/{r.n_indices_esperados}"
+            # Sin resaltado de color: solo se muestra el valor oficial (agosto 2026)
+        _ajustar_tabla_docx(tabla, anchos_cm=[9.5, 2.3, 2.3, 2.0])
+
+        doc.add_paragraph()
+        try:
+            buffer_grafica_dim = generar_grafica_dimensiones(diag)
+            doc.add_picture(buffer_grafica_dim, width=Inches(6.2))
+            parrafo_imagen = doc.paragraphs[-1]
+            parrafo_imagen.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        except Exception:
+            pass  # si falla la gráfica, el informe sigue sin ella
+    else:
+        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): régimen
+        # especial no tiene dimensiones D1-D7 oficiales — se lista por
+        # política individual (Control Interno + las voluntarias con
+        # brecha), sin agrupar ni promediar.
+        doc.add_paragraph(
+            "Esta entidad es de régimen especial (MECI-only): no tiene dimensiones D1-D7 oficiales. "
+            "Se lista a continuación la política de Control Interno (única obligatoria) y las demás "
+            "políticas que la entidad reportó voluntariamente con índices por debajo de 60 puntos, "
+            "cada una de forma individual."
+        )
+        tabla = doc.add_table(rows=1, cols=3)
+        tabla.style = "Light Grid Accent 1"
+        encabezados = tabla.rows[0].cells
+        for celda, texto in zip(encabezados, ["Política / Índice", "Puntaje oficial", "Exigibilidad"]):
+            celda.text = texto
+            for parrafo in celda.paragraphs:
+                for run_enc in parrafo.runs:
+                    run_enc.bold = True
         fila = tabla.add_row().cells
-        fila[0].text = f"{r.codigo} {r.nombre}"
-        fila[1].text = str(valor_protagonista_dimension(r))
-        fila[2].text = str(r.nivel_riesgo)
-        fila[3].text = f"{r.n_indices_evaluados}/{r.n_indices_esperados}"
-        # Sin resaltado de color: solo se muestra el valor oficial (agosto 2026)
-    _ajustar_tabla_docx(tabla, anchos_cm=[9.5, 2.3, 2.3, 2.0])
-
-    doc.add_paragraph()
-    try:
-        buffer_grafica_dim = generar_grafica_dimensiones(diag)
-        doc.add_picture(buffer_grafica_dim, width=Inches(6.2))
-        parrafo_imagen = doc.paragraphs[-1]
-        parrafo_imagen.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    except Exception:
-        pass  # si falla la gráfica, el informe sigue sin ella
+        fila[0].text = "Control Interno (MECI)"
+        fila[1].text = str(diag.idi_estimado)
+        fila[2].text = "Obligatoria"
+        for b in diag.brechas:
+            if not b.obligatoria:
+                fila = tabla.add_row().cells
+                fila[0].text = f"{b.codigo_indice} {b.nombre_indice} ({b.politica})"
+                fila[1].text = str(b.puntaje)
+                fila[2].text = "Voluntaria (no exigida a este régimen)"
+        _ajustar_tabla_docx(tabla, anchos_cm=[9.5, 2.3, 4.3])
 
     doc.add_heading("Brechas priorizadas (todas las detectadas)", level=2)
     if diag.brechas:
@@ -3523,20 +3595,45 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         )
         if resultado_360.percentil_entidad_referencia is not None:
             parrafos_resumen.append(f"Esto la ubica en el percentil {resultado_360.percentil_entidad_referencia}% de su grupo.")
-    dims_criticas = sorted(diag.resultados_por_dimension, key=lambda r: (valor_protagonista_dimension(r) if valor_protagonista_dimension(r) is not None else 0))[:3]
-    if dims_criticas:
-        nombres_criticas = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_criticas)
-        parrafos_resumen.append(f"Las dimensiones más críticas son: {nombres_criticas}.")
-    dims_fuertes = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
-    if dims_fuertes:
-        nombres_fuertes = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_fuertes)
-        parrafos_resumen.append(f"Como fortaleza relativa, se destaca(n): {nombres_fuertes}.")
+    if diag.aplica_mipg_integral:
+        dims_criticas = sorted(diag.resultados_por_dimension, key=lambda r: (valor_protagonista_dimension(r) if valor_protagonista_dimension(r) is not None else 0))[:3]
+        if dims_criticas:
+            nombres_criticas = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_criticas)
+            parrafos_resumen.append(f"Las dimensiones más críticas son: {nombres_criticas}.")
+        dims_fuertes = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
+        if dims_fuertes:
+            nombres_fuertes = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_fuertes)
+            parrafos_resumen.append(f"Como fortaleza relativa, se destaca(n): {nombres_fuertes}.")
+        else:
+            parrafos_resumen.append(
+                "Ninguna dimensión alcanza el umbral de 60 puntos: el patrón de brechas simultáneas en "
+                "múltiples dimensiones sugiere una debilidad estructural de capacidad institucional "
+                "(Oszlak), más que fallas puntuales y aisladas de gestión."
+            )
     else:
-        parrafos_resumen.append(
-            "Ninguna dimensión alcanza el umbral de 60 puntos: el patrón de brechas simultáneas en "
-            "múltiples dimensiones sugiere una debilidad estructural de capacidad institucional "
-            "(Oszlak), más que fallas puntuales y aisladas de gestión."
-        )
+        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): para
+        # régimen especial NO se agrupan políticas en dimensiones D1-D7
+        # (no están definidas oficialmente para este régimen). Se reporta,
+        # sin agrupar, cuántas de las políticas que la entidad reportó
+        # voluntariamente (más allá de Control Interno) quedaron por
+        # debajo de 60 — cada una se desarrolla individualmente más
+        # adelante en el informe, en riesgos y plan de mejoramiento.
+        brechas_voluntarias_resumen = [b for b in diag.brechas if not b.obligatoria]
+        if brechas_voluntarias_resumen:
+            politicas_afectadas = sorted({b.politica for b in brechas_voluntarias_resumen})
+            parrafos_resumen.append(
+                f"Adicionalmente, de las políticas que la entidad reportó de forma voluntaria (no "
+                f"exigidas por la norma a este régimen especial), {len(politicas_afectadas)} "
+                f"presentan índices por debajo de 60 puntos: {', '.join(politicas_afectadas)}. "
+                "Se analizan de forma individual, sin agruparlas en dimensiones, en las secciones "
+                "de riesgos y plan de mejoramiento de este informe."
+            )
+        else:
+            parrafos_resumen.append(
+                "Las políticas adicionales que la entidad reportó de forma voluntaria (más allá de "
+                "Control Interno, que es la única exigida a este régimen especial) no presentan "
+                "índices por debajo de 60 puntos."
+            )
     if hay_diferencia_idi:
         parrafos_resumen.append(
             f"Nota metodológica: Función Pública reporta un IDI oficial de {idi_oficial} para esta "
@@ -3592,40 +3689,65 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
 
     # Resultado real del diagnóstico
     elementos.extend(_divisor_seccion_pdf("Resultado del diagnóstico institucional (datos reales)", icono="📈"))
-    elementos.append(Paragraph(f"<b>IDI estimado: {diag.idi_estimado}</b>", ParagraphStyle("IDIGrande", parent=estilo_normal, fontSize=15)))
+    etiqueta_idi_seccion_pdf = "IDI estimado" if diag.aplica_mipg_integral else "Índice de Control Interno (MECI) oficial"
+    elementos.append(Paragraph(f"<b>{etiqueta_idi_seccion_pdf}: {diag.idi_estimado}</b>", ParagraphStyle("IDIGrande", parent=estilo_normal, fontSize=15)))
     elementos.append(Spacer(1, 8))
 
-    datos_tabla = [[_celda_pdf("Dimensión", encabezado=True, tamano_fuente=9), "Promedio", "Riesgo", "Índices"]]
-    for r in diag.resultados_por_dimension:
-        datos_tabla.append([
-            _celda_pdf(f"{r.codigo} {r.nombre}", tamano_fuente=9), str(valor_protagonista_dimension(r)), str(r.nivel_riesgo),
-            f"{r.n_indices_evaluados}/{r.n_indices_esperados}",
-        ])
-    tabla = Table(datos_tabla, hAlign="LEFT", colWidths=[7 * cm, 2.5 * cm, 2.5 * cm, 2.5 * cm])
-    estilo_tabla_dim = [
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-    ]
-    _COLOR_PDF_POR_RIESGO = {
-        "alta": colors.HexColor("#F5B7B1"),
-        "media": colors.HexColor("#FAD7A0"),
-        "baja": colors.HexColor("#A9DFBF"),
-    }
-    for indice_fila, r in enumerate(diag.resultados_por_dimension, start=1):
-        pass  # Sin resaltado de color: solo se muestra el valor oficial (agosto 2026)
-    tabla.setStyle(TableStyle(estilo_tabla_dim))
-    elementos.append(tabla)
-    elementos.append(Spacer(1, 10))
-
-    try:
-        buffer_grafica_dim = generar_grafica_dimensiones(diag)
-        elementos.append(Image(buffer_grafica_dim, width=16 * cm, height=16 * cm * 0.5))
+    if diag.aplica_mipg_integral:
+        datos_tabla = [[_celda_pdf("Dimensión", encabezado=True, tamano_fuente=9), "Promedio", "Riesgo", "Índices"]]
+        for r in diag.resultados_por_dimension:
+            datos_tabla.append([
+                _celda_pdf(f"{r.codigo} {r.nombre}", tamano_fuente=9), str(valor_protagonista_dimension(r)), str(r.nivel_riesgo),
+                f"{r.n_indices_evaluados}/{r.n_indices_esperados}",
+            ])
+        tabla = Table(datos_tabla, hAlign="LEFT", colWidths=[7 * cm, 2.5 * cm, 2.5 * cm, 2.5 * cm])
+        estilo_tabla_dim = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]
+        tabla.setStyle(TableStyle(estilo_tabla_dim))
+        elementos.append(tabla)
         elementos.append(Spacer(1, 10))
-    except Exception:
-        pass
+
+        try:
+            buffer_grafica_dim = generar_grafica_dimensiones(diag)
+            elementos.append(Image(buffer_grafica_dim, width=16 * cm, height=16 * cm * 0.5))
+            elementos.append(Spacer(1, 10))
+        except Exception:
+            pass
+    else:
+        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): régimen
+        # especial no tiene dimensiones D1-D7 oficiales — se lista por
+        # política individual, sin agrupar.
+        elementos.append(Paragraph(
+            "Esta entidad es de régimen especial (MECI-only): no tiene dimensiones D1-D7 oficiales. "
+            "Se lista la política de Control Interno (única obligatoria) y las demás políticas "
+            "reportadas voluntariamente con índices por debajo de 60 puntos, cada una de forma "
+            "individual.",
+            estilo_normal,
+        ))
+        elementos.append(Spacer(1, 6))
+        datos_tabla = [[_celda_pdf("Política / Índice", encabezado=True, tamano_fuente=9), "Puntaje oficial", "Exigibilidad"]]
+        datos_tabla.append([_celda_pdf("Control Interno (MECI)", tamano_fuente=9), str(diag.idi_estimado), "Obligatoria"])
+        for b in diag.brechas:
+            if not b.obligatoria:
+                datos_tabla.append([
+                    _celda_pdf(f"{b.codigo_indice} {b.nombre_indice} ({b.politica})", tamano_fuente=9),
+                    str(b.puntaje), "Voluntaria (no exigida)",
+                ])
+        tabla = Table(datos_tabla, hAlign="LEFT", colWidths=[9 * cm, 2.5 * cm, 4 * cm])
+        tabla.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]))
+        elementos.append(tabla)
+        elementos.append(Spacer(1, 10))
 
     elementos.append(Paragraph("Brechas priorizadas (todas las detectadas)", estilo_h2))
     if diag.brechas:

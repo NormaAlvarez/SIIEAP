@@ -1356,20 +1356,40 @@ def generar_estudio_de_caso_docx(
 
     # 7. Fortalezas y debilidades
     _agregar_divisor_seccion_docx(doc, "7. Fortalezas y debilidades identificadas", icono="💪")
-    fortalezas = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
-    debilidades = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) < 60]
-    doc.add_heading("Fortalezas", level=2)
-    if fortalezas:
-        for r in fortalezas:
-            doc.add_paragraph(f"{r.codigo} {r.nombre}: {valor_protagonista_dimension(r)} puntos", style="List Bullet")
+    if diag.aplica_mipg_integral:
+        fortalezas = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
+        debilidades = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) < 60]
+        doc.add_heading("Fortalezas", level=2)
+        if fortalezas:
+            for r in fortalezas:
+                doc.add_paragraph(f"{r.codigo} {r.nombre}: {valor_protagonista_dimension(r)} puntos", style="List Bullet")
+        else:
+            doc.add_paragraph("Con los datos disponibles, no se identifican dimensiones por encima de 60 puntos.")
+        doc.add_heading("Debilidades", level=2)
+        if debilidades:
+            for r in debilidades:
+                doc.add_paragraph(f"{r.codigo} {r.nombre}: {valor_protagonista_dimension(r)} puntos", style="List Bullet")
+        else:
+            doc.add_paragraph("Con los datos disponibles, no se identifican dimensiones por debajo de 60 puntos.")
     else:
-        doc.add_paragraph("Con los datos disponibles, no se identifican dimensiones por encima de 60 puntos.")
-    doc.add_heading("Debilidades", level=2)
-    if debilidades:
-        for r in debilidades:
-            doc.add_paragraph(f"{r.codigo} {r.nombre}: {valor_protagonista_dimension(r)} puntos", style="List Bullet")
-    else:
-        doc.add_paragraph("Con los datos disponibles, no se identifican dimensiones por debajo de 60 puntos.")
+        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): para
+        # régimen especial no se agrupan políticas en dimensiones D1-D7.
+        # La fortaleza es el índice de Control Interno (MECI, protagonista
+        # ya presentado); las debilidades se listan por política individual.
+        doc.add_heading("Fortaleza", level=2)
+        doc.add_paragraph(
+            f"Índice de Control Interno (MECI): {idi_protagonista} puntos — única política de "
+            "obligatorio cumplimiento para este régimen especial, y la única con estatus de "
+            "fortaleza/debilidad normativamente exigible.",
+            style="List Bullet",
+        )
+        doc.add_heading("Políticas voluntarias con índices por debajo de 60 (informativo, no exigible)", level=2)
+        brechas_vol_fd = [b for b in diag.brechas if not b.obligatoria]
+        if brechas_vol_fd:
+            for b in brechas_vol_fd:
+                doc.add_paragraph(f"{b.codigo_indice} {b.nombre_indice} ({b.politica}): {b.puntaje} puntos", style="List Bullet")
+        else:
+            doc.add_paragraph("Ninguna política voluntaria reportada presenta índices por debajo de 60 puntos.")
 
     doc.add_page_break()
 
@@ -1777,13 +1797,24 @@ def generar_estudio_de_caso_pdf(
     elementos.append(PageBreak())
 
     elementos.extend(_divisor_seccion_pdf("7. Fortalezas y debilidades identificadas", icono="💪"))
-    fortalezas = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
-    debilidades = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) < 60]
-    datos_tabla = [[_celda_pdf("Dimensión", encabezado=True), "Promedio", "Clasificación"]]
-    for r in fortalezas:
-        datos_tabla.append([_celda_pdf(f"{r.codigo} {r.nombre}"), str(valor_protagonista_dimension(r)), "Fortaleza"])
-    for r in debilidades:
-        datos_tabla.append([_celda_pdf(f"{r.codigo} {r.nombre}"), str(valor_protagonista_dimension(r)), "Debilidad"])
+    if diag.aplica_mipg_integral:
+        fortalezas = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
+        debilidades = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) < 60]
+        datos_tabla = [[_celda_pdf("Dimensión", encabezado=True), "Promedio", "Clasificación"]]
+        for r in fortalezas:
+            datos_tabla.append([_celda_pdf(f"{r.codigo} {r.nombre}"), str(valor_protagonista_dimension(r)), "Fortaleza"])
+        for r in debilidades:
+            datos_tabla.append([_celda_pdf(f"{r.codigo} {r.nombre}"), str(valor_protagonista_dimension(r)), "Debilidad"])
+    else:
+        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): régimen
+        # especial no agrupa políticas en dimensiones D1-D7. MECI es la
+        # única fortaleza/debilidad exigible; las demás políticas
+        # voluntarias con índice bajo 60 se listan de forma individual.
+        datos_tabla = [[_celda_pdf("Política / Índice", encabezado=True), "Puntaje", "Clasificación"]]
+        datos_tabla.append([_celda_pdf("Índice de Control Interno (MECI)"), str(idi_protagonista), "Fortaleza (única exigible)"])
+        for b in diag.brechas:
+            if not b.obligatoria:
+                datos_tabla.append([_celda_pdf(f"{b.codigo_indice} {b.nombre_indice} ({b.politica})"), str(b.puntaje), "Debilidad (voluntaria, informativa)"])
     if len(datos_tabla) > 1:
         tabla = Table(datos_tabla, hAlign="LEFT", colWidths=[8 * cm, 3 * cm, 4 * cm])
         estilo_tabla_fd = [
