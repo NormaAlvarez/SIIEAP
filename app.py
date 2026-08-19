@@ -10,6 +10,8 @@ además del modo de captura manual de V1.
 """
 import streamlit as st
 from pathlib import Path
+import re
+import zipfile
 
 from backend.base_conocimiento.catalogo import todos_los_indices, dimensiones
 from backend.base_conocimiento.cargar_resultados_oficiales import (
@@ -1135,8 +1137,38 @@ with tab_lotes:
             entidades_validas = [m for m in st.session_state.confirmaciones_lotes.values() if m]
 
             st.markdown("#### 3. Generar")
+            CARPETA_LOTE_DISCO = CARPETA_DATA / "lote_en_progreso"
+            CARPETA_LOTE_DISCO.mkdir(parents=True, exist_ok=True)
+
+            def _ruta_zip_entidad(nombre_entidad: str):
+                nombre_seguro = re.sub(r"[^A-Za-z0-9_\-]", "_", nombre_entidad)[:150]
+                return CARPETA_LOTE_DISCO / f"{nombre_seguro}.zip"
+
             if "lote_completadas" not in st.session_state:
                 st.session_state.lote_completadas = {}  # nombre -> {clave_archivo: bytes}
+                # RECUPERACIÓN TRAS REINICIO: si la app se reinició (se pierde
+                # st.session_state, pero el disco puede seguir intacto), esto
+                # rescata del disco cualquier entidad que ya se hubiera
+                # generado y guardado en una sesión anterior, para no volver
+                # a pagar por generarla otra vez.
+                for archivo_zip in CARPETA_LOTE_DISCO.glob("*.zip"):
+                    try:
+                        with zipfile.ZipFile(archivo_zip, "r") as zf:
+                            archivos_rescatados = {n: zf.read(n) for n in zf.namelist()}
+                        nombre_rescatado = archivo_zip.stem.replace("_", " ")
+                        # Empatamos por coincidencia flexible con las entidades válidas de esta corrida
+                        for cand in entidades_validas:
+                            if re.sub(r"[^A-Za-z0-9]", "", cand).upper() == re.sub(r"[^A-Za-z0-9]", "", archivo_zip.stem).upper():
+                                st.session_state.lote_completadas[cand] = archivos_rescatados
+                                break
+                    except Exception:
+                        continue
+                if st.session_state.lote_completadas:
+                    st.success(
+                        f"🔄 Se recuperaron {len(st.session_state.lote_completadas)} entidad(es) ya "
+                        f"generadas de una sesión anterior (guardadas en disco) — no hace falta "
+                        f"volver a pagar por ellas."
+                    )
             if "lote_fallidas" not in st.session_state:
                 st.session_state.lote_fallidas = {}  # nombre -> motivo
             if "lote_objetivo" not in st.session_state:
@@ -1307,6 +1339,19 @@ with tab_lotes:
 
                         st.session_state.lote_completadas[nombre_of] = archivos_entidad
                         st.session_state.lote_fallidas.pop(nombre_of, None)
+
+                        # GUARDADO INMEDIATO EN DISCO: apenas termina una entidad
+                        # (ya se pagó por generarla), se guarda en disco ANTES de
+                        # seguir con la siguiente. Así, si la app se reinicia a
+                        # mitad de la tanda, esta entidad no se pierde — se
+                        # recupera automáticamente al volver a entrar (ver bloque
+                        # de recuperación más arriba).
+                        try:
+                            with zipfile.ZipFile(_ruta_zip_entidad(nombre_of), "w", zipfile.ZIP_DEFLATED) as zf:
+                                for nombre_archivo, contenido in archivos_entidad.items():
+                                    zf.writestr(nombre_archivo, contenido)
+                        except Exception:
+                            pass  # el guardado en disco es una salvaguarda extra; no debe tumbar la corrida
                     except Exception as e:
                         st.session_state.lote_fallidas[nombre_of] = str(e)
 
