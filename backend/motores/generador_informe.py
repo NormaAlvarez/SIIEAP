@@ -3082,10 +3082,23 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
     _agregar_divisor_seccion_docx(doc, "1. Resumen ejecutivo", icono="📊")
-    parrafos_resumen = [
-        f"{nombre_entidad} obtuvo un Índice de Desempeño Institucional (IDI) oficial de {idi_protagonista} "
-        f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}."
-    ]
+    if diag.aplica_mipg_integral:
+        frase_apertura = (
+            f"{nombre_entidad} obtuvo un Índice de Desempeño Institucional (IDI) oficial de {idi_protagonista} "
+            f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}."
+        )
+    else:
+        # CORRECCIÓN (agosto 2026, hallazgo de Norma Álvarez): esta entidad
+        # es de régimen especial (MECI-only) — no tiene "IDI-MIPG", tiene
+        # Índice de Control Interno, que es lo único que rinde en el FURAG.
+        frase_apertura = (
+            f"{nombre_entidad} obtuvo un Índice de Control Interno (MECI) oficial de {idi_protagonista} "
+            f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}. "
+            f"Como entidad de régimen especial, no está sujeta al Modelo Integrado de Planeación y "
+            f"Gestión (MIPG) en su integralidad, y por tanto no tiene un IDI-MIPG oficial: la política "
+            f"de Control Interno es la única de obligatorio cumplimiento para este tipo de entidad."
+        )
+    parrafos_resumen = [frase_apertura]
     if resultado_360 is not None and resultado_360.promedio_idi is not None:
         brecha_grupo = round((idi_protagonista or 0) - resultado_360.promedio_idi, 2)
         comparativo = "por debajo" if brecha_grupo < 0 else "por encima"
@@ -3255,7 +3268,18 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         _ajustar_tabla_docx(tabla_enfoques, anchos_cm=[5.0, 4.5, 6.0], tamano_fuente_pt=8.5)
         _franjas_alternas_docx(tabla_enfoques)
 
-    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None:
+    # CORRECCIÓN (agosto 2026): el ISVPT normaliza las 7 dimensiones D1-D7
+    # DEL IDI-MIPG dentro del grupo de comparación — pero para entidades de
+    # régimen especial (MECI-only), Función Pública no publica esas 7
+    # dimensiones (solo Control Interno), así que TODO el grupo de
+    # comparación tiene esas columnas vacías y la normalización min-max
+    # degenera a 0.5 en todas las dimensiones, para todas las entidades del
+    # grupo — un resultado sin ningún contenido informativo real, que
+    # además reforzaría la misma fabricación de "7 dimensiones" que ya se
+    # corrigió en el resto del informe (ver motor_analisis_ia.py). Por eso
+    # esta sección se omite para régimen especial, en vez de mostrar un
+    # ISVPT plano de 0.5 como si fuera un dato válido.
+    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None and diag.aplica_mipg_integral:
         doc.add_page_break()
         _agregar_divisor_seccion_docx(doc, "El Termómetro del Valor Público: Índice Sintético de Valor Público Territorial (ISVPT)", icono="🎯")
         doc.add_paragraph(
@@ -3456,14 +3480,18 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         ))
     elementos.append(PageBreak())
 
-    elementos.extend(_toc_pdf_flowables([
+    _capitulos_toc_tecnico = [
         "Contextualización de la Administración Pública Contemporánea",
         "Diagnóstico institucional por dimensión",
-        "Índice Sintético de Valor Público Territorial (ISVPT)",
+    ]
+    if diag.aplica_mipg_integral:
+        _capitulos_toc_tecnico.append("Índice Sintético de Valor Público Territorial (ISVPT)")
+    _capitulos_toc_tecnico.extend([
         "Análisis integral generado por IA",
         "Plan de mejoramiento prospectivo",
         "Glosario y notas de trazabilidad",
-    ]))
+    ])
+    elementos.extend(_toc_pdf_flowables(_capitulos_toc_tecnico))
     elementos.extend(_razon_de_ser_pdf_flowables("tecnico"))
 
     _agregar_glosario_pdf(elementos, estilos, estilo_normal, estilo_h2)
@@ -3471,10 +3499,20 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
     elementos.extend(_divisor_seccion_pdf("1. Resumen ejecutivo", icono="📊"))
-    parrafos_resumen = [
-        f"{nombre_entidad} obtuvo un Índice de Desempeño Institucional (IDI) oficial de {idi_protagonista} "
-        f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}."
-    ]
+    if diag.aplica_mipg_integral:
+        frase_apertura_pdf = (
+            f"{nombre_entidad} obtuvo un Índice de Desempeño Institucional (IDI) oficial de {idi_protagonista} "
+            f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}."
+        )
+    else:
+        frase_apertura_pdf = (
+            f"{nombre_entidad} obtuvo un Índice de Control Interno (MECI) oficial de {idi_protagonista} "
+            f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}. "
+            f"Como entidad de régimen especial, no está sujeta al Modelo Integrado de Planeación y "
+            f"Gestión (MIPG) en su integralidad, y por tanto no tiene un IDI-MIPG oficial: la política "
+            f"de Control Interno es la única de obligatorio cumplimiento para este tipo de entidad."
+        )
+    parrafos_resumen = [frase_apertura_pdf]
     if resultado_360 is not None and resultado_360.promedio_idi is not None:
         brecha_grupo = round((idi_protagonista or 0) - resultado_360.promedio_idi, 2)
         comparativo = "por debajo" if brecha_grupo < 0 else "por encima"
@@ -3637,7 +3675,7 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         elementos.append(tabla_enfoques)
         elementos.append(PageBreak())
 
-    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None:
+    if resultado_isvpt is not None and resultado_isvpt.isvpt_entidad_referencia is not None and diag.aplica_mipg_integral:
         elementos.extend(_divisor_seccion_pdf("El Termómetro del Valor Público: Índice Sintético de Valor Público Territorial (ISVPT)", icono="🎯"))
         elementos.append(Paragraph(
             "Como complemento al IDI oficial, este informe incorpora un ejercicio de índice "
