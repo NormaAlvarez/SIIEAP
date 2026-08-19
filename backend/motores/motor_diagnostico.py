@@ -71,6 +71,18 @@ class DiagnosticoInstitucional:
     idi_estimado: float | None  # promedio simple de dimensiones con información
     aplica_mipg_integral: bool = True
     regimen_especial: str | None = None
+    # CORRECCIÓN (agosto 2026): puntaje OFICIAL agregado por política
+    # (columnas "POLxx Índice..." del archivo oficial de Función Pública),
+    # {codigo_politica ('POL01'..'POL19'): puntaje}. Se llena para TODAS
+    # las políticas que la entidad reportó, tenga o no índices propios.
+    # Antes de este cambio no existía en el diagnóstico, así que cualquier
+    # texto que necesitara "el puntaje oficial de la política POLxx" no
+    # tenía de dónde tomarlo y terminaba usando por error el puntaje de
+    # un índice individual cualquiera de esa política (ver bug de la
+    # sección "Programa de Transparencia y Ética Pública" en
+    # contenido_riesgo_auditoria.py, encontrado en auditoría de agosto
+    # 2026: reportaba el puntaje de I48/I06 como si fuera el de POL15/POL02).
+    politicas_oficiales: dict[str, float] | None = None
 
 
 def _nivel_riesgo(promedio: float | None) -> str:
@@ -235,6 +247,17 @@ def diagnosticar(
 
     brechas.sort(key=lambda b: b.puntaje)  # las más críticas primero
 
+    # Puntaje oficial agregado por política, para TODAS las políticas que
+    # la entidad reportó (tengan o no índices propios desglosados). Este
+    # dato ya llega cargado en entidad.resultados_politica_directa (ver
+    # cargar_resultados_oficiales.columnas_de_politica_directa, que lee
+    # TODAS las columnas "POLxx Índice..." del archivo oficial, no solo
+    # las de políticas sin índices propios) — antes de esta corrección
+    # simplemente no se copiaba al diagnóstico.
+    politicas_oficiales = {
+        r.codigo_politica: r.puntaje for r in entidad.resultados_politica_directa
+    }
+
     return DiagnosticoInstitucional(
         entidad=entidad.nombre,
         vigencia=entidad.vigencia,
@@ -243,4 +266,5 @@ def diagnosticar(
         idi_estimado=idi_estimado,
         aplica_mipg_integral=aplica_integral,
         regimen_especial=entidad.regimen_especial,
+        politicas_oficiales=politicas_oficiales,
     )
