@@ -712,6 +712,7 @@ with tab_real:
                     resultado = generar_analisis_integral(
                         datos["nombre"], datos["diag"], datos["texto_recos"],
                         on_texto_parcial=_mostrar_avance,
+                        idi_oficial=datos.get("idi_oficial"),
                     )
                     marcador_texto_en_vivo.markdown(resultado)
                     st.session_state.ultimo_diagnostico_real["analisis_ia"] = resultado
@@ -1252,6 +1253,7 @@ with tab_lotes:
 
                         analisis_ia = generar_analisis_integral(
                             nombre_of, diag, texto_recos, on_texto_parcial=_avance,
+                            idi_oficial=idi_oficial,
                         )
 
                         archivos_entidad = {}
