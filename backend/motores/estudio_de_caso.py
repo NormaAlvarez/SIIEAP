@@ -1825,8 +1825,6 @@ def generar_estudio_de_caso_pdf(
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2F4F8")]),
         ]
-        for indice_fila_fd, r in enumerate(fortalezas + debilidades, start=1):
-            pass  # Sin resaltado de color: solo se muestra el valor oficial (agosto 2026)
         tabla.setStyle(TableStyle(estilo_tabla_fd))
         elementos.append(tabla)
     else:
