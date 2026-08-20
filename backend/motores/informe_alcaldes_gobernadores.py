@@ -360,7 +360,7 @@ def generar_informe_alcaldes_docx(
     tabla_cifras = doc.add_table(rows=2, cols=n_columnas)
     tabla_cifras.style = "Light Grid Accent 1"
     tabla_cifras.alignment = WD_TABLE_ALIGNMENT.CENTER
-    encabezados = [("IDI oficial" if diag.aplica_mipg_integral else "Índice Control Interno"), f"Nivel de riesgo {emoji_global}", "Brechas más críticas detectadas"]
+    encabezados = [(("IDI oficial" if idi_oficial is not None else "IDI estimado") if diag.aplica_mipg_integral else "Índice Control Interno"), f"Nivel de riesgo {emoji_global}", "Brechas más críticas detectadas"]
     valores = [str(idi_protagonista), texto_global, str(len(diag.brechas))]
     if total_recomendaciones is not None:
         encabezados.append("Recomendaciones oficiales de Función Pública")
@@ -425,8 +425,9 @@ def generar_informe_alcaldes_docx(
         for r in diag.resultados_por_dimension:
             fila = tabla_dim.add_row().cells
             fila[0].text = f"{r.nombre}"
-            fila[1].text = str(valor_protagonista_dimension(r))
-            color_dim, emoji_dim, texto_dim = _quintil_mipg(valor_protagonista_dimension(r))
+            valor_prot_eje = valor_protagonista_dimension(r)
+            fila[1].text = str(valor_prot_eje) if valor_prot_eje is not None else "Sin dato"
+            color_dim, emoji_dim, texto_dim = _quintil_mipg(valor_prot_eje)
             fila[2].text = f"{emoji_dim} {texto_dim}"
             _sombrear_celda(fila[2], color_dim)
         _bandear_filas_docx(tabla_dim)
@@ -695,7 +696,7 @@ def generar_informe_alcaldes_pdf(
     elementos.append(Spacer(1, 14))
 
     n_columnas = 4 if total_recomendaciones is not None else 3
-    encabezados = [("IDI oficial" if diag.aplica_mipg_integral else "Índice Control Interno"), f"Nivel de riesgo {emoji_global}", "Brechas más críticas detectadas"]
+    encabezados = [(("IDI oficial" if idi_oficial is not None else "IDI estimado") if diag.aplica_mipg_integral else "Índice Control Interno"), f"Nivel de riesgo {emoji_global}", "Brechas más críticas detectadas"]
     valores = [str(idi_protagonista), texto_global, str(len(diag.brechas))]
     if total_recomendaciones is not None:
         encabezados.append("Recomendaciones oficiales FP")
@@ -749,8 +750,9 @@ def generar_informe_alcaldes_pdf(
         datos_dim = [["Dimensión", "Puntaje (sobre 100)", "Semáforo"]]
         colores_fila_dim = []
         for r in diag.resultados_por_dimension:
-            color_dim, emoji_dim, texto_dim = _quintil_mipg(valor_protagonista_dimension(r))
-            datos_dim.append([r.nombre, str(valor_protagonista_dimension(r)), f"{emoji_dim} {texto_dim}"])
+            valor_prot_eje_pdf = valor_protagonista_dimension(r)
+            color_dim, emoji_dim, texto_dim = _quintil_mipg(valor_prot_eje_pdf)
+            datos_dim.append([r.nombre, str(valor_prot_eje_pdf) if valor_prot_eje_pdf is not None else "Sin dato", f"{emoji_dim} {texto_dim}"])
             colores_fila_dim.append(color_dim)
         tabla_dim = Table(datos_dim, hAlign="LEFT", colWidths=[9 * cm, 3.5 * cm, 3.5 * cm])
         estilo_tabla_dim = [

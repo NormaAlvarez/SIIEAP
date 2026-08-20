@@ -3032,7 +3032,20 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
     tabla_portada.autofit = False
     tabla_portada.allow_autofit = False
     celdas_portada = tabla_portada.rows[0].cells
-    etiqueta_idi = "IDI oficial (Función Pública)" if diag.aplica_mipg_integral else "Índice Control Interno (MECI)"
+    # CORRECCIÓN (agosto 2026, hallazgo en Empresas Públicas de Venecia S.A. E.S.P.):
+    # antes esta etiqueta decidía "oficial" solo mirando el régimen de la entidad
+    # (aplica_mipg_integral), sin verificar si Función Pública realmente publicó un
+    # IDI para ella. Una entidad de régimen NORMAL que solo reportó datos en 1-2
+    # políticas (dejando la columna "Índice de Desempeño Institucional" vacía en el
+    # archivo oficial) terminaba mostrando "IDI oficial (Función Pública)" sobre un
+    # valor que en realidad es un cálculo interno de respaldo (equivalente, en ese
+    # caso, al puntaje de la única política con datos) — nunca publicado como IDI
+    # general por Función Pública. Ahora la etiqueta refleja la disponibilidad real
+    # del dato oficial, no solo el régimen.
+    if diag.aplica_mipg_integral:
+        etiqueta_idi = "IDI oficial (Función Pública)" if idi_oficial is not None else "IDI estimado (cálculo interno, dato oficial no disponible en el archivo de Función Pública)"
+    else:
+        etiqueta_idi = "Índice Control Interno (MECI)"
     celdas_portada[0].text = f"{etiqueta_idi}\n{idi_protagonista}"
     celdas_portada[1].text = f"Nivel de riesgo global\n{nivel_riesgo_global}"
     celdas_portada[2].text = f"Brechas detectadas (dato exclusivo de este informe)\n{len(diag.brechas)}"
@@ -3097,10 +3110,25 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
     _agregar_divisor_seccion_docx(doc, "1. Resumen ejecutivo", icono="📊")
-    if diag.aplica_mipg_integral:
+    if diag.aplica_mipg_integral and idi_oficial is not None:
         frase_apertura = (
             f"{nombre_entidad} obtuvo un Índice de Desempeño Institucional (IDI) oficial de {idi_protagonista} "
             f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}."
+        )
+    elif diag.aplica_mipg_integral and idi_oficial is None:
+        # CORRECCIÓN (agosto 2026, hallazgo en Empresas Públicas de Venecia S.A.
+        # E.S.P.): entidad de régimen NORMAL, pero Función Pública no publicó un
+        # IDI general para ella — el archivo oficial solo trae datos completos
+        # de 1-2 políticas, no del resto. La cifra que se muestra es un cálculo
+        # interno de respaldo (no un IDI oficial), y se dice así explícitamente
+        # en vez de llamarlo "oficial" por error.
+        frase_apertura = (
+            f"{nombre_entidad} no cuenta con un Índice de Desempeño Institucional (IDI) publicado por "
+            f"Función Pública en la vigencia analizada — el archivo oficial no trae un dato completo para "
+            f"esta entidad, posiblemente por reporte incompleto en el formulario FURAG. Con la información "
+            f"oficial parcial disponible, SIIEAP calcula un valor de referencia interno de {idi_protagonista} "
+            f"sobre 100, con un nivel de riesgo global {nivel_riesgo_global}. Esta cifra es un cálculo de "
+            f"SIIEAP, no un dato publicado por Función Pública, y debe leerse con esa salvedad."
         )
     else:
         # CORRECCIÓN (agosto 2026, hallazgo de Norma Álvarez): esta entidad
@@ -3127,15 +3155,29 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
                 f"Esto la ubica en el percentil {resultado_360.percentil_entidad_referencia}% de su grupo."
             )
     if diag.aplica_mipg_integral:
-        dims_criticas = sorted(diag.resultados_por_dimension, key=lambda r: (valor_protagonista_dimension(r) if valor_protagonista_dimension(r) is not None else 0))[:3]
+        # CORRECCIÓN (agosto 2026, hallazgo en Empresas Públicas de Venecia
+        # S.A. E.S.P.): se filtran las dimensiones SIN dato (None) antes de
+        # ordenar — antes, una dimensión sin información caía a key=0 y
+        # aparecía como "la más crítica" mostrando literalmente "(None)" en
+        # el texto. Sin datos no es lo mismo que un puntaje de 0.
+        dims_con_dato = [r for r in diag.resultados_por_dimension if valor_protagonista_dimension(r) is not None]
+        dims_sin_dato = [r for r in diag.resultados_por_dimension if valor_protagonista_dimension(r) is None]
+        dims_criticas = sorted(dims_con_dato, key=lambda r: valor_protagonista_dimension(r))[:3]
         if dims_criticas:
             nombres_criticas = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_criticas)
             parrafos_resumen.append(f"Las dimensiones más críticas son: {nombres_criticas}.")
-        dims_fuertes = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
+        if dims_sin_dato:
+            nombres_sin_dato = ", ".join(f"{r.codigo} {r.nombre}" for r in dims_sin_dato)
+            parrafos_resumen.append(
+                f"El archivo oficial de Función Pública no trae datos suficientes para calcular "
+                f"{nombres_sin_dato} en esta entidad — no se incluyen en el análisis por dimensión "
+                f"para no inventar un puntaje que no existe."
+            )
+        dims_fuertes = [r for r in dims_con_dato if valor_protagonista_dimension(r) >= 60]
         if dims_fuertes:
             nombres_fuertes = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_fuertes)
             parrafos_resumen.append(f"Como fortaleza relativa, se destaca(n): {nombres_fuertes}.")
-        else:
+        elif dims_con_dato:
             parrafos_resumen.append(
                 "Ninguna dimensión alcanza el umbral de 60 puntos: el patrón de brechas simultáneas en "
                 "múltiples dimensiones sugiere una debilidad estructural de capacidad institucional "
@@ -3245,7 +3287,8 @@ def generar_reporte_docx(nombre_entidad, diag, analisis_ia_texto, resultado_isvp
         for r in diag.resultados_por_dimension:
             fila = tabla.add_row().cells
             fila[0].text = f"{r.codigo} {r.nombre}"
-            fila[1].text = str(valor_protagonista_dimension(r))
+            valor_prot = valor_protagonista_dimension(r)
+            fila[1].text = str(valor_prot) if valor_prot is not None else "Sin dato"
             fila[2].text = str(r.nivel_riesgo)
             fila[3].text = f"{r.n_indices_evaluados}/{r.n_indices_esperados}"
             # Sin resaltado de color: solo se muestra el valor oficial (agosto 2026)
@@ -3493,7 +3536,10 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         else (sum(len(lista) for lista in cruce_recomendaciones.values()) if cruce_recomendaciones else None)
     )
 
-    etiqueta_idi_pdf = "IDI oficial (Función Pública)" if diag.aplica_mipg_integral else "Índice Control Interno (MECI)"
+    if diag.aplica_mipg_integral:
+        etiqueta_idi_pdf = "IDI oficial (Función Pública)" if idi_oficial is not None else "IDI estimado (cálculo interno, dato oficial no disponible en el archivo de Función Pública)"
+    else:
+        etiqueta_idi_pdf = "Índice Control Interno (MECI)"
     if total_recomendaciones is not None:
         datos_tabla_portada = [
             [etiqueta_idi_pdf, "Nivel de riesgo global", "Brechas detectadas\n(dato exclusivo de este informe)", "Recomendaciones oficiales FP"],
@@ -3571,10 +3617,19 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
 
     # 1. Resumen ejecutivo — cifras reales de ESTA entidad, arriba de todo
     elementos.extend(_divisor_seccion_pdf("1. Resumen ejecutivo", icono="📊"))
-    if diag.aplica_mipg_integral:
+    if diag.aplica_mipg_integral and idi_oficial is not None:
         frase_apertura_pdf = (
             f"{nombre_entidad} obtuvo un Índice de Desempeño Institucional (IDI) oficial de {idi_protagonista} "
             f"sobre 100 en la vigencia analizada, con un nivel de riesgo global {nivel_riesgo_global}."
+        )
+    elif diag.aplica_mipg_integral and idi_oficial is None:
+        frase_apertura_pdf = (
+            f"{nombre_entidad} no cuenta con un Índice de Desempeño Institucional (IDI) publicado por "
+            f"Función Pública en la vigencia analizada — el archivo oficial no trae un dato completo para "
+            f"esta entidad, posiblemente por reporte incompleto en el formulario FURAG. Con la información "
+            f"oficial parcial disponible, SIIEAP calcula un valor de referencia interno de {idi_protagonista} "
+            f"sobre 100, con un nivel de riesgo global {nivel_riesgo_global}. Esta cifra es un cálculo de "
+            f"SIIEAP, no un dato publicado por Función Pública, y debe leerse con esa salvedad."
         )
     else:
         frase_apertura_pdf = (
@@ -3596,15 +3651,29 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
         if resultado_360.percentil_entidad_referencia is not None:
             parrafos_resumen.append(f"Esto la ubica en el percentil {resultado_360.percentil_entidad_referencia}% de su grupo.")
     if diag.aplica_mipg_integral:
-        dims_criticas = sorted(diag.resultados_por_dimension, key=lambda r: (valor_protagonista_dimension(r) if valor_protagonista_dimension(r) is not None else 0))[:3]
+        # CORRECCIÓN (agosto 2026, hallazgo en Empresas Públicas de Venecia
+        # S.A. E.S.P.): se filtran las dimensiones SIN dato (None) antes de
+        # ordenar — antes, una dimensión sin información caía a key=0 y
+        # aparecía como "la más crítica" mostrando literalmente "(None)" en
+        # el texto. Sin datos no es lo mismo que un puntaje de 0.
+        dims_con_dato = [r for r in diag.resultados_por_dimension if valor_protagonista_dimension(r) is not None]
+        dims_sin_dato = [r for r in diag.resultados_por_dimension if valor_protagonista_dimension(r) is None]
+        dims_criticas = sorted(dims_con_dato, key=lambda r: valor_protagonista_dimension(r))[:3]
         if dims_criticas:
             nombres_criticas = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_criticas)
             parrafos_resumen.append(f"Las dimensiones más críticas son: {nombres_criticas}.")
-        dims_fuertes = [r for r in diag.resultados_por_dimension if (valor_protagonista_dimension(r) or 0) >= 60]
+        if dims_sin_dato:
+            nombres_sin_dato = ", ".join(f"{r.codigo} {r.nombre}" for r in dims_sin_dato)
+            parrafos_resumen.append(
+                f"El archivo oficial de Función Pública no trae datos suficientes para calcular "
+                f"{nombres_sin_dato} en esta entidad — no se incluyen en el análisis por dimensión "
+                f"para no inventar un puntaje que no existe."
+            )
+        dims_fuertes = [r for r in dims_con_dato if valor_protagonista_dimension(r) >= 60]
         if dims_fuertes:
             nombres_fuertes = ", ".join(f"{r.codigo} {r.nombre} ({valor_protagonista_dimension(r)})" for r in dims_fuertes)
             parrafos_resumen.append(f"Como fortaleza relativa, se destaca(n): {nombres_fuertes}.")
-        else:
+        elif dims_con_dato:
             parrafos_resumen.append(
                 "Ninguna dimensión alcanza el umbral de 60 puntos: el patrón de brechas simultáneas en "
                 "múltiples dimensiones sugiere una debilidad estructural de capacidad institucional "
@@ -3696,8 +3765,11 @@ def generar_reporte_pdf(nombre_entidad, diag, analisis_ia_texto, resultado_isvpt
     if diag.aplica_mipg_integral:
         datos_tabla = [[_celda_pdf("Dimensión", encabezado=True, tamano_fuente=9), "Promedio", "Riesgo", "Índices"]]
         for r in diag.resultados_por_dimension:
+            valor_prot_pdf = valor_protagonista_dimension(r)
             datos_tabla.append([
-                _celda_pdf(f"{r.codigo} {r.nombre}", tamano_fuente=9), str(valor_protagonista_dimension(r)), str(r.nivel_riesgo),
+                _celda_pdf(f"{r.codigo} {r.nombre}", tamano_fuente=9),
+                str(valor_prot_pdf) if valor_prot_pdf is not None else "Sin dato",
+                str(r.nivel_riesgo),
                 f"{r.n_indices_evaluados}/{r.n_indices_esperados}",
             ])
         tabla = Table(datos_tabla, hAlign="LEFT", colWidths=[7 * cm, 2.5 * cm, 2.5 * cm, 2.5 * cm])

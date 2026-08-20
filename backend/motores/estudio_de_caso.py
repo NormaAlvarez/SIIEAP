@@ -995,8 +995,13 @@ def generar_estudio_de_caso_docx(
     except Exception:
         pass
     if diag.brechas:
-        if diag.aplica_mipg_integral:
+        if diag.aplica_mipg_integral and idi_oficial is not None:
             etiqueta_idi_ec = f"IDI oficial de Función Pública: {idi_protagonista}"
+        elif diag.aplica_mipg_integral and idi_oficial is None:
+            # CORRECCIÓN (agosto 2026, hallazgo en Empresas Públicas de Venecia
+            # S.A. E.S.P.): régimen normal sin IDI oficial publicado — no llamar
+            # "oficial" a un cálculo interno de respaldo.
+            etiqueta_idi_ec = f"IDI estimado (SIIEAP, sin IDI oficial publicado por Función Pública para esta entidad): {idi_protagonista}"
         else:
             etiqueta_idi_ec = (
                 f"Índice de Control Interno (MECI) oficial de Función Pública: {idi_protagonista} "
@@ -1503,8 +1508,10 @@ def generar_estudio_de_caso_pdf(
     except Exception:
         pass
     if diag.brechas:
-        if diag.aplica_mipg_integral:
+        if diag.aplica_mipg_integral and idi_oficial is not None:
             etiqueta_idi_ec_pdf = f"IDI oficial de Función Pública: {idi_protagonista}"
+        elif diag.aplica_mipg_integral and idi_oficial is None:
+            etiqueta_idi_ec_pdf = f"IDI estimado (SIIEAP, sin IDI oficial publicado por Función Pública para esta entidad): {idi_protagonista}"
         else:
             etiqueta_idi_ec_pdf = (
                 f"Índice de Control Interno (MECI) oficial de Función Pública: {idi_protagonista} "
