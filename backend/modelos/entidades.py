@@ -39,6 +39,25 @@ REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL = "organizacion_electoral"  # Registradu
 # que rige a las Contralorías) — es decir, son voluntarias/condicionadas,
 # nunca exigencia normativa plena.
 REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO = "instituto_cientifico_tecnologico"  # Ruta N Medellín y análogos
+# CORRECCIÓN (agosto 2026, hallazgo en "Región de Planeación y Gestión del
+# Bajo Cauca"): categoría de RESPALDO GENÉRICO para cuando el archivo oficial
+# de Función Pública dice, en la columna "Tipo Formulario", literalmente
+# "MECI" (es decir, la propia Función Pública ya determinó que esta entidad
+# NO reporta MIPG íntegro), pero su "Naturaleza Jurídica" no coincide con
+# NINGUNA de las categorías específicas ya nombradas arriba (a diferencia de
+# los institutos científicos y tecnológicos, que SÍ están nombrados
+# textualmente en el art. 2.2.22.3.4 del Decreto 1499/2017, no se encontró
+# una norma que nombre igual de explícita a las Regiones de Planeación y
+# Gestión — RPG, Ley 1454/2011 art. 19 — como régimen especial; el dato
+# "Tipo Formulario = MECI" es la evidencia empírica disponible, no una cita
+# textual). Sin esta categoría de respaldo, cualquier tipo de entidad nuevo
+# y minoritario que aparezca con Tipo Formulario=MECI seguiría cayendo,
+# entidad por entidad, en el mismo bug ya corregido dos veces (Contraloría
+# de Medellín, Ruta N Medellín): se le fabrica un "IDI-MIPG" inexistente
+# agrupando políticas voluntarias en dimensiones D1-D7. Esta categoría evita
+# que eso vuelva a pasar mientras se identifica y agrega la categoría
+# específica correcta.
+REGIMEN_ESPECIAL_MECI_OTRO = "meci_otro_no_clasificado"
 
 # Categorías que NO están obligadas al MIPG íntegro (solo MECI/Control Interno)
 ENTIDADES_MECI_UNICAMENTE = frozenset({
@@ -53,6 +72,7 @@ ENTIDADES_MECI_UNICAMENTE = frozenset({
     REGIMEN_ESPECIAL_RAMA_JUDICIAL,
     REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
     REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO,
+    REGIMEN_ESPECIAL_MECI_OTRO,
 })
 
 
