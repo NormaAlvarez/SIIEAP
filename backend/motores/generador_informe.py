@@ -632,6 +632,11 @@ REGIMEN_ESPECIAL_RAMA_LEGISLATIVA = "rama_legislativa"
 REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL = "organo_control_nacional"
 REGIMEN_ESPECIAL_RAMA_JUDICIAL = "rama_judicial"
 REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL = "organizacion_electoral"
+# CORRECCIÓN (agosto 2026, hallazgo en Corporación Ruta N Medellín): el art.
+# 2.2.22.3.4 del Decreto 1499/2017 nombra EXPLÍCITAMENTE "los institutos
+# científicos y tecnológicos" en el mismo listado que Contralorías,
+# Personerías, Concejos/Asambleas y Ramas Legislativa/Judicial.
+REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO = "instituto_cientifico_tecnologico"
 
 _CATALOGO_REGIMEN_ESPECIAL = {
     REGIMEN_ESPECIAL_NINGUNO: {
@@ -789,6 +794,30 @@ _CATALOGO_REGIMEN_ESPECIAL = {
             "política 19, dimensión 7 del MIPG, desarrollada a través del MECI, "
             "formulario 'MECI', no 'MIPG'). Cualquier lectura de brecha en las demás "
             "dimensiones que aparezca en este informe debe leerse con esa salvedad."
+        ),
+    },
+    REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO: {
+        "nombre": "Instituto científico y tecnológico",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "Esta entidad es un instituto científico y tecnológico. El artículo "
+            "2.2.22.3.4 del Decreto 1499 de 2017 la nombra de forma EXPLÍCITA, en el "
+            "mismo listado que las entidades sujetas a régimen especial del artículo 40 "
+            "de la Ley 489 de 1998, las Ramas Legislativa y Judicial, la Organización "
+            "Electoral y los organismos de control: '[...] los institutos científicos y "
+            "tecnológicos, aplicarán la política de control interno prevista en la Ley "
+            "87 de 1993; así mismo, les aplicarán las demás políticas de gestión y "
+            "desempeño institucional en los términos y condiciones en la medida en que "
+            "les sean aplicables de acuerdo con las normas que las regulan.' En "
+            "consecuencia, esta entidad no está sujeta al Modelo Integrado de "
+            "Planeación y Gestión (MIPG) en su integralidad: únicamente debe implementar "
+            "la política de Control Interno (Ley 87 de 1993 — política 19, dimensión 7 "
+            "del MIPG, desarrollada a través del MECI). Las demás 18 políticas se "
+            "implementan solo en la medida en que le sean aplicables por su propia "
+            "normativa sectorial — no por obligatoriedad del MIPG. Cualquier lectura de "
+            "brecha en las demás dimensiones que aparezca en este informe debe leerse "
+            "con esa salvedad: no es un incumplimiento del MIPG, porque el MIPG íntegro "
+            "no le es exigible."
         ),
     },
 }
