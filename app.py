@@ -43,6 +43,7 @@ from backend.motores.generador_informe import (
     REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL,
     REGIMEN_ESPECIAL_RAMA_JUDICIAL,
     REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
+    REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO,
 )
 from backend.base_conocimiento.subregiones_antioquia import todas_las_subregiones
 
@@ -89,6 +90,7 @@ OPCIONES_REGIMEN_ESPECIAL = {
     "Órgano de control nacional (Procuraduría, Contraloría General, Defensoría, Auditoría General)": REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL,
     "Rama Judicial (Fiscalía, Consejo Superior de la Judicatura, Medicina Legal)": REGIMEN_ESPECIAL_RAMA_JUDICIAL,
     "Organización Electoral (Registraduría, Consejo Nacional Electoral)": REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
+    "Instituto científico y tecnológico (ej. Ruta N Medellín)": REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO,
 }
 
 
@@ -128,6 +130,10 @@ def _sugerir_regimen_especial(fila_entidad) -> str | None:
         return REGIMEN_ESPECIAL_BANCO_REPUBLICA
     if "CORPORACION AUTONOMA" in nombre_entidad or "CORPORACIÓN AUTÓNOMA" in nombre_entidad:
         return REGIMEN_ESPECIAL_CORPORACION_AUTONOMA
+    if "INSTITUTO CIENTÍFICO" in naturaleza or "INSTITUTO CIENTIFICO" in naturaleza:
+        # Art. 2.2.22.3.4 Decreto 1499/2017: nombra explícitamente a "los
+        # institutos científicos y tecnológicos" como régimen especial MECI.
+        return REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO
     if clasificacion == "RAMA LEGISLATIVA":
         return REGIMEN_ESPECIAL_RAMA_LEGISLATIVA
     if clasificacion == "RAMA JUDICIAL":
