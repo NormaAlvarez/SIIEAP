@@ -28,6 +28,17 @@ REGIMEN_ESPECIAL_RAMA_LEGISLATIVA = "rama_legislativa"  # Senado, Cámara de Rep
 REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL = "organo_control_nacional"  # Procuraduría, Contraloría General, Defensoría, Auditoría General
 REGIMEN_ESPECIAL_RAMA_JUDICIAL = "rama_judicial"  # Fiscalía, Consejo Superior de la Judicatura, Medicina Legal
 REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL = "organizacion_electoral"  # Registraduría, Consejo Nacional Electoral
+# CORRECCIÓN (agosto 2026, hallazgo en Corporación Ruta N Medellín): el
+# artículo 2.2.22.3.4 del Decreto 1499 de 2017 nombra EXPLÍCITAMENTE a "los
+# institutos científicos y tecnológicos" en el mismo listado que las
+# Contralorías/Personerías/Concejos/Asambleas/Ramas Legislativa y Judicial —
+# es decir, la ley no los trata como un caso ambiguo o "parecido" a régimen
+# especial: los nombra por su tipo exacto. Solo la política de Control
+# Interno (Ley 87/1993) es obligatoria para ellos; las demás políticas
+# "aplicarán... en la medida en que les sean aplicables" (mismo texto legal
+# que rige a las Contralorías) — es decir, son voluntarias/condicionadas,
+# nunca exigencia normativa plena.
+REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO = "instituto_cientifico_tecnologico"  # Ruta N Medellín y análogos
 
 # Categorías que NO están obligadas al MIPG íntegro (solo MECI/Control Interno)
 ENTIDADES_MECI_UNICAMENTE = frozenset({
@@ -41,6 +52,7 @@ ENTIDADES_MECI_UNICAMENTE = frozenset({
     REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL,
     REGIMEN_ESPECIAL_RAMA_JUDICIAL,
     REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
+    REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO,
 })
 
 
