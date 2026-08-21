@@ -1158,6 +1158,50 @@ with tab_lotes:
 
             entidades_validas = [m for m in st.session_state.confirmaciones_lotes.values() if m]
 
+            st.markdown("#### 2.5 Recomendaciones individuales adicionales (opcional)")
+            st.caption(
+                "Si alguna entidad de esta tanda NO está en el banco consolidado que cargó en la "
+                "barra lateral (por ejemplo, entidades de un departamento distinto al que tiene "
+                "consolidado), suba aquí su archivo de recomendaciones oficial individual "
+                "(el mismo formato .xlsx con hoja 'Recomendaciones' que Función Pública entrega "
+                "por entidad). Puede subir varios a la vez. Para las entidades que SÍ estén en el "
+                "consolidado de la barra lateral, no hace falta subir nada aquí."
+            )
+            archivos_recos_individuales = st.file_uploader(
+                "Archivos de recomendaciones individuales (.xlsx, uno por entidad)",
+                type=["xlsx"], accept_multiple_files=True, key="archivos_recos_individuales_lote",
+            )
+            recos_individuales_lote: dict[str, list] = {}
+            if archivos_recos_individuales and entidades_validas:
+                # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): el nombre del
+                # archivo casi nunca coincide letra por letra con el nombre oficial de la
+                # entidad (p.ej. "ESECAMULAAPARTADA.xlsx" vs. el nombre oficial completo
+                # "EMPRESA SOCIAL DEL ESTADO CAMU DEL MUNICIPIO DE LA APARTADA - LA
+                # APARTADA") — emparejar por nombre de archivo sería tan poco confiable
+                # como el problema que el Paso 2 ya resuelve para la lista de entidades.
+                # Por eso aquí también se pide confirmación manual explícita, archivo por
+                # archivo, en vez de adivinar.
+                st.markdown("Para cada archivo subido, confirme a cuál entidad de esta tanda corresponde:")
+                opciones_entidad = ["— Seleccione la entidad —"] + entidades_validas
+                for idx_archivo, archivo_reco in enumerate(archivos_recos_individuales):
+                    entidad_elegida_reco = st.selectbox(
+                        f"'{archivo_reco.name}' corresponde a:",
+                        options=opciones_entidad,
+                        key=f"mapeo_reco_individual_{idx_archivo}",
+                    )
+                    if entidad_elegida_reco != opciones_entidad[0]:
+                        try:
+                            recos_archivo = cargar_recomendaciones(archivo_reco)
+                        except Exception as e:
+                            st.warning(f"No se pudo leer '{archivo_reco.name}' como recomendaciones oficiales: {e}")
+                            continue
+                        recos_individuales_lote[entidad_elegida_reco.strip().upper()] = recos_archivo
+                if recos_individuales_lote:
+                    st.success(
+                        f"✅ Recomendaciones individuales listas para: "
+                        f"{', '.join(recos_individuales_lote.keys())}."
+                    )
+
             st.markdown("#### 3. Generar")
             CARPETA_LOTE_DISCO = CARPETA_DATA / "lote_en_progreso"
             CARPETA_LOTE_DISCO.mkdir(parents=True, exist_ok=True)
@@ -1268,11 +1312,24 @@ with tab_lotes:
 
                         cruce, total_recos = None, None
                         recos = None
-                        if "consolidado_cargado" in st.session_state:
+                        # CORRECCIÓN (agosto 2026, a solicitud de Norma Álvarez): antes el
+                        # modo por lotes SOLO podía tomar recomendaciones del consolidado
+                        # cargado en la barra lateral — una entidad de un departamento sin
+                        # consolidado (p.ej. Córdoba o Sucre, cuando solo se cargó el de
+                        # Antioquia) generaba su plan de mejoramiento vacío, sin ninguna
+                        # forma de subir su recomendación individual dentro del modo por
+                        # lotes (esa opción solo existía en la pestaña de entidad única).
+                        # Ahora se busca primero en recos_individuales_lote (los archivos
+                        # subidos en el paso 2.5 de esta misma tanda); si el nombre de la
+                        # entidad no coincide con ninguno, se cae al consolidado como antes.
+                        nombre_of_normalizado = nombre_of.strip().upper()
+                        if nombre_of_normalizado in recos_individuales_lote:
+                            recos = recos_individuales_lote[nombre_of_normalizado]
+                        elif "consolidado_cargado" in st.session_state:
                             recos = recomendaciones_de_entidad(st.session_state.consolidado_cargado, nombre_of)
-                            if recos:
-                                cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
-                                total_recos = len(recos)
+                        if recos:
+                            cruce = cruzar_brechas_con_recomendaciones(diag.brechas, recos)
+                            total_recos = len(recos)
 
                         # ISVPT/Análisis 360 automático (Departamento+Grupo par,
                         # o solo Grupo par si es una entidad de nivel nacional).
