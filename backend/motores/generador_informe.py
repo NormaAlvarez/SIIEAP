@@ -637,6 +637,7 @@ REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL = "organizacion_electoral"
 # científicos y tecnológicos" en el mismo listado que Contralorías,
 # Personerías, Concejos/Asambleas y Ramas Legislativa/Judicial.
 REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO = "instituto_cientifico_tecnologico"
+REGIMEN_ESPECIAL_MECI_OTRO = "meci_otro_no_clasificado"
 
 _CATALOGO_REGIMEN_ESPECIAL = {
     REGIMEN_ESPECIAL_NINGUNO: {
@@ -818,6 +819,28 @@ _CATALOGO_REGIMEN_ESPECIAL = {
             "brecha en las demás dimensiones que aparezca en este informe debe leerse "
             "con esa salvedad: no es un incumplimiento del MIPG, porque el MIPG íntegro "
             "no le es exigible."
+        ),
+    },
+    REGIMEN_ESPECIAL_MECI_OTRO: {
+        "nombre": "Régimen especial MECI (tipo específico no clasificado en el catálogo)",
+        "aplica_mipg_integral": False,
+        "nota": (
+            "El archivo oficial de Función Pública clasifica a esta entidad con "
+            "Tipo Formulario = 'MECI', lo que significa que la propia Función Pública "
+            "determinó que NO debe reportar el Modelo Integrado de Planeación y Gestión "
+            "(MIPG) en su integralidad — únicamente la política de Control Interno "
+            "(Ley 87 de 1993 — política 19, dimensión 7 del MIPG, desarrollada a través "
+            "del MECI). A diferencia de otras categorías de este catálogo (Contralorías, "
+            "Personerías, institutos científicos y tecnológicos...), para el tipo "
+            "específico de esta entidad no se ha identificado todavía la norma que la "
+            "nombre de forma explícita como régimen especial — el dato 'Tipo Formulario "
+            "= MECI' es la evidencia oficial disponible. Las demás políticas que la "
+            "entidad reporte se implementan solo en la medida en que le sean aplicables "
+            "por su propia normativa sectorial, no por obligatoriedad del MIPG. "
+            "Cualquier lectura de brecha en las demás dimensiones que aparezca en este "
+            "informe debe leerse con esa salvedad. Se recomienda verificar la norma "
+            "específica aplicable a este tipo de entidad y, si corresponde, agregar una "
+            "categoría propia al catálogo con esa cita."
         ),
     },
 }
