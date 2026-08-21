@@ -39,6 +39,7 @@ import os
 from anthropic import Anthropic
 
 from backend.motores.motor_diagnostico import UMBRAL_BRECHA
+from backend.modelos.entidades import REGIMEN_ESPECIAL_MECI_OTRO
 
 MODELO = "claude-sonnet-4-6"
 
@@ -304,12 +305,35 @@ def _construir_prompt_usuario_regimen_especial(nombre_entidad, diag, recomendaci
     lineas.append(
         "## RÉGIMEN ESPECIAL (MECI-only) — instrucciones OBLIGATORIAS y distintas a una entidad de MIPG íntegro"
     )
-    lineas.append(
-        "Esta entidad NO está sujeta al Modelo Integrado de Planeación y Gestión (MIPG) en su "
-        "integralidad (art. 40 Ley 489/1998, art. 2.2.22.3.4 Decreto 1499/2017): solo está obligada "
-        "a la política de Control Interno (MECI). Es lo único que esta entidad realmente rinde en "
-        "el FURAG de Función Pública."
-    )
+    # CORRECCIÓN (agosto 2026, hallazgo en Región de Planeación y Gestión
+    # del Bajo Cauca): antes esta línea citaba SIEMPRE "art. 40 Ley
+    # 489/1998, art. 2.2.22.3.4 Decreto 1499/2017" para cualquier régimen
+    # especial, incluida la categoría genérica REGIMEN_ESPECIAL_MECI_OTRO
+    # (creada para cuando el archivo oficial dice Tipo Formulario=MECI
+    # pero NO se identificó la norma específica que nombra a ese tipo de
+    # entidad). Eso hacía que la narrativa de la IA afirmara con seguridad
+    # una cita legal que el propio sistema, en la nota jurídica fija del
+    # documento, reconoce no haber confirmado — una contradicción interna
+    # entre dos partes del mismo informe. Ahora la cita solo se afirma
+    # cuando el régimen específico realmente la tiene confirmada.
+    if diag.regimen_especial == REGIMEN_ESPECIAL_MECI_OTRO:
+        lineas.append(
+            "Esta entidad NO está sujeta al Modelo Integrado de Planeación y Gestión (MIPG) en su "
+            "integralidad: el archivo oficial de Función Pública la clasifica con Tipo Formulario = "
+            "'MECI', es decir, la propia Función Pública determinó que solo debe reportar la política "
+            "de Control Interno (MECI). NO se ha confirmado todavía la norma específica que nombra a "
+            "este tipo de entidad como régimen especial (a diferencia de Contralorías, Personerías o "
+            "institutos científicos y tecnológicos, que sí tienen su norma identificada) — no afirmes "
+            "en tu redacción una cita legal específica para esto; usa la formulación 'el archivo "
+            "oficial de Función Pública clasifica a esta entidad con Tipo Formulario MECI'."
+        )
+    else:
+        lineas.append(
+            "Esta entidad NO está sujeta al Modelo Integrado de Planeación y Gestión (MIPG) en su "
+            "integralidad (art. 40 Ley 489/1998, art. 2.2.22.3.4 Decreto 1499/2017): solo está obligada "
+            "a la política de Control Interno (MECI). Es lo único que esta entidad realmente rinde en "
+            "el FURAG de Función Pública."
+        )
     lineas.append(
         "REGLAS ESTRICTAS que debes seguir en TODO el texto que redactes:\n"
         "  a) NO existe un 'IDI-MIPG' ni un 'IDI estimado' para esta entidad. NUNCA calcules, "
