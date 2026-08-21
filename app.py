@@ -44,6 +44,7 @@ from backend.motores.generador_informe import (
     REGIMEN_ESPECIAL_RAMA_JUDICIAL,
     REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
     REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO,
+    REGIMEN_ESPECIAL_MECI_OTRO,
 )
 from backend.base_conocimiento.subregiones_antioquia import todas_las_subregiones
 
@@ -91,6 +92,7 @@ OPCIONES_REGIMEN_ESPECIAL = {
     "Rama Judicial (Fiscalía, Consejo Superior de la Judicatura, Medicina Legal)": REGIMEN_ESPECIAL_RAMA_JUDICIAL,
     "Organización Electoral (Registraduría, Consejo Nacional Electoral)": REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL,
     "Instituto científico y tecnológico (ej. Ruta N Medellín)": REGIMEN_ESPECIAL_INSTITUTO_CIENTIFICO_TECNOLOGICO,
+    "Régimen especial MECI — tipo no clasificado (Tipo Formulario oficial = MECI, categoría específica sin identificar)": REGIMEN_ESPECIAL_MECI_OTRO,
 }
 
 
@@ -142,7 +144,21 @@ def _sugerir_regimen_especial(fila_entidad) -> str | None:
         return REGIMEN_ESPECIAL_ORGANIZACION_ELECTORAL
     if clasificacion == "ORGANOS DE CONTROL":
         return REGIMEN_ESPECIAL_ORGANO_CONTROL_NACIONAL
-    return None  # No hay suficiente certeza: se deja para elección manual.
+    # CORRECCIÓN (agosto 2026, hallazgo en "Región de Planeación y Gestión
+    # del Bajo Cauca"): antes, si ninguna categoría específica coincidía,
+    # se devolvía None y la entidad quedaba preseleccionada como régimen
+    # NORMAL (MIPG íntegro) — pese a que "Tipo Formulario" ya dijo "MECI"
+    # dos líneas más arriba. Eso reproducía, entidad por entidad, el mismo
+    # bug ya corregido para la Contraloría de Medellín y para Ruta N
+    # Medellín: se le fabricaba un "IDI-MIPG" inexistente agrupando
+    # políticas voluntarias en dimensiones D1-D7. Ahora, si se sabe con
+    # certeza que el formulario es MECI pero no se identificó la categoría
+    # específica, se usa el respaldo genérico REGIMEN_ESPECIAL_MECI_OTRO —
+    # que sí evita la fabricación de dimensiones, aunque su nota jurídica
+    # sea menos específica que la de una categoría con norma citada. El
+    # usuario sigue pudiendo cambiar la categoría a mano si identifica cuál
+    # es la correcta.
+    return REGIMEN_ESPECIAL_MECI_OTRO
 
 st.set_page_config(page_title="SIIEAP — Diagnóstico IDI-MIPG", layout="wide")
 
