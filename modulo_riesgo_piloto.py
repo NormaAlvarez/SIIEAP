@@ -34,9 +34,13 @@ Instrucciones adicionales ya incorporadas:
     ERM con los 77 puntos de reflexión oficiales del Anexo 4.
   - Se programaron completas las Pantallas 6, 7 y 8.
 
-El listado nominal de cada proceso individual de Carepa (más allá de los 4
-tipos generales) sigue pendiente de la Alcaldía; la pestaña "Procesos"
-permite capturarlo tan pronto se reciba.
+ACTUALIZACIÓN (19-sep-2026, tarde): se recibió el Mapa de Procesos oficial
+de la Alcaldía de Carepa (19 procesos, código C-ADM-xx-01, en 4 tipos:
+Estratégico, Misional, De Apoyo, De Evaluación). Los 19 quedaron cargados
+con su caracterización completa (objetivo, alcance, entradas, salidas,
+responsable) en la pestaña "Procesos" y disponibles para identificar
+riesgos desde la Pantalla 1 — el listado nominal que antes estaba
+pendiente de la Alcaldía ya no lo está.
 """
 from __future__ import annotations
 
@@ -47,6 +51,8 @@ from backend.base_conocimiento.catalogo_riesgos import (
     opciones_factor_riesgo,
     opciones_tipologia_riesgo,
     opciones_proceso_carepa,
+    procesos_confirmados_carepa,
+    procesos_confirmados_disponibles,
     instrumentos_insumo_ambientales,
     catalogo_puntos_riesgo_fiscal_disponible,
     opciones_punto_riesgo_fiscal,
@@ -83,6 +89,23 @@ def render_modulo_riesgo() -> None:
     if "kris_capturados" not in st.session_state:
         st.session_state.kris_capturados = []  # list[KRI]
 
+    # Precarga (una sola vez por sesión) de los 19 procesos reales de Carepa,
+    # tomados del Mapa de Procesos oficial (C-ADM-xx-01) entregado por la
+    # docente/experta temática el 19-sep-2026. El usuario puede seguir
+    # agregando o editando procesos con el formulario de abajo.
+    if not st.session_state.get("_procesos_confirmados_precargados"):
+        for p in procesos_confirmados_carepa():
+            st.session_state.procesos_caracterizados.append(
+                ProcesoCaracterizado(
+                    codigo=p["codigo"], nombre=p["nombre"], tipo=p["tipo"],
+                    objetivo=p.get("objetivo", ""), alcance=p.get("alcance", ""),
+                    entradas=p.get("entradas", ""), salidas=p.get("salidas", ""),
+                    responsable=p.get("responsable", ""),
+                    indicadores=p.get("indicadores", []),
+                )
+            )
+        st.session_state._procesos_confirmados_precargados = True
+
 
     def opciones_proceso_combinadas() -> list[str]:
         """Los 4 tipos generales confirmados + cualquier proceso ya
@@ -97,13 +120,23 @@ def render_modulo_riesgo() -> None:
         "Prototipo independiente de SIIEAP v6.1. Caso de prueba: Alcaldía de Carepa "
         "(Antioquia), vigencia 2026-2027. No sustituye ni modifica el diagnóstico IDI-MIPG."
     )
-    st.warning(
-        "⚠ Este es un PILOTO para validación funcional y de contenido con la docente/experta "
-        "temática. Los procesos de Carepa que se listan abajo son solo los 4 TIPOS confirmados "
-        "(Decreto 092 de 2021); el listado nominal de cada proceso específico está pendiente "
-        "de verificar con la Alcaldía.",
-        icon="⚠️",
-    )
+    if procesos_confirmados_disponibles():
+        st.success(
+            f"✅ Los {len(procesos_confirmados_carepa())} procesos institucionales de la Alcaldía de "
+            "Carepa (Mapa de Procesos oficial, código C-ADM-xx-01, entregado el 19-sep-2026) ya están "
+            "cargados en la pestaña 'Procesos', con su objetivo, alcance, entradas, salidas y "
+            "responsable. Puede usarlos directamente para identificar riesgos, o agregar/editar procesos "
+            "adicionales con el formulario.",
+            icon="✅",
+        )
+    else:
+        st.warning(
+            "⚠ Este es un PILOTO para validación funcional y de contenido con la docente/experta "
+            "temática. Los procesos de Carepa que se listan abajo son solo los 4 TIPOS confirmados "
+            "(Decreto 092 de 2021); el listado nominal de cada proceso específico está pendiente "
+            "de verificar con la Alcaldía.",
+            icon="⚠️",
+        )
 
     tab_procesos, tab1, tab2, tab3, tab4, tab_fiscal, tab_seg, tab_sigrip, tab_kri, tab_amb, tab_madurez, tab_mapa = st.tabs([
         "Procesos",
@@ -122,12 +155,21 @@ def render_modulo_riesgo() -> None:
 
     with tab_procesos:
         st.subheader("Caracterización de procesos institucionales")
-        st.caption(
-            "Además de los 4 tipos generales confirmados (Decreto 092 de 2021), aquí se puede capturar la "
-            "caracterización completa de cada proceso individual de la entidad, en cuanto la Alcaldía la entregue "
-            "o se levante con los líderes de proceso. Campo agregado a petición de la docente/experta temática "
-            "(validación 19-sep-2026)."
-        )
+        if procesos_confirmados_disponibles():
+            st.caption(
+                "Los 19 procesos oficiales de la Alcaldía de Carepa (Mapa de Procesos, código C-ADM-xx-01) "
+                "ya están precargados abajo, con su objetivo, alcance, entradas, salidas y responsable "
+                "tomados literalmente de la caracterización entregada por la Alcaldía. Puede agregar más "
+                "procesos o ajustar alguno con el formulario. Campo agregado a petición de la docente/"
+                "experta temática (validación 19-sep-2026)."
+            )
+        else:
+            st.caption(
+                "Además de los 4 tipos generales confirmados (Decreto 092 de 2021), aquí se puede capturar la "
+                "caracterización completa de cada proceso individual de la entidad, en cuanto la Alcaldía la entregue "
+                "o se levante con los líderes de proceso. Campo agregado a petición de la docente/experta temática "
+                "(validación 19-sep-2026)."
+            )
         esquema = esquema_caracterizacion_proceso()
         with st.expander("Ver los campos de la caracterización (Anexo del diseño técnico)"):
             for c in esquema["campos"]:
@@ -156,7 +198,7 @@ def render_modulo_riesgo() -> None:
                 )
 
         if st.session_state.procesos_caracterizados:
-            st.write("Procesos caracterizados hasta ahora:")
+            st.write(f"Procesos caracterizados hasta ahora ({len(st.session_state.procesos_caracterizados)}):")
             st.dataframe(
                 pd.DataFrame([{
                     "Código": p.codigo, "Nombre": p.nombre, "Tipo": p.tipo,
@@ -164,6 +206,18 @@ def render_modulo_riesgo() -> None:
                 } for p in st.session_state.procesos_caracterizados]),
                 use_container_width=True,
             )
+            with st.expander("Ver la ficha completa de un proceso (objetivo, alcance, entradas, salidas)"):
+                nombres_p = [f"{p.codigo} — {p.nombre}" for p in st.session_state.procesos_caracterizados]
+                elegido = st.selectbox("Proceso", nombres_p, key="f_proceso_detalle")
+                p_sel = st.session_state.procesos_caracterizados[nombres_p.index(elegido)]
+                st.markdown(f"**Tipo:** {p_sel.tipo}")
+                st.markdown(f"**Objetivo:** {p_sel.objetivo or '—'}")
+                st.markdown(f"**Alcance:** {p_sel.alcance or '—'}")
+                st.markdown(f"**Entradas:** {p_sel.entradas or '—'}")
+                st.markdown(f"**Salidas:** {p_sel.salidas or '—'}")
+                st.markdown(f"**Responsable:** {p_sel.responsable or '—'}")
+                if p_sel.indicadores:
+                    st.markdown("**Indicadores:** " + "; ".join(p_sel.indicadores))
         else:
             st.info("Todavía no se ha caracterizado ningún proceso con nombre propio. Mientras tanto, la "
                     "identificación de riesgos (pestaña 1) puede usar los 4 tipos generales.")

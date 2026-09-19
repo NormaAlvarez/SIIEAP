@@ -1,72 +1,87 @@
-SIIEAP — app.py YA INTEGRADO con el Módulo de Riesgo (19-sep-2026)
-====================================================================
+SIIEAP — app.py YA INTEGRADO, con los 19 procesos reales de Carepa (19-sep-2026)
+====================================================================================
 
 Esto NO es una guía para parchar nada a mano. Es el sistema completo, listo
 para correr con un solo comando:
 
     streamlit run app.py
 
-QUÉ CAMBIÓ
-----------
-Antes había dos apps separadas (`streamlit run app.py` para el diagnóstico
-IDI-MIPG, y `streamlit run modulo_riesgo_piloto.py` para el piloto de
-riesgo, cada una por su lado). Ahora hay un solo punto de entrada:
-
+QUÉ HAY EN ESTE PAQUETE
+------------------------
   app.py
-    -> Es un ROUTER nuevo y pequeño (60 líneas). En la barra lateral
-       aparece un menú "Módulo" con dos opciones:
-         📊 Diagnóstico IDI-MIPG (v6.1)
-         🛡️ Administración y Gestión del Riesgo (piloto)
-       Según lo que elija el usuario, ejecuta uno de los dos módulos de
-       abajo. No contiene ninguna pantalla propia.
+    -> ROUTER principal. En la barra lateral aparece un menú "Módulo" con
+       dos opciones: 📊 Diagnóstico IDI-MIPG (v6.1) y 🛡️ Administración y
+       Gestión del Riesgo (piloto). No contiene pantallas propias.
 
   diagnostico_idi_mipg.py
-    -> Es EXACTAMENTE el contenido de su app.py anterior (las mismas 1469
-       líneas, el mismo código, los mismos cálculos, ni una coma cambiada),
-       solo que ahora envuelto en una función render_diagnostico_idi_mipg()
-       para que el router pueda llamarlo. Sigue funcionando también solo:
+    -> El contenido íntegro de su app.py anterior (v6.1), sin cambios,
+       envuelto en render_diagnostico_idi_mipg() para que el router lo
+       pueda invocar. Sigue funcionando también solo:
            streamlit run diagnostico_idi_mipg.py
 
   modulo_riesgo_piloto.py
-    -> Es el módulo de riesgo (10 pantallas + mapa consolidado, ya con
-       las 5 instrucciones de la validación del 19-sep-2026 incorporadas),
-       envuelto de la misma forma en render_modulo_riesgo(). También sigue
-       funcionando solo:
+    -> El módulo de riesgo (10 pantallas + mapa consolidado), envuelto en
+       render_modulo_riesgo(). NOVEDAD de esta entrega: la pestaña
+       "Procesos" ya NO empieza vacía — carga automáticamente los 19
+       procesos institucionales reales de la Alcaldía de Carepa, tomados
+       del Mapa de Procesos oficial que usted compartió (código
+       C-ADM-xx-01), cada uno con su objetivo, alcance, entradas, salidas
+       y responsable transcritos literalmente del documento. Ya se pueden
+       usar de inmediato para identificar riesgos en la Pantalla 1, sin
+       tener que volver a escribirlos a mano. También sigue funcionando
+       solo:
            streamlit run modulo_riesgo_piloto.py
 
-No se reescribió ni una pantalla ni un cálculo de ninguno de los dos
-módulos para hacer esta integración: solo se les puso una "envoltura" de
-función para que un mismo archivo (app.py) pueda decidir cuál mostrar.
+  backend/
+    -> Incluye el catálogo actualizado (catalogo_riesgos.json) con los 19
+       procesos confirmados agregados bajo procesos_carepa.procesos_confirmados,
+       y el accesor procesos_confirmados_carepa() en catalogo_riesgos.py.
+
+LOS 19 PROCESOS CARGADOS
+--------------------------
+Estratégicos (4): Gestión Financiera y Contable, Comunicación Pública,
+Direccionamiento y Planeación Estratégica, Gestión de Talento Humano.
+
+Misionales (8): Atención al Ciudadano, Gestión del Desarrollo Económico,
+Gestión Ambiental, Infraestructura Pública, Participación Ciudadana,
+Gestión de la Provisión de Programas y Servicios Sociales, Derechos
+Humanos-Seguridad y Convivencia Ciudadana, Inspección Vigilancia y Control.
+
+De Apoyo (5): Gestión Tributaria y de Rentas, Gestión de Asuntos Legales,
+Gestión de Bienes y Servicios, Gestión Documental, Gestión de TIC.
+
+De Evaluación (2): Evaluación y Control, Evaluación de Desempeño
+Institucional.
+
+Cómo se extrajo cada campo (para que quede trazable, sin inventar nada):
+  - Objetivo y Alcance: se tomaron literalmente de la celda "Objetivo:" /
+    "Alcance:" de cada documento de caracterización.
+  - Entradas y Salidas: se tomaron de la tabla PHVA (Planear/Hacer/
+    Verificar/Actuar) de cada documento, columnas "Entradas" y "Salidas".
+  - Responsable: se tomó de la fila "Talento Humano" de cada documento.
+  - Indicadores: los 19 documentos remiten a un "Tablero de Indicadores"
+    institucional externo, sin enumerar indicadores por proceso dentro del
+    documento mismo — por eso el campo queda vacío en vez de inventarse; el
+    formulario de la pestaña "Procesos" permite agregarlos manualmente si
+    usted los tiene disponibles en otro lado.
 
 CÓMO INSTALARLO
 ----------------
 1. Copie los 3 archivos de la raíz de este paquete (app.py,
    diagnostico_idi_mipg.py, modulo_riesgo_piloto.py) a la raíz de su
-   proyecto SIIEAP, REEMPLAZANDO el app.py que tenía antes (su contenido
-   íntegro quedó preservado dentro de diagnostico_idi_mipg.py, no se
-   pierde nada).
+   proyecto SIIEAP, reemplazando lo que tenía antes.
 2. Copie la carpeta backend/ de este paquete sobre la carpeta backend/ de
-   su proyecto (son los mismos archivos del módulo de riesgo que ya tenía
-   instalados del zip anterior; se incluyen aquí de nuevo solo para que el
-   paquete quede completo y autocontenido).
+   su proyecto.
 3. Ejecute:
        streamlit run app.py
-   Debe abrir con el menú "Módulo" en la barra lateral. Por defecto se ve
-   el Diagnóstico IDI-MIPG; al elegir "Administración y Gestión del
-   Riesgo (piloto)" en la barra lateral aparecen las 10 pantallas del
-   módulo nuevo, sin salir de la aplicación ni abrir otra pestaña.
+   Elija "Administración y Gestión del Riesgo (piloto)" en el menú lateral,
+   abra la pestaña "Procesos" y verá los 19 ya cargados.
 
 VERIFICACIÓN REALIZADA
 -----------------------
-- Los 3 archivos compilan sin errores (py_compile).
-- Se levantó `streamlit run app.py` de verdad: responde HTTP 200 y el
-  log del servidor queda limpio, sin excepciones.
-- Se simuló con streamlit.testing (AppTest) el cambio de módulo en la
-  barra lateral: al seleccionar "Administración y Gestión del Riesgo
-  (piloto)" el módulo se ejecuta sin ninguna excepción.
-- No se modificó ni backend/base_conocimiento/catalogo.py ni
-  catalogo_idi.json (el catálogo v6.1 original), tal como se ha respetado
-  durante todo el proyecto.
-
-NADA QUEDA PENDIENTE DE "PARCHAR": el app.py de este paquete es el que se
-usa tal cual, no hay líneas para copiar y pegar a mano en otro archivo.
+- Los 4 archivos de código compilan sin errores (py_compile).
+- Se simuló con streamlit.testing (AppTest) la carga del módulo de riesgo:
+  la pestaña "Procesos" muestra una tabla de 19 filas, sin excepciones.
+- El JSON del catálogo es válido (json.load sin errores).
+- No se modificó backend/base_conocimiento/catalogo.py ni catalogo_idi.json
+  (catálogo v6.1 original).
