@@ -44,8 +44,17 @@ def tabla_impacto() -> list[dict]:
     return cargar_catalogo_riesgos()["tabla_impacto"]["niveles"]
 
 
-def tabla_valoracion_controles() -> dict:
-    return cargar_catalogo_riesgos()["tabla_valoracion_controles"]
+def tabla_valoracion_controles(tipologia: str = "Gestión") -> dict:
+    """Devuelve la tabla de valoración de controles que corresponde según la
+    tipología del riesgo. Instrucción de la docente/experta temática
+    (19-sep-2026): NO unificar los porcentajes entre fuentes — la tipología
+    'Seguridad de la información' usa el peso del Anexo 5 (Manual = 10%);
+    todas las demás tipologías usan el peso de la Guía v7 / Anexo 1
+    (Manual = 15%)."""
+    catalogo = cargar_catalogo_riesgos()
+    if tipologia == "Seguridad de la información":
+        return catalogo["tabla_valoracion_controles_seguridad_informacion"]
+    return catalogo["tabla_valoracion_controles_general"]
 
 
 def tipologias_riesgo() -> list[dict]:
@@ -121,3 +130,40 @@ def tipos_proceso_carepa() -> list[dict]:
 
 def opciones_proceso_carepa() -> list[str]:
     return [f'{p["codigo"]} — {p["nombre"]}' for p in tipos_proceso_carepa()]
+
+
+def esquema_caracterizacion_proceso() -> dict:
+    """Estructura de campos para caracterizar un proceso individual (más
+    allá de los 4 tipos generales), agregada a petición de la docente/
+    experta temática (validación 19-sep-2026)."""
+    return cargar_catalogo_riesgos()["procesos_carepa"]["esquema_caracterizacion"]
+
+
+def glosario_secciones() -> list[dict]:
+    """Las 5 secciones del Anexo 2 (Glosario oficial de la Guía v7)."""
+    return cargar_catalogo_riesgos()["glosario"]["secciones"]
+
+
+def buscar_termino_glosario(texto: str) -> list[dict]:
+    """Busca (sin distinguir mayúsculas) un texto en los términos del
+    glosario oficial, incluyendo subtipos anidados."""
+    texto = texto.lower().strip()
+    encontrados = []
+    for seccion in glosario_secciones():
+        for t in seccion["terminos"]:
+            if texto in t["termino"].lower() or texto in t["definicion"].lower():
+                encontrados.append({**t, "_seccion": seccion["titulo"]})
+            for sub in t.get("subtipos", []):
+                if texto in sub["termino"].lower() or texto in sub["definicion"].lower():
+                    encontrados.append({**sub, "_seccion": seccion["titulo"], "_termino_padre": t["termino"]})
+    return encontrados
+
+
+def modelo_madurez_componentes() -> list[dict]:
+    """Los 5 componentes COSO-ERM del Anexo 4, cada uno con sus puntos de
+    reflexión oficiales (77 en total)."""
+    return cargar_catalogo_riesgos()["modelo_madurez_erm"]["componentes"]
+
+
+def escala_madurez_erm() -> list[dict]:
+    return cargar_catalogo_riesgos()["modelo_madurez_erm"]["escala_madurez"]

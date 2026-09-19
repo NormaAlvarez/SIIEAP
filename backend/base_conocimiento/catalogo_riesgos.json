@@ -4,8 +4,8 @@
     "fuente_principal": "Guía Gestión Integral del Riesgo v7 (DAFP, ago-2025)",
     "fuente_ambiental": "Manual Operativo MIPG v7 (DAFP, ago-2026), numeral 4.10 - Política de Gestión Ambiental Institucional",
     "fecha_construccion": "2026-09-18",
-    "version": "1.1-piloto",
-    "fecha_actualizacion": "2026-09-18",
+    "version": "1.3-piloto",
+    "fecha_actualizacion": "2026-09-19",
     "anexos_incorporados": [
       "Anexo 1 - Formato mapa de riesgos integral (xlsx oficial DAFP)",
       "Anexo 3 - Catálogo indicativo de puntos de riesgo fiscal (docx oficial DAFP)",
@@ -14,7 +14,13 @@
     "anexos_disponibles_no_incorporados_aun": [
       "Anexo 2 - Glosario (pdf, 15 páginas) - disponible pero no transcrito término por término todavía.",
       "Anexo 4 - Herramienta de diagnóstico del modelo de madurez ERM (xlsx) - estructura identificada (5 componentes COSO-ERM: Gobierno y Cultura, Estrategia y Objetivos, Desempeño, Análisis y Monitorización, Información/Comunicación/Reporting; escala 1-5 Nunca a Siempre) pero no se construyó todavía una pantalla para este autodiagnóstico; queda para una fase posterior del módulo."
-    ]
+    ],
+    "validacion_docente": {
+      "validado_por": "Norma Elizabeth Álvarez Grajales",
+      "cargo": "Docente / experta temática",
+      "fecha": "2026-09-19",
+      "resultado": "Las 9 pantallas (1 a 9) quedaron APROBADAS en la checklist de validación. Se instruyó además: (1) no unificar el peso de controles entre fuentes, dejar el de cada anexo; (2) incluir caracterización completa de cada proceso; (3) transcribir completos los subanexos 2, 4, 5 y 6 de la política ambiental; (4) transcribir el glosario completo (Anexo 2) y construir la pantalla de autodiagnóstico de madurez ERM (Anexo 4); (5) programar completas las Pantallas 6, 7 y 8 (seguridad de la información, SIGRIP, KRI)."
+    }
   },
   "factores_riesgo": {
     "FR01": {
@@ -116,30 +122,6 @@
         "afectacion_reputacional": "El riesgo afecta la imagen de la entidad a nivel nacional, con efecto publicitario sostenido a nivel país."
       }
     ]
-  },
-  "tabla_valoracion_controles": {
-    "_fuente": "Guía v7, Tabla 6 (numeral 3.10), confirmado y precisado con el Anexo 1 oficial (hoja '11 FORMULAS')",
-    "_correccion_v1_1": "La versión 1.0 de este catálogo aplicaba el peso de CUALQUIER control sobre la probabilidad (y opcionalmente sobre el impacto, según un parámetro manual). El Anexo 1 oficial muestra que esto depende del TIPO de control: Preventivo y Detectivo afectan la PROBABILIDAD; Correctivo afecta el IMPACTO. Esta versión corrige esa regla.",
-    "tipo": {
-      "preventivo": {
-        "peso": 0.25,
-        "afecta": "probabilidad"
-      },
-      "detectivo": {
-        "peso": 0.15,
-        "afecta": "probabilidad"
-      },
-      "correctivo": {
-        "peso": 0.1,
-        "afecta": "impacto"
-      }
-    },
-    "implementacion": {
-      "automatico": 0.25,
-      "manual": 0.15
-    },
-    "_nota_discrepancia_fuentes": "El Anexo 5 (Matriz de riesgos de seguridad de la información) trae el peso de 'Manual' como 0.10 en vez de 0.15. Es una diferencia entre dos documentos oficiales del mismo paquete (Guía v7 Tabla 6 vs. Anexo 5). SIIEAP usa 0.15 (el valor de la Guía v7 y del Anexo 1, que coinciden entre sí) como valor por defecto, y deja esta nota para que se confirme con el DAFP o con la docente/experta temática cuál prevalece.",
-    "_nota_no_semiautomaticos": "No existen controles semiautomáticos en esta tabla (Guía v7)."
   },
   "tipologias_riesgo": [
     {
@@ -451,19 +433,161 @@
     "base_normativa": "Ley 610 de 2000 (15 de agosto de 2000, Diario Oficial No. 44133) — define la gestión fiscal."
   },
   "politica_ambiental_mipg_v7": {
-    "_fuente": "Manual Operativo MIPG v7 (DAFP, ago-2026), numeral 4.10",
+    "_fuente": "Manual Operativo MIPG v7 (DAFP, ago-2026), numeral 4.10 — transcripción ampliada 19-sep-2026",
     "dimension": 4,
     "politica_numero": "4.10",
     "nombre": "Política de Gestión Ambiental Institucional",
-    "subanexos": [
-      "Subanexo 1",
-      "Subanexo 2",
-      "Subanexo 3 (Metodología Conesa simplificada)",
-      "Subanexo 4",
-      "Subanexo 5",
-      "Subanexo 6"
+    "objetivo": "Establecer los lineamientos técnicos, operativos y de gestión para la adopción, implementación, seguimiento y evaluación de la Política de Gestión Ambiental Institucional en las entidades públicas del Estado colombiano, articulada con el MIPG, el sistema de control interno, la planeación institucional, la normatividad ambiental vigente y los instrumentos de gestión ambiental que resulten aplicables en cada jurisdicción.",
+    "objetivos_especificos": [
+      "Integrar la gestión ambiental en la planeación estratégica y operativa de la entidad.",
+      "Mejorar las prácticas de Gestión Ambiental, identificar y controlar aspectos e impactos ambientales asociados a actividades, bienes y servicios.",
+      "Cumplir con los requisitos legales ambientales y otros compromisos aplicables.",
+      "Promover el uso eficiente de recursos como agua, energía, materiales y demás recursos naturales.",
+      "Fortalecer la gestión de residuos y el consumo sostenible.",
+      "Incorporar acciones de mitigación y adaptación al cambio climático, movilidad e infraestructura sostenibles según la capacidad institucional.",
+      "Consolidar la cultura ambiental institucional mediante formación, comunicación y participación de las partes interesadas.",
+      "Implementar mecanismos de seguimiento, evaluación y mejora con base en indicadores, evidencias y reportes periódicos."
     ],
-    "_nota_subanexos": "El detalle completo de cada subanexo (2, 4, 5, 6) no se transcribió en el diseño técnico previo; se recomienda completarlo directamente del Manual Operativo MIPG v7 antes de programar el formulario final.",
+    "marco_normativo": {
+      "marco_general_ambiental": [
+        "Constitución Política (Arts. 79 y 80)",
+        "Ley 99 de 1993",
+        "Decreto 1076 de 2015",
+        "NTC-ISO 14001"
+      ],
+      "agua_y_vertimientos": [
+        "Ley 9 de 1979",
+        "Ley 373 de 1997",
+        "Decreto-Ley 2811 de 1974",
+        "Decreto 1575 de 2007",
+        "Resolución 631 de 2015"
+      ],
+      "energia": [
+        "Ley 697 de 2001",
+        "Ley 1715 de 2014",
+        "Ley 2294 de 2023 (Art. 237)",
+        "Ley 2407 de 2024",
+        "Decreto 2501 de 2007",
+        "Decreto 1073 de 2015",
+        "Resolución UPME 16 de 2024",
+        "Resolución 40156 de 2022",
+        "Resolución 40412 de 2024",
+        "RETILAP"
+      ],
+      "residuos_y_suelo": [
+        "Ley 1252 de 2008",
+        "Ley 1259 de 2008",
+        "Ley 1672 de 2013",
+        "Decreto 596 de 2016",
+        "Decreto 284 de 2018",
+        "Decreto 2981 de 2013",
+        "Resoluciones 1326 de 2017, 472 de 2017, 2184 de 2019, 1342 de 2020, 1257 de 2021, 851 de 2022",
+        "Ley 140 de 1994",
+        "Ley 769 de 2002",
+        "Ley 2169 de 2021",
+        "Resoluciones 901 de 2006, 1309 de 2010, 634 de 2022, 762 de 2022"
+      ],
+      "sustancias_quimicas": [
+        "Ley 55 de 1993",
+        "Decreto 1496 de 2018",
+        "Decreto 1630 de 2021",
+        "Decreto 1868 de 2021",
+        "Resolución 773 de 2021"
+      ],
+      "otros": [
+        "Ley 142 de 1994",
+        "Ley 1964 de 2019",
+        "Ley 2155 de 2021 (Art. 19)",
+        "Ley 2232 de 2022",
+        "Resolución 803 de 2024",
+        "Directiva Presidencial 04 de 2012"
+      ]
+    },
+    "ambito_aplicacion": "Ministerios, departamentos administrativos, superintendencias, unidades administrativas especiales, establecimientos públicos, gobernaciones, alcaldías, concejos, asambleas, personerías, contralorías, empresas industriales y comerciales del Estado y demás entidades públicas que, por el desarrollo de sus actividades administrativas, misionales, operativas o de apoyo, generen consumos de recursos, residuos, vertimientos, emisiones, desplazamientos, compras o cualquier otra interacción con el ambiente. Aplica a sedes propias, arrendadas, en comodato, administradas por terceros o compartidas, así como a procesos ejecutados directamente o mediante contratación, mientras la entidad mantenga control operacional o capacidad de influencia sobre los aspectos e impactos ambientales generados.",
+    "fundamentos_secuencia_implementacion": [
+      {
+        "paso": "1. Comprender los requisitos de gestión ambiental (contexto)",
+        "descripcion": "Identificar y analizar circunstancias, factores, actividades, interrelaciones de procesos y condiciones internas y externas que incidan en el desempeño ambiental de la entidad (NTC-ISO 14001)."
+      },
+      {
+        "paso": "2. Estructura de gestión institucional (roles y responsabilidades)",
+        "descripcion": "Asignar, coordinar y dotar de recursos las responsabilidades: alta dirección, instancias de decisión, responsable estratégico y áreas operativas, articulado con el MIPG."
+      },
+      {
+        "paso": "3. Diagnóstico ambiental institucional",
+        "descripcion": "Debe comprender como mínimo: descripción institucional, inventario de sedes, caracterización de procesos, población permanente, parque automotor y equipos relevantes, condiciones del entorno, aspectos e impactos ambientales, requisitos legales, riesgos y condiciones ambientales institucionales por recurso."
+      },
+      {
+        "paso": "4. Línea base (recopilar datos y diagnóstico del desempeño ambiental)",
+        "descripcion": "Consolidar una línea base ambiental con información verificable de al menos los últimos 12 meses sobre consumo de agua, consumo de energía, generación de residuos, uso de combustibles, huella de carbono, infraestructura instalada y demás variables relevantes. Complementable con inventarios, facturación, reportes de servicios públicos, mediciones internas, reportes de contratistas, formatos de mantenimiento y certificaciones de disposición."
+      },
+      {
+        "paso": "5. Priorizar, planificar y comprometerse a la acción",
+        "descripcion": "Transformar los hallazgos en decisiones, metas y acciones medibles: criterios de priorización, programas ambientales operativos, formulación de objetivos/metas/indicadores, compromisos institucionales y formalización."
+      },
+      {
+        "paso": "6. Construir una cultura de toma de conciencia de la gestión ambiental",
+        "descripcion": "Movilizar conocimiento, comportamiento y compromiso de servidores, contratistas y partes interesadas a lo largo de toda la entidad."
+      },
+      {
+        "paso": "7. Seguimiento, medición, análisis y evaluación (indicadores)",
+        "descripcion": "Verificar si la política, los programas y los planes de acción producen los resultados ambientales previstos, en línea con el MIPG y el reporte FURAG."
+      }
+    ],
+    "que_medir_indicadores": [
+      "Cumplimiento de los objetivos y metas ambientales por programa.",
+      "Cumplimiento de los requisitos legales y otros requisitos.",
+      "Desempeño en los aspectos ambientales significativos identificados.",
+      "Eficacia de los controles operacionales adoptados.",
+      "Tratamiento de riesgos y oportunidades.",
+      "Avance del plan de acción anual y la ejecución presupuestal asociada."
+    ],
+    "subanexos": [
+      {
+        "numero": 1,
+        "nombre": "Matriz de análisis de contexto y DOFA"
+      },
+      {
+        "numero": 2,
+        "nombre": "Matriz de roles y responsabilidades"
+      },
+      {
+        "numero": 3,
+        "nombre": "Matriz de aspectos e impactos ambientales (metodología Conesa simplificada)"
+      },
+      {
+        "numero": 4,
+        "nombre": "Matriz de identificación, aplicabilidad y cumplimiento de requisitos legales ambientales"
+      },
+      {
+        "numero": 5,
+        "nombre": "Plantillas de línea base por recurso (agua, energía, residuos, papel)"
+      },
+      {
+        "numero": 6,
+        "nombre": "Fichas con criterios con cláusulas ambientales para contratos y supervisión"
+      }
+    ],
+    "_estado_subanexos": "El Manual Operativo MIPG v7 NOMBRA y describe en una línea cada uno de los 6 subanexos (arriba), pero aclara textualmente que estos son documentos/formatos/guías de apoyo INDEPENDIENTES, puestos a disposición por el Ministerio de Ambiente y Desarrollo Sostenible 'a través de los canales que disponga la entidad líder de la política' — es decir, son archivos aparte (como los anexos de la Guía de riesgo v7), que NO vienen incrustados dentro del texto del manual. Ninguno de los 6 subanexos fue compartido en esta sesión (solo se compartieron los anexos de la Guía de RIESGO v7, que son un paquete distinto). SIIEAP no fabrica el contenido de esas plantillas: si se necesitan completas, hay que solicitarlas al Ministerio de Ambiente y Desarrollo Sostenible o a la entidad líder de la política, igual que se hizo con el Anexo 3 de riesgo fiscal.",
+    "gradualidad": {
+      "_fuente": "Manual Operativo MIPG v7, numeral 4.10 'Criterios diferenciales'",
+      "niveles_cumplimiento": [
+        "Mínimo",
+        "Intermedio",
+        "Avanzado"
+      ],
+      "descripcion_niveles": "Definidos según las capacidades institucionales, los riesgos identificados y las condiciones particulares de cada entidad.",
+      "gradualidad_en_el_tiempo": "Las exigencias aplican a partir de 2027, con incremento progresivo en 2029, 2031 y años siguientes.",
+      "criterio_materialidad": "Se tiene en cuenta la materialidad y el riesgo ambiental (magnitud de los impactos ambientales asociados a la operación de la entidad) para ajustar el nivel de exigencia.",
+      "referencia_adicional": "Anexo 9 del Manual Operativo MIPG v7 — criterios diferenciales para la política de Gestión Ambiental Institucional (tampoco compartido en esta sesión)."
+    },
+    "resultados_favorables_dimension": [
+      "Estructuras organizacionales y modelos de operación alineados con la estrategia y capacidad institucional, orientados a la generación de valor público.",
+      "Mejor calidad técnica y jurídica de la producción normativa.",
+      "Fortalecimiento de la gestión del ciclo de defensa jurídica del Estado.",
+      "Gestión ambiental institucional responsable que previene impactos, optimiza el uso de recursos y contribuye al desarrollo sostenible.",
+      "Protección de activos institucionales en el entorno digital mediante gestión de riesgos de seguridad digital."
+    ],
     "instrumentos_insumo": [
       "Plan Institucional de Gestión Ambiental (PIGA)",
       "Plan de Gestión Integral de Residuos Sólidos (PGIRS) del municipio",
@@ -496,7 +620,49 @@
         "nombre": "De Evaluación",
         "descripcion": "Medición del desempeño y mejora continua."
       }
-    ]
+    ],
+    "esquema_caracterizacion": {
+      "_uso": "Estructura para capturar la caracterización completa de CADA proceso individual (más allá de los 4 tipos generales confirmados), tal como lo pidió la docente/experta temática el 19-sep-2026. Se captura en la Pantalla 'Procesos' del piloto y queda disponible para vincular cada riesgo a un proceso caracterizado, no solo a su tipo general.",
+      "campos": [
+        {
+          "campo": "codigo",
+          "descripcion": "Código interno del proceso (si la entidad ya tiene uno) o consecutivo asignado por el módulo."
+        },
+        {
+          "campo": "nombre",
+          "descripcion": "Nombre del proceso, tal como lo tenga documentado la entidad."
+        },
+        {
+          "campo": "tipo",
+          "descripcion": "Estratégico / Misional / De Apoyo / De Evaluación (los 4 tipos confirmados de Carepa)."
+        },
+        {
+          "campo": "objetivo",
+          "descripcion": "Objetivo del proceso."
+        },
+        {
+          "campo": "alcance",
+          "descripcion": "Alcance del proceso: desde dónde hasta dónde llega."
+        },
+        {
+          "campo": "entradas",
+          "descripcion": "Insumos/entradas que recibe el proceso (de otros procesos o de fuera de la entidad)."
+        },
+        {
+          "campo": "salidas",
+          "descripcion": "Productos/salidas que entrega el proceso."
+        },
+        {
+          "campo": "responsable",
+          "descripcion": "Cargo responsable del proceso (líder de proceso)."
+        },
+        {
+          "campo": "indicadores",
+          "descripcion": "Indicadores de gestión asociados al proceso (lista)."
+        }
+      ],
+      "_nota": "El listado nominal de los procesos reales de Carepa sigue pendiente de la Alcaldía; esta estructura permite ir capturando la caracterización tan pronto la Alcaldía la entregue, o durante entrevistas con los líderes de proceso, sin tener que rediseñar el módulo después."
+    }
   },
   "matriz_calor_severidad": {
     "_fuente": "Anexo 1 de la Guía v7 (Formato mapa de riesgos integral, DAFP), hoja 'MAPA CALOR INHERENTE'. Reemplaza la aproximación por cuartiles usada en la versión 1.0 de este catálogo, que quedaba pendiente de validar.",
@@ -583,21 +749,695 @@
     "_nota": "Esta lista de campos reemplaza y amplía los 3 campos genéricos que traía la Pantalla 6 en la versión 1.0 del diseño técnico (Activo de información, Clasificación, Descripción del riesgo)."
   },
   "modelo_madurez_erm": {
-    "_fuente": "Anexo 4 - Herramienta de diagnóstico del modelo de madurez ERM (DAFP), marco COSO-ERM",
-    "_estado": "Estructura identificada; NO incorporada todavía como pantalla del módulo (fuera del alcance priorizado: Pantallas 1-4 y 9). Queda documentada aquí para una fase posterior.",
-    "componentes": [
-      "1. Gobierno y Cultura",
-      "2. Estrategia y Objetivos",
-      "3. Desempeño",
-      "4. Análisis y Monitorización",
-      "5. Información, Comunicación y Reporting"
-    ],
+    "_fuente": "Anexo 4 - Herramienta de diagnóstico del modelo de madurez ERM (DAFP), marco COSO-ERM 2017",
+    "_estado": "DISPONIBLE — 77 puntos de reflexión transcritos completos de las 5 hojas del Anexo 4 oficial",
     "escala_madurez": [
-      "1.- Nunca",
-      "2.- Raramente",
-      "3.- A veces",
-      "4.- Frecuentemente",
-      "5.- Siempre"
+      {
+        "valor": 1,
+        "etiqueta": "1.- Nunca"
+      },
+      {
+        "valor": 2,
+        "etiqueta": "2.- Raramente"
+      },
+      {
+        "valor": 3,
+        "etiqueta": "3.- A veces"
+      },
+      {
+        "valor": 4,
+        "etiqueta": "4.- Frecuentemente"
+      },
+      {
+        "valor": 5,
+        "etiqueta": "5.- Siempre"
+      }
+    ],
+    "componentes": [
+      {
+        "numero": 1,
+        "nombre": "Gobierno y Cultura",
+        "puntos_reflexion": [
+          {
+            "principio": "1.   Supervisión de Riesgos a través del Comité Institucional de Coordinación de Control Interno",
+            "punto_reflexion": "1.1. El Reglamento del Comité Institucional de Coordinación de Control Interno o instancia equivalente establece sus competencias en materia de supervisión de gestión de riesgos, de acuerdo al esquema de líneas?"
+          },
+          {
+            "principio": "1.   Supervisión de Riesgos a través del Comité Institucional de Coordinación de Control Interno",
+            "punto_reflexion": "1.2. Los miembros del Comité Institucional de Coordinación de Control Interno o instancia equivalente realizan por lo menos dos veces al año supervisión sobre la efectividad de la gestión de riesgos?"
+          },
+          {
+            "principio": "1.   Supervisión de Riesgos a través del Comité Institucional de Coordinación de Control Interno",
+            "punto_reflexion": "1.3. Existe una Política de Administración de Riesgos aprobada por el Comité Institucional de Coordinación de Control Interno, donde se establecen los principales roles, responsabilidades y competencias?"
+          },
+          {
+            "principio": "1.   Supervisión de Riesgos a través del Comité Institucional de Coordinación de Control Interno",
+            "punto_reflexion": "1.4. La Política de Administración de Riesgos es consistente con otros marcos relacionados (v.g.; seguridad, calidad, financiero, seguridad pacviente, asistenciales, etc.) ?"
+          },
+          {
+            "principio": "2.   Establece Estructuras Operativas",
+            "punto_reflexion": "2.1. El marco de gestión de riesgos definido a traves de la Politica de Administración de Riesgos ha sido ampliamente comunicado a través de la organización"
+          },
+          {
+            "principio": "2.   Establece Estructuras Operativas",
+            "punto_reflexion": "2.2. Están claramente establecidos los flujos de aprobación y reporte en la gestión de riesgos?"
+          },
+          {
+            "principio": "2.   Establece Estructuras Operativas",
+            "punto_reflexion": "2.3. Están claramente identificados las instancias de 1a., 2a y 3a Línea de Defensa en las principales áreas de la entidad?"
+          },
+          {
+            "principio": "2.   Establece Estructuras Operativas",
+            "punto_reflexion": "2.4. Están claramente identificados los aspectos claves de exitos de 2a  Línea, sus funciones de aseguramiento y su nivel de confianza?"
+          },
+          {
+            "principio": "2.   Establece Estructuras Operativas",
+            "punto_reflexion": "2.5. Los responsables de riesgos de los procesos/planes/programas/proyectos rinden informes al Comité Institucional de Coordinación de Control Interno o instancia equivalente sobre el cumplimiento de los objetivos basados en los niveles de exposición a riesgos?"
+          },
+          {
+            "principio": "3.   Define la Cultura Deseada",
+            "punto_reflexion": "3.1. ¿Se evidencia una cultura orientada a la gestión preventiva del riesgo, promovida desde la Alta Dirección?"
+          },
+          {
+            "principio": "3.   Define la Cultura Deseada",
+            "punto_reflexion": "3.2. ¿El riesgo se analiza antes de haber establecido las estrategias o realizado la planificación institucional?"
+          },
+          {
+            "principio": "3.   Define la Cultura Deseada",
+            "punto_reflexion": "3.3. ¿Los objetivos de las procesos o de los planes, programas proyectos generan incentivos o presiones que favorecen un comportamiento contrario a los valores del Código de Integridad?"
+          },
+          {
+            "principio": "3.   Define la Cultura Deseada",
+            "punto_reflexion": "3.4. La Política de Administración de Riesgos refleja los principios de comportamiento esperados, conforme a lo previsto en el Código de Integridad de la organización?"
+          },
+          {
+            "principio": "4.   Demuestra Compromiso con los Valores del Servicio Público",
+            "punto_reflexion": "4.1. Se ponen a disposición de los grupos de valor, tanto interno como externo, los valores de la entidad y los diferentes mecanismos utilizados para garantizar su apropiación por parte de los servidores y contratistas?"
+          },
+          {
+            "principio": "4.   Demuestra Compromiso con los Valores del Servicio Público",
+            "punto_reflexion": "4.2. Demuestra la Alta Dirección con su comportamiento su compromiso con los valores del servicio público (tone at the top)?"
+          },
+          {
+            "principio": "4.   Demuestra Compromiso con los Valores del Servicio Público",
+            "punto_reflexion": "4.3. Demuestra la Alta Dirección con su comportamiento su compromiso con la gestión del riesgo institucional (tone at the top)?"
+          },
+          {
+            "principio": "4.   Demuestra Compromiso con los Valores del Servicio Público",
+            "punto_reflexion": "4.4. Los miembros del Comité Institucional de Coordinación de Control Interno o instancia equivalente promueven activamente la cultura de gestión de riesgos entre el personal operativo?"
+          },
+          {
+            "principio": "4.   Demuestra Compromiso con los Valores del Servicio Público",
+            "punto_reflexion": "4.5. El proceso de inducción de nuevos servidores incorpora contenidos orientadores sobre la gestión preventiva de riesgos?"
+          },
+          {
+            "principio": "4.   Demuestra Compromiso con los Valores del Servicio Público",
+            "punto_reflexion": "4.6.  Se realizan mediciones / evaluaciones sobre el nivel de cultura de riesgos entre los empleados de forma regular?"
+          },
+          {
+            "principio": "5.   Atrae, Desarrolla, y Retiene a Profesionales Capacitados",
+            "punto_reflexion": "5.1. El personal de segunda línea respecto de la gestión de riesgos dispone de las competencias, habilidades y conocimiento necesario para realizar sus tareas?"
+          },
+          {
+            "principio": "5.   Atrae, Desarrolla, y Retiene a Profesionales Capacitados",
+            "punto_reflexion": "5.2. Los objetivos del proceso encargado de liderar la gestión de riesgos en la entidad están alineados con los de la Guía para la Administración del Riesgo y el diseño de controles en entidades públicas?"
+          },
+          {
+            "principio": "5.   Atrae, Desarrolla, y Retiene a Profesionales Capacitados",
+            "punto_reflexion": "5.3. Existe un plan de gestión del conocimiento para los puestos clave de gestión de riesgos?"
+          }
+        ]
+      },
+      {
+        "numero": 2,
+        "nombre": "Estrategia y Objetivos",
+        "puntos_reflexion": [
+          {
+            "principio": "6. Analiza el Contexto Sectorial/Territorial e Institucional",
+            "punto_reflexion": "6.1. ¿La entidad ha identificado y definido su contexto externo y la alineación con el plan estrategico sectorial (nación)/plan de desarrollo municipal, distrital o departamenmtal (territorio)?"
+          },
+          {
+            "principio": "6. Analiza el Contexto Sectorial/Territorial e Institucional",
+            "punto_reflexion": "6.2. ¿La entidad ha formulado un Plan estratégico institucional aprobado por la Alta Dirección?"
+          },
+          {
+            "principio": "6. Analiza el Contexto Sectorial/Territorial e Institucional",
+            "punto_reflexion": "6.3. La Politica de Administración de Riesgos incorpora el análisis de los factores internos y externos que puedan repercutir sobre los objetivos institucionales (estratégicos, de operaciones, etc.)?"
+          },
+          {
+            "principio": "6. Analiza el Contexto Sectorial/Territorial e Institucional",
+            "punto_reflexion": "6.4. Se analiza de forma sistemática la información externa para identificar los cambios relevantes en el contexto de la entidad e identificar riesgos emergentes?"
+          },
+          {
+            "principio": "6. Analiza el Contexto Sectorial/Territorial e Institucional",
+            "punto_reflexion": "6.5. Se analiza de forma sistemática la información interna para identificar los cambios relevantes en el contexto de la entidad e identificar riesgos emergentes?"
+          },
+          {
+            "principio": "7. Define el Apetito al Riesgo",
+            "punto_reflexion": "7.1. Existe una \"declaración del apetito al riesgo” adecuadamente formalizada?"
+          },
+          {
+            "principio": "7. Define el Apetito al Riesgo",
+            "punto_reflexion": "7.2. Es competencia exclusiva del Comité Institucional de Coordinación de Control Interno o instancia equivalente para la gestión integral del riesgo la definición del apetito al riesgo?"
+          },
+          {
+            "principio": "7. Define el Apetito al Riesgo",
+            "punto_reflexion": "7.3. Se promueve activamente que la Alta Dirección y las instancias clave de 2a línea conozcan el apetito al riesgo de la organización?"
+          },
+          {
+            "principio": "7. Define el Apetito al Riesgo",
+            "punto_reflexion": "7.4. El apetito al riesgo es considerado en los procesos de toma de decisiones?"
+          },
+          {
+            "principio": "7. Define el Apetito al Riesgo",
+            "punto_reflexion": "7.5. Se involucra al Comité Institucional de Coordinación de Control Interno o instancia equivalente en la toma de decisiones que pudieran implicar incumplir con el apetito al riesgo establecido?"
+          },
+          {
+            "principio": "7. Define el Apetito al Riesgo",
+            "punto_reflexion": "7.6. Se monitoriza activamente el cumplimiento con el apetito al riesgo en todos los procesos?"
+          },
+          {
+            "principio": "8. Evalúa Estrategias Alternativas",
+            "punto_reflexion": "7.1. La estrategia de la entidad está alineada con su misión, visión y valores?"
+          },
+          {
+            "principio": "8. Evalúa Estrategias Alternativas",
+            "punto_reflexion": "7.2. En el proceso de planeación estratégica, se analizan los riesgos y oportunidades aplicando metodologías que permitan contar con datos e información para su mejora?"
+          },
+          {
+            "principio": "8. Evalúa Estrategias Alternativas",
+            "punto_reflexion": "7.3. Participan sistemáticamente las instancias clave en la gestión del riesgo en el proceso de planeación estratégica (instancias de 2a línea identificados y la 3a línea?"
+          },
+          {
+            "principio": "9. Formula Objetivos Estrategicos y Operacionales",
+            "punto_reflexion": "8.2. La entidad ha definido objetivos estrategicos?"
+          },
+          {
+            "principio": "9. Formula Objetivos Estrategicos y Operacionales",
+            "punto_reflexion": "8.2. Los objetivos estratégicos son desarrollados en objetivos de procesos/planes/programas/proyectos, etc.?"
+          },
+          {
+            "principio": "9. Formula Objetivos Estrategicos y Operacionales",
+            "punto_reflexion": "8.2. Los objetivos tanto estratégicos como operacionales son especificos, medibles, observables, alcanzables y relevantes?"
+          }
+        ]
+      },
+      {
+        "numero": 3,
+        "nombre": "Desempeño",
+        "puntos_reflexion": [
+          {
+            "principio": "9. Identifica y describe el Riesgo",
+            "punto_reflexion": "9.1. Existen procesos para identificar sistemáticamente los riesgos (en todas sus tipologías) que repercuten en la consecución de los objetivos estratégicos y de procesos/planes/programas/proyectos?"
+          },
+          {
+            "principio": "9. Identifica y describe el Riesgo",
+            "punto_reflexion": "9.2. Se evalúa la identificación de los riesgos (en todas sus tipologías) al menos con carácter anual a fin de identificar posible sub o sobre identificación?"
+          },
+          {
+            "principio": "9. Identifica y describe el Riesgo",
+            "punto_reflexion": "9.3. Se utiliza la taxonomía de riesgos de la Guía para la Administración del Riesgo y el diseño de controles en entidades públicas para catalogar los riesgos por tipología?"
+          },
+          {
+            "principio": "9. Identifica y describe el Riesgo",
+            "punto_reflexion": "9.4. Para la identificación y descripción de los riesgos (en todas sus tipologías) se realiza el análisis de los factores de riesgo?"
+          },
+          {
+            "principio": "9. Identifica y describe el Riesgo",
+            "punto_reflexion": "9.5. Para la identificación y decsripción de los riesgos (en todas sus tipologías) se realiza el análisis de los puntos de riesgo?"
+          },
+          {
+            "principio": "9. Identifica y describe el Riesgo",
+            "punto_reflexion": "9.6. La descripción de los riesgos (en todas sus tipologías) se realiza conforme las estructuras definidas en la Guía para la Administración del Riesgo y el diseño de controles en entidades públicas para cada de estas."
+          },
+          {
+            "principio": "10. Evalúa el Riesgo Inherente",
+            "punto_reflexion": "10.1. Se evalúa la probabilidad e impacto de los riesgos identificados (en todas sus tipologías) con base a las escalas y niveles definidos en la Guía para la Administración del Riesgo y el diseño de controles en entidades públicas para cada una de las tipologías?"
+          },
+          {
+            "principio": "10. Evalúa el Riesgo Inherente",
+            "punto_reflexion": "10.2. Se cuantifica el impacto económico de los riesgos sobre los que se ha identificado un potencial de afectación economica?"
+          },
+          {
+            "principio": "10. Evalúa el Riesgo Inherente",
+            "punto_reflexion": "10.3. Se considera el impacto reputacional de los riesgos sobre los que se ha identificado un potencial de afectación reputacional?"
+          },
+          {
+            "principio": "10. Evalúa el Riesgo Inherente",
+            "punto_reflexion": "Se realiza el análisis de severidad del inherente en el mapa de calor?"
+          },
+          {
+            "principio": "11. Diseña Controles efectivos",
+            "punto_reflexion": "11.1. En la descripción de los controles se muestra el cargo del servidor que ejecuta el control, en caso se ser controles automáticos se muestra el sistema que realiza la actividad?"
+          },
+          {
+            "principio": "11. Diseña Controles efectivos",
+            "punto_reflexion": "11.2. En la descripción de los controles se muestra el verbo en el cual se identifica la acción de control a realizar como parte del control (verificar, validar, cotejar, comparar)?"
+          },
+          {
+            "principio": "11. Diseña Controles efectivos",
+            "punto_reflexion": "11.3. En la descripción de los controles se muestra la frecuencia (semanal, mensual, bimestral, trimetsral, semestral o a demanda) de ejecución del control?"
+          },
+          {
+            "principio": "11. Diseña Controles efectivos",
+            "punto_reflexion": "11.4. En la descripción de los controles se muestra el objetivo de la ejecución de este?"
+          },
+          {
+            "principio": "11. Diseña Controles efectivos",
+            "punto_reflexion": "11.5. En la descripción de los controles se definen las fuentes de información (confiables) para la ejecución de este?"
+          },
+          {
+            "principio": "11. Diseña Controles efectivos",
+            "punto_reflexion": "11.6. En la descripción de los controles se muestra la evidencia que permita realizar la trazabilidad a la ejecución de este?"
+          },
+          {
+            "principio": "11. Diseña Controles efectivos",
+            "punto_reflexion": "11.7. Los controles se encuentran documentados en un procedimiento, manual, guía o instructivo que garantice su operativización?"
+          },
+          {
+            "principio": "12. Prioriza Riesgos",
+            "punto_reflexion": "12.1. Los riesgos se priorizan con base a su probabilidad e impacto residual?"
+          },
+          {
+            "principio": "12. Prioriza Riesgos",
+            "punto_reflexion": "12.2. Los riesgos se representan en un mapa de riesgos y de matriz de calor que facilita su priorización?"
+          },
+          {
+            "principio": "12. Prioriza Riesgos",
+            "punto_reflexion": "12.3. Se asigna un área, personal responsable y fechas de ejecución para monitorear los riesgos críticos identificados?"
+          },
+          {
+            "principio": "13. Desarrolla una visión integral",
+            "punto_reflexion": "13.1.  Existe un registro/inventario de riesgos centralizado a nivel de proceso, plan, programa, proyecto?"
+          },
+          {
+            "principio": "13. Desarrolla una visión integral",
+            "punto_reflexion": "13.2. Se analizan las posibles interdependencias entre los riesgos identificados en cada proceso, plan, programa, proyectos para obtener una visión integral de la operación y la gestión del riesgo?"
+          },
+          {
+            "principio": "13. Desarrolla una visión integral",
+            "punto_reflexion": "13.3. Existe un registro/ inventario de riesgos centralizado para un análisis integral sobre la efectividad de la gestión del riesgo?"
+          }
+        ]
+      },
+      {
+        "numero": 4,
+        "nombre": "Análisis y Monitorización",
+        "puntos_reflexion": [
+          {
+            "principio": "14. Evalúa los Cambios Significativos",
+            "punto_reflexion": "14.1. Existe un proceso o esquema que permita monitorear periódicamente los cambios del contexto institucional (i.e.;  los factores internos y externos) con posible impacto en la consecución de los objetivos?"
+          },
+          {
+            "principio": "14. Evalúa los Cambios Significativos",
+            "punto_reflexion": "14.2.  Se actualiza periódicamente el registro/inventario de riesgos de la organización, incorporando temas emergentes o cambios en el contexto institucional?"
+          },
+          {
+            "principio": "14. Evalúa los Cambios Significativos",
+            "punto_reflexion": "14.3. El Comité Institucional de Coordinación de Control Interno evalúa por lo menos una (1) vez al año la Politica de Administración de Riesgos respecto de:\n\n1. La adecuación de esta con los requerimientos técnicos,\n2. la adecuada operativización de esta a través de las primeras líneas de defensa considerando las disposiciones de esta."
+          },
+          {
+            "principio": "15. Revisa el Riesgo y el Desempeño",
+            "punto_reflexion": "15.1. La organización realiza un seguimiento periódico del grado de desempeño para los principales objetivos establecidos"
+          },
+          {
+            "principio": "15. Revisa el Riesgo y el Desempeño",
+            "punto_reflexion": "15.2. Se utilizan métricas de monitorización del riesgo (Key Risk Indicators o KRIs) para alertar respecto de riesgos crecientes o emergentes ?"
+          },
+          {
+            "principio": "16. Persigue la Mejora de la Gestión del Riesgo",
+            "punto_reflexion": "16.1. La organización revisa la idoneidad y actualiza su Politica de Administración de Riesgos periódicamente ?"
+          },
+          {
+            "principio": "16. Persigue la Mejora de la Gestión del Riesgo",
+            "punto_reflexion": "16.2. Se han implantado mejoras significativas en el proceso de gestión de riesgos en el último año?"
+          }
+        ]
+      },
+      {
+        "numero": 5,
+        "nombre": "Información, Comunicación y Reporting",
+        "puntos_reflexion": [
+          {
+            "principio": "17. Aprovecha la Información y la Tecnología",
+            "punto_reflexion": "17.1. Los miembros del Comité Institucional de Coordinación de Control Interno o instancia esquivalente tienen acceso directo a la Información de riesgos que necesitan para cumplir con sus responsabilidades de supervisión"
+          },
+          {
+            "principio": "17. Aprovecha la Información y la Tecnología",
+            "punto_reflexion": "17.2. Se dispone de una herramienta informática o algún otro mecanismo que centralice la gestión del riesgo?"
+          },
+          {
+            "principio": "17. Aprovecha la Información y la Tecnología",
+            "punto_reflexion": "17.3. Las instancias de 1a. y 2a. Línea de Defensa tienen acceso directo a la herramienta para la carga, análisis y reporte de los riesgos bajo su responsabilidad?"
+          },
+          {
+            "principio": "18. Comunica Información sobre Riesgos",
+            "punto_reflexion": "18.1. Están claramente establecidos los flujos de aprobación y reporte de la información en materia de riesgos?"
+          },
+          {
+            "principio": "19. Informa sobre el Riesgo, la Cultura y el Desempeño",
+            "punto_reflexion": "19.1. Existen procesos de reporte estandarizado a los diferentes niveles organizacionales?"
+          },
+          {
+            "principio": "19. Informa sobre el Riesgo, la Cultura y el Desempeño",
+            "punto_reflexion": "19.2. Se generan reportes cualitativos (tendencia histórica, perspectiva futura, nivel de aseguramiento, etc.) como cuantitativos (nivel de exposición, nivel máximo, etc.) de los principales riesgos?"
+          },
+          {
+            "principio": "19. Informa sobre el Riesgo, la Cultura y el Desempeño",
+            "punto_reflexion": "19.3. Se reportan los riesgos materializados y su impacto real sobre los objetivos de la entidad?"
+          },
+          {
+            "principio": "19. Informa sobre el Riesgo, la Cultura y el Desempeño",
+            "punto_reflexion": "19.4. Se reporta sobre la cultura de riesgos?"
+          }
+        ]
+      }
+    ]
+  },
+  "tabla_valoracion_controles_general": {
+    "_fuente": "Guía v7, Tabla 6 (numeral 3.10), confirmado con el Anexo 1 oficial (hoja '11 FORMULAS'). Aplica a las tipologías: Gestión, Fiscal, Integridad pública (SIGRIP), Ambiental.",
+    "_uso": "Todas las tipologías de riesgo EXCEPTO Seguridad de la información, que usa su propia tabla (ver tabla_valoracion_controles_seguridad_informacion) porque el Anexo 5 trae un peso distinto para 'Manual'. Instrucción de la docente/experta temática (validación 19-sep-2026): NO asumir un único porcentaje — dejar el que dice cada anexo, cada uno en su propio dominio.",
+    "tipo": {
+      "preventivo": {
+        "peso": 0.25,
+        "afecta": "probabilidad"
+      },
+      "detectivo": {
+        "peso": 0.15,
+        "afecta": "probabilidad"
+      },
+      "correctivo": {
+        "peso": 0.1,
+        "afecta": "impacto"
+      }
+    },
+    "implementacion": {
+      "automatico": 0.25,
+      "manual": 0.15
+    },
+    "_nota_no_semiautomaticos": "No existen controles semiautomáticos en esta tabla (Guía v7)."
+  },
+  "tabla_valoracion_controles_seguridad_informacion": {
+    "_fuente": "Anexo 5 - Matriz de riesgos de seguridad de la información (DAFP), hoja 'Listas'.",
+    "_uso": "Exclusiva de la tipología 'Seguridad de la información' (Pantalla 6). El Anexo 5 trae el mismo peso para tipo de control (preventivo 25%, detectivo 15%, correctivo 10%) pero un peso DISTINTO para 'Manual' (10%, no 15% como en la Guía v7/Anexo 1). Validado por la docente/experta temática el 19-sep-2026: se deja el porcentaje que dice cada anexo, sin unificar.",
+    "tipo": {
+      "preventivo": {
+        "peso": 0.25,
+        "afecta": "probabilidad"
+      },
+      "detectivo": {
+        "peso": 0.15,
+        "afecta": "probabilidad"
+      },
+      "correctivo": {
+        "peso": 0.1,
+        "afecta": "impacto"
+      }
+    },
+    "implementacion": {
+      "automatico": 0.25,
+      "manual": 0.1
+    }
+  },
+  "glosario": {
+    "_fuente": "Anexo Glosario - Guía para la Gestión Integral del Riesgo en Entidades Públicas, Versión 7, DAFP, agosto de 2025",
+    "_estado": "DISPONIBLE — transcrito completo de las 13 páginas de contenido del Anexo 2 oficial",
+    "secciones": [
+      {
+        "numero": "I",
+        "titulo": "Conceptos clave generales para la gestión del riesgo",
+        "terminos": [
+          {
+            "termino": "Riesgo",
+            "definicion": "Efecto que se causa sobre los objetivos de las entidades, debido a eventos potenciales.",
+            "nota": "Los eventos potenciales hacen referencia a la posibilidad de incurrir en pérdidas por deficiencias, fallas o inadecuaciones, en el recurso humano, los procesos, la tecnología, la infraestructura o por la ocurrencia de acontecimientos externos."
+          },
+          {
+            "termino": "Probabilidad",
+            "definicion": "Se entiende la posibilidad de ocurrencia del riesgo. Estará asociada a la exposición al riesgo del proceso o actividad que se esté analizando. La probabilidad inherente será el número de veces que se pasa por el punto de riesgo en el periodo de 1 año."
+          },
+          {
+            "termino": "Consecuencia",
+            "definicion": "Los efectos o situaciones resultantes de la materialización del riesgo que impactan en el proceso, la entidad, sus grupos de valor y demás partes interesadas.",
+            "nota": "Tratándose de riesgo fiscal, el impacto siempre será económico y se identificará en la redacción de riesgos como efecto dañoso, sobre bienes públicos, recursos públicos o intereses patrimoniales públicos."
+          },
+          {
+            "termino": "Causa Inmediata",
+            "definicion": "Circunstancias bajo las cuales se presenta el riesgo, pero no constituyen la causa principal o base para que se presente el riesgo.",
+            "nota": "Tratándose de riesgo fiscal, se usa el término circunstancia inmediata (Causa Inmediata, pero se asocia a la misma causa inmediata)."
+          },
+          {
+            "termino": "Causa Raíz",
+            "definicion": "Causa principal o básica, corresponde a las razones por las cuales se puede presentar el riesgo.",
+            "nota": "También denominada Causa Eficiente o Causa Adecuada: Es el evento (acción u omisión) que de presentarse es generador directo de un efecto dañoso sobre los bienes, recursos o intereses patrimoniales de naturaleza pública. Es la condición necesaria, de tal forma que, si ese hecho no se produce, el daño no se genera. Así las cosas, la causa raíz se asocia con aquel hecho potencial generador del daño."
+          },
+          {
+            "termino": "Riesgo Inherente",
+            "definicion": "Nivel de riesgo propio de la actividad. El resultado de combinar la probabilidad con el impacto, nos permite determinar el nivel del riesgo inherente, dentro de unas escalas de severidad."
+          },
+          {
+            "termino": "Riesgo Residual",
+            "definicion": "El resultado de aplicar la efectividad de los controles al riesgo inherente."
+          },
+          {
+            "termino": "Control",
+            "definicion": "Medida que permite reducir o mitigar un riesgo."
+          },
+          {
+            "termino": "Punto de Riesgo",
+            "definicion": "Actividades en las que potencialmente se genera riesgo. Tratándose de riesgo fiscal los puntos de riesgo son todas las actividades que representen gestión fiscal, por ejemplo, aquellas de administración, gestión, ordenación, ejecución, manejo, adquisición, planeación, conservación, custodia, explotación, enajenación, consumo, adjudicación, gasto, inversión y disposición de los bienes o recursos públicos o intereses de naturaleza pública.",
+            "nota": "Para la identificación y priorización de los puntos de riesgo, la entidad deberá tener en cuenta aquellas actividades en las cuales se han presentado advertencias, alertas, hallazgos fiscales y/o fallos con responsabilidad fiscal, así como, aquellas actividades que la organización identifique que pueden generar riesgos fiscales. Para facilitar el ejercicio de identificación de puntos de riesgo consulte el Anexo: Catálogo Indicativo y Enunciativo de Puntos de riesgo fiscal y Circunstancias Inmediatas."
+          }
+        ]
+      },
+      {
+        "numero": "II",
+        "titulo": "Conceptos clave para la gestión preventiva del riesgo fiscal",
+        "terminos": [
+          {
+            "termino": "Riesgo fiscal",
+            "definicion": "Es el efecto dañoso sobre los recursos públicos y/o los bienes y/o intereses patrimoniales de naturaleza pública, a causa de un evento potencial.",
+            "nota": "Ver conceptos de recursos públicos, bien público e intereses patrimoniales de naturaleza pública."
+          },
+          {
+            "termino": "Recurso público",
+            "definicion": "Para efectos del capítulo de riesgos fiscales, entiéndase como recurso público, los dineros comprometidos y ejecutados en ejercicio de la función pública.",
+            "ejemplos": "Los recursos de inversión y recursos de funcionamiento de cada entidad; los recursos generados por actividades comerciales, industriales y de prestación de servicios, por parte de entidades estatales; los recursos parafiscales; los recursos que resultan del ejercicio de funciones públicas por particulares."
+          },
+          {
+            "termino": "Bien público",
+            "definicion": "Son todos aquellos muebles e inmuebles de propiedad pública (este concepto comprende: bienes del Estado y aquellos productos del ejercicio de una función pública a cargo de particulares). Estos se clasifican en bienes de uso público y bienes fiscales.",
+            "subtipos": [
+              {
+                "termino": "Bien de uso público",
+                "definicion": "Aquellos cuyo uso pertenece a todos los habitantes del territorio nacional.",
+                "ejemplos": "Las calles, plazas, puentes, vías, parques etc."
+              },
+              {
+                "termino": "Bienes fiscales",
+                "definicion": "Aquellos que están destinados al cumplimiento de las funciones públicas o servicios públicos (Consejo de Estado, 2012), es decir, afectos al desarrollo de su misión y utilizados para sus actividades.",
+                "ejemplos": "Los terrenos, edificios, oficinas, colegios, hospitales, otras construcciones, fincas, granjas, equipos, enseres, mobiliario etc."
+              }
+            ]
+          },
+          {
+            "termino": "Intereses patrimoniales de naturaleza pública",
+            "definicion": "Son expectativas razonables de beneficios, que en condiciones normales se espera obtener o recibir y que sean susceptible de estimación económica. A diferencia del recurso público, los intereses patrimoniales de naturaleza pública son expectativas.",
+            "ejemplos": "La rentabilidad proyectada de cualquier inversión pública (antes de causarse); la cobertura de garantías y pólizas; la participación accionaria pública en una empresa de economía mixta o de servicios públicos con socio(s) público(s); los rendimientos financieros y frutos de recursos públicos cuando se proyectan; los intereses moratorios, indexaciones, actualización del dinero en el tiempo, estimación de pérdida de costo de oportunidad cuando se trata de cobrar recursos públicos que un tercero debe; explotación de bienes públicos y/o recaudo de recursos públicos por un particular sin contrato o habilitación legal."
+          },
+          {
+            "termino": "Patrimonio público",
+            "definicion": "Se entiende como el conjunto de bienes o recursos o intereses patrimoniales de naturaleza pública, susceptibles de estimación económica (artículo 6 Ley 610 de 2000 y sentencia C-340-07)."
+          },
+          {
+            "termino": "Gestión del Riesgo Fiscal",
+            "definicion": "Son las actividades que debe desarrollar cada Entidad y todos los gestores públicos (ver concepto de gestor público) para identificar, valorar, prevenir y mitigar los riesgos fiscales (probabilidad de efecto dañoso sobre los bienes, recursos y/o intereses patrimoniales de naturaleza pública, a causa de un evento potencial)."
+          },
+          {
+            "termino": "Gestor público",
+            "definicion": "Es todo aquel que participa, concurre, incide o contribuye directa o indirectamente en el manejo o administración de bienes, recursos o intereses patrimoniales de naturaleza pública, sean o no gestores fiscales, por lo tanto, son todos los gestores públicos y no sólo los que desarrollan gestión fiscal, los llamados a prevenir riesgos fiscales.",
+            "ejemplos": "Además de los gestores fiscales, son gestores públicos, entre otros (sin perjuicio de las particularidades de cada entidad): los contratistas, los interventores, los supervisores y en general todos los servidores públicos."
+          },
+          {
+            "termino": "Gestor Fiscal",
+            "definicion": "Son los servidores públicos y las personas de derecho privado que manejen o administren recursos o fondos públicos, desarrollando actividades económicas, jurídicas y tecnológicas, tendientes a la adecuada y correcta adquisición, planeación, conservación, administración, custodia, explotación, enajenación, consumo, adjudicación, gasto, inversión y disposición de los bienes públicos, así como, a la recaudación, manejo e inversión de sus rentas, en orden a cumplir los fines esenciales del Estado (artículo 3 de la Ley 610 de 2000 o la norma que lo sustituya o modifique).",
+            "ejemplos": "Entre otros (sin perjuicio de las particularidades de cada entidad): representante legal, ordenador del gasto, autorizado para contratar, pagador, tesorero, almacenista."
+          }
+        ]
+      },
+      {
+        "numero": "III",
+        "titulo": "Conceptos clave para la gestión de Riesgos de Seguridad de la Información",
+        "terminos": [
+          {
+            "termino": "Riesgo de Seguridad de la Información",
+            "definicion": "Posibilidad de que una amenaza concreta pueda explotar una vulnerabilidad para causar una pérdida o daño en un activo de información. Suele considerarse como una combinación de la probabilidad de un evento y sus consecuencias. (ISO/IEC 27000)"
+          },
+          {
+            "termino": "Confidencialidad",
+            "definicion": "Propiedad de la información que la hace no disponible o sea divulgada a individuos, entidades o procesos no autorizados."
+          },
+          {
+            "termino": "Integridad",
+            "definicion": "Propiedad de exactitud y completitud."
+          },
+          {
+            "termino": "Disponibilidad",
+            "definicion": "Propiedad de ser accesible y utilizable a demanda por una entidad."
+          },
+          {
+            "termino": "Vulnerabilidad",
+            "definicion": "Representan la debilidad de un activo o de un control que puede ser explotada por una o más amenazas."
+          },
+          {
+            "termino": "Activo",
+            "definicion": "En el contexto de seguridad digital son elementos tales como aplicaciones de la organización, servicios web, redes, Hardware, información física o digital, recurso humano, entre otros, que utiliza la organización para funcionar en el entorno digital."
+          }
+        ]
+      },
+      {
+        "numero": "IV",
+        "titulo": "Conceptos clave para la gestión de Riesgos a la Integridad Pública",
+        "terminos": [
+          {
+            "termino": "Sistema de Gestión de Riesgos para la Integridad Pública (SIGRIP)",
+            "definicion": "Esquema que define la interrelación e interacción de diferentes elementos para asegurar una gestión integral de los riesgos que afectan la integridad pública. El SIGRIP se articula con la Política para la Gestión Integral de Riesgos."
+          },
+          {
+            "termino": "Riesgos para la integridad",
+            "definicion": "Toda actuación o decisión de las y los servidores públicos, así como de otros colaboradores de las entidades públicas que privilegien el interés particular sobre el general, asociadas a conductas no deseadas que van en contravía de los valores del servicio público. Incluido, también, el riesgo de que la integridad de la entidad sea utilizada para dar apariencia de legalidad a los activos provenientes de actividades delictivas o para canalizar recursos hacia la realización de actividades terroristas."
+          },
+          {
+            "termino": "Soborno",
+            "definicion": "Ofrecer, prometer, dar, aceptar o solicitar una ventaja indebida de cualquier valor (que puede ser financiero o no financiero), directa o indirectamente, e independientemente de la ubicación, en violación de la ley aplicable, como incentivo o recompensa para que una persona actúe o se abstenga de actuar. (A partir de ISO37001:2025)",
+            "subtipos": [
+              {
+                "termino": "Soborno entrante",
+                "definicion": "Ofrecer, prometer, dar, aceptar o solicitar una ventaja indebida a un servidor de la entidad."
+              },
+              {
+                "termino": "Soborno saliente",
+                "definicion": "Ofrecer, prometer, dar, aceptar o solicitar una ventaja indebida por parte de servidores públicos a otros en nombre de la entidad."
+              }
+            ]
+          },
+          {
+            "termino": "Fraude",
+            "definicion": "Errores, omisiones, informes inexactos o descripciones incorrectas realizados con culpa o dolo para beneficio personal o de terceros. Puede ser interno, en cuyo caso el fraude involucra a colaboradores, o externo, cuando se realiza por terceros, externos y la organización es la víctima. (A partir de ISO37001:2025)"
+          },
+          {
+            "termino": "Conflicto de interés",
+            "definicion": "Se presenta cuando el interés general, propio de la función pública, entre en conflicto con un interés particular y directo del servidor público. El interés del servidor público se presenta cuando debe decidir sobre asuntos en los que tiene un interés particular y directo en su regulación, gestión, control o decisión, o lo tiene su cónyuge, compañero o compañera permanente, o algunos de sus parientes dentro del cuarto grado de consanguinidad, segundo de afinidad o primero civil, o su socio o socios de hecho o de derecho. (A partir de la Ley 1952 de 2019, art. 44, Ley 734 de 2002 y algunas disposiciones de la Ley 1474 de 2011)"
+          },
+          {
+            "termino": "Corrupción",
+            "definicion": "Todo acto que implique desviación de la gestión administrativa o de los recursos públicos y privados para obtener un beneficio propio o para un tercero. Igualmente, constituyen actos de corrupción las conductas punibles descritas en la Ley 599 de 2000, o en cualquier ley que la modifique, sustituya o adicione, así como lo previsto en la Ley 1474 de 2011; las faltas disciplinarias; y las conductas generadoras de responsabilidad fiscal relacionadas con los actos de corrupción y cualquier comportamiento contemplado en las convenciones o tratados contra la corrupción que Colombia haya suscrito y ratificado. Esas conductas incluyen: (i) El uso del poder para obtener beneficios personales, (ii) Pérdida o disminución del patrimonio público, (iii) El perjuicio social significativo, y (iv) La corrupción electoral. (A partir del artículo 2.1.4.3.1.3 del Decreto 1081 de 2015)"
+          },
+          {
+            "termino": "Lavado de activos",
+            "definicion": "El artículo 323 de la Ley 599 de 2000 define el delito de lavado de activos como la conducta desplegada por quien 'adquiera, resguarde, invierta, transporte, transforme, almacene, conserve, custodie o administre bienes que tengan su origen mediato o inmediato en actividades [relacionadas con un delito fuente], o vinculados con el producto de delitos ejecutados bajo concierto para delinquir, o les dé a los bienes provenientes de dichas actividades apariencia de legalidad o los legalice, oculte o encubra la verdadera naturaleza, origen, ubicación, destino, movimiento o derecho sobre tales bienes o realice cualquier otro acto para ocultar o encubrir su origen ilícito'. El Lavado de Activos puede darse por: colocación, ocultamiento e integración.",
+            "subtipos": [
+              {
+                "termino": "Colocación",
+                "definicion": "Es la disposición del dinero proveniente de actividades delictivas. Durante esta fase inicial, el determinador o autor introduce sus fondos ilegales en actividades legales o aparentemente legales, bien a través del sistema financiero o de otros tipos de negocios o contratos, tanto nacionales como internacionales."
+              },
+              {
+                "termino": "Ocultamiento",
+                "definicion": "Es la separación de fondos ilícitos de su fuente mediante una serie de transacciones, cuyo fin es desdibujar la transacción ilícita original. Esta etapa supone la conversión de los fondos procedentes de actividades ilícitas a otra forma y crear esquemas complejos de transacciones financieras para disimular el rastro documentado, la fuente y la propiedad de los fondos."
+              },
+              {
+                "termino": "Integración",
+                "definicion": "Es dar apariencia legítima a riqueza ilícita mediante el reingreso en la economía con transacciones comerciales o personales que aparentan ser normales. Esta fase conlleva la colocación de los fondos lavados de vuelta en la economía para crear una percepción de legitimidad. El lavador podría optar por invertir los fondos en bienes raíces, artículos de lujo o proyectos comerciales, entre otros."
+              }
+            ]
+          },
+          {
+            "termino": "Delito fuente",
+            "definicion": "Según el artículo 323 de la Ley 599 de 2000, son delitos fuente del lavado de activos: tráfico de migrantes, trata de personas, extorsión, enriquecimiento ilícito, secuestro extorsivo, rebelión, tráfico de armas, tráfico de menores de edad, financiación del terrorismo y administración de recursos relacionados con actividades terroristas, tráfico de drogas tóxicas, estupefacientes o sustancias sicotrópicas, delitos contra el sistema financiero, delitos contra la administración pública, contrabando, contrabando de hidrocarburos o sus derivados, fraude aduanero o favorecimiento y facilitación del contrabando, favorecimiento de contrabando de hidrocarburos o sus derivados, en cualquiera de sus formas."
+          },
+          {
+            "termino": "Financiación del Terrorismo (FP)",
+            "definicion": "El artículo 345 de la Ley 599 de 2000 define el delito como la conducta desplegada por quien 'directa o indirectamente provea, recolecte, entregue, reciba, administre, aporte, custodie o guarde fondos, bienes o recursos, o realice cualquier otro acto que promueva, organice, apoye, mantenga, financie o sostenga económicamente a grupos de delincuencia organizada, grupos armados al margen de la ley o a sus integrantes, o a grupos terroristas nacionales o extranjeros, o a terroristas nacionales o extranjeros, o a actividades terroristas'. Puede darse por: recaudación, transmisión, utilización.",
+            "subtipos": [
+              {
+                "termino": "Recaudación",
+                "definicion": "Consiste en la búsqueda de fuentes de financiación por las organizaciones terroristas, bien sean de origen legal, como los aportes de los Estados, individuos, entidades, organizaciones y donantes en general que apoyan su causa o son engañados, así como recursos provenientes de cualquier actividad delictiva, fondos que generalmente circulan en efectivo."
+              },
+              {
+                "termino": "Transmisión",
+                "definicion": "Es la fase intermedia que busca poner el dinero recaudado a disposición de la organización terrorista, quedando simplemente a la espera de su utilización final; corresponde al movimiento de los fondos a través de distintas técnicas, tratando de ocultar sus movimientos y destino final."
+              },
+              {
+                "termino": "Utilización",
+                "definicion": "Fase donde los fondos se utilizan básicamente para la financiación de la logística estructural de la organización o la logística operativa en materia de planeación y ejecución de actos terroristas."
+              }
+            ]
+          },
+          {
+            "termino": "Financiación de la Proliferación de Armas de Destrucción Masiva (FP)",
+            "definicion": "Fondos u otros activos a disposición, directa o indirectamente, de o para el beneficio de, alguna persona o entidad designada por o bajo la autoridad del Consejo de Seguridad de las Naciones Unidas dentro del Capítulo VII de la Carta de las Naciones Unidas, en lo relativo a la prevención, represión e interrupción de la proliferación de armas de destrucción masiva y su financiamiento. Puede darse por: recaudación, transmisión, utilización."
+          },
+          {
+            "termino": "Debida diligencia (due diligence)",
+            "definicion": "Proceso que deben llevar a cabo las entidades para identificar, prevenir, mitigar y explicar cómo abordan los impactos negativos reales y potenciales en sus propias actividades, su cadena de suministro y otras relaciones comerciales."
+          },
+          {
+            "termino": "Debida diligencia en el conocimiento de la contraparte (debida diligencia del cliente)",
+            "definicion": "Proceso que le permite a la entidad conocer aspectos relevantes de sus contrapartes, sean partes vinculadas o relacionadas, para poder gestionar el riesgo que cualquier vinculación o relacionamiento genera."
+          },
+          {
+            "termino": "Función de cumplimiento",
+            "definicion": "Función que debe distribuirse dentro de la organización que asigna a una persona, grupo o dependencia la responsabilidad de adoptar medidas para promover el cumplimiento interno, administrar los riesgos para la integridad pública de conformidad con las políticas institucionales de gestión de riesgos, apoyar los procesos de evaluación de los Sistemas de Gestión del Riesgo, realizar un control de segunda línea y asesorar a la Alta Dirección en el direccionamiento estratégico de la organización desde un enfoque basado en riesgos para proteger la integridad pública."
+          },
+          {
+            "termino": "Contraparte",
+            "definicion": "Cualquier persona o entidad que tenga un interés propio o particular, diferente al interés de la organización."
+          },
+          {
+            "termino": "Parte Interesada",
+            "definicion": "Es un tipo de contraparte con la cual no se ha establecido ninguna relación o vínculo, pero que ha manifestado formalmente su interés en establecerlo."
+          },
+          {
+            "termino": "Parte Vinculada",
+            "definicion": "Para efectos del SIGRIP, es una contraparte dependiente de la organización con la cual se ha establecido una relación de especial sujeción por su relación legal o reglamentaria, o laboral."
+          },
+          {
+            "termino": "Parte Relacionada",
+            "definicion": "Para efectos del SIGRIP, es una contraparte independiente de la organización con la cual se ha establecido una relación comercial, contractual o legal; o respecto de la cual se ejerce algún grado de control jerárquico, de tutela o de propiedad, sin detrimento de su independencia."
+          }
+        ]
+      },
+      {
+        "numero": "V",
+        "titulo": "Conceptos clave para la gestión de Riesgos en Sector Salud",
+        "terminos": [
+          {
+            "termino": "Riesgo en salud",
+            "definicion": "Es el efecto negativo que tiene un evento no deseado o cualquiera de los determinantes de la salud, sobre la salud de una persona o grupos de personas, y que usualmente implica un mayor uso de tecnologías en salud para su atención, o para mitigar sus consecuencias.",
+            "nota": "Los determinantes de la salud se definen como 'el conjunto de factores personales, sociales, económicos y ambientales que determinan la esperanza de vida saludable de los individuos y las poblaciones' (World Health Organization, 2021)."
+          },
+          {
+            "termino": "Sistema Integral de administración de riesgos de cumplimiento (SIARC)",
+            "definicion": "Conjunto de políticas, principios, normas, procedimientos y mecanismos de verificación y evaluación establecidos por el máximo órgano social u órgano equivalente, la alta dirección y demás funcionarios de una organización para proporcionar un grado de seguridad razonable en cuanto a la consecución de objetivos: mejorar la eficiencia y eficacia evitando situaciones de riesgo LA/FT/FP, corrupción, fraude y soborno transnacional; prevenir y mitigar la ocurrencia de esos riesgos; y realizar una gestión adecuada de los riesgos."
+          },
+          {
+            "termino": "Subsistema de Administración del Riesgo de Corrupción, Opacidad y Fraude (SICOF)",
+            "definicion": "Conjunto de políticas, principios, normas, procedimientos y mecanismos de verificación y evaluación establecidos por el máximo órgano social u órgano equivalente, la alta dirección y demás funcionarios de una organización para proporcionar un grado de seguridad razonable en cuanto a: mejorar la eficiencia y eficacia evitando situaciones de Corrupción, Opacidad y Fraude; prevenir y mitigar la ocurrencia de estos actos; y realizar una gestión adecuada de los riesgos."
+          },
+          {
+            "termino": "Sistema General de Seguridad Social en Salud (SGSSS)",
+            "definicion": "Sistema integrado por el Estado, a través del Ministerio de Salud y Protección Social, quien actúa como organismo de coordinación, dirección y control; las Entidades Promotoras de Salud (EPS), responsables de la afiliación y el recaudo de las cotizaciones y de garantizar la prestación del Plan Obligatorio de Salud a los afiliados; y las instituciones prestadoras de salud (IPS), que son los hospitales, clínicas y laboratorios, entre otros, encargadas de prestar la atención a los usuarios. También hacen parte del SGSSS las Entidades Territoriales y la Superintendencia Nacional de Salud. El SGSSS tiene como objetivo regular el servicio público esencial de salud y crear condiciones de acceso para toda la población residente del país, en todos los niveles de atención."
+          },
+          {
+            "termino": "Sistema de Control Interno",
+            "definicion": "Sistema integrado por el esquema de organización y el conjunto de los planes, métodos, principios, normas, procedimientos y mecanismos de verificación y evaluación adoptados por una entidad, con el fin de procurar que todas las actividades, operaciones y actuaciones, así como la administración de la información y los recursos, se realicen de acuerdo con las normas constitucionales y legales vigentes dentro de las políticas trazadas por la dirección y en atención a las metas u objetivos previstos."
+          },
+          {
+            "termino": "Superintendencia Nacional de Salud (SUPERSALUD)",
+            "definicion": "Entidad encargada de proteger los derechos de los usuarios del Sistema General de Seguridad Social en Salud mediante la inspección, vigilancia, control y el ejercicio de la función jurisdiccional y de conciliación, de manera transparente y oportuna."
+          }
+        ]
+      }
     ]
   }
 }
