@@ -66,6 +66,7 @@ from backend.base_conocimiento.catalogo_riesgos import (
     esquema_caracterizacion_proceso,
     modelo_madurez_componentes,
     escala_madurez_erm,
+    sugerencias_para,
 )
 from backend.modelos.riesgos import Riesgo, Control, KRI, ProcesoCaracterizado
 from backend.motores.motor_riesgos import (
@@ -177,49 +178,87 @@ def render_modulo_riesgo() -> None:
             for c in esquema["campos"]:
                 st.write(f"**{c['campo']}** — {c['descripcion']}")
 
-        with st.form("form_proceso", clear_on_submit=True):
+        # Selección hecha en la tabla de más abajo (clic en una fila): se lee
+        # ANTES de dibujar el formulario para que sus campos se llenen solos
+        # con los datos de ese proceso, sin tener que copiar y pegar nada.
+        # (Streamlit no distingue clic sencillo de doble clic en una tabla;
+        # esta es la forma más confiable de lograr "seleccionar y que se
+        # llene todo": un clic en la fila ya autocompleta el formulario.)
+        seleccion_tabla = st.session_state.get("tabla_procesos_sel")
+        proceso_para_editar = None
+        if seleccion_tabla:
+            filas_sel = seleccion_tabla.get("selection", {}).get("rows", [])
+            if filas_sel:
+                idx_sel = filas_sel[0]
+                lista_actual = st.session_state.procesos_caracterizados
+                if 0 <= idx_sel < len(lista_actual):
+                    proceso_para_editar = lista_actual[idx_sel]
+
+        if proceso_para_editar:
+            st.info(
+                f"✏️ Editando **{proceso_para_editar.codigo} — {proceso_para_editar.nombre}** (se "
+                "autocompletó al seleccionarlo en la tabla de abajo). Ajuste lo que necesite y presione "
+                "'Guardar cambios'. Para capturar un proceso nuevo en blanco, presione 'Nuevo proceso en "
+                "blanco'.",
+                icon="✏️",
+            )
+            if st.button("🆕 Nuevo proceso en blanco (quitar selección)"):
+                st.session_state["tabla_procesos_sel"] = None
+                st.rerun()
+
+        with st.form("form_proceso", clear_on_submit=False):
             col1, col2 = st.columns(2)
-            codigo = col1.text_input("Código del proceso")
-            nombre_p = col2.text_input("Nombre del proceso")
-            tipo_p = st.selectbox("Tipo", ["Estratégico", "Misional", "De Apoyo", "De Evaluación"])
-            objetivo_p = st.text_area("Objetivo del proceso")
-            alcance_p = st.text_area("Alcance del proceso")
+            codigo = col1.text_input("Código del proceso", value=proceso_para_editar.codigo if proceso_para_editar else "")
+            nombre_p = col2.text_input("Nombre del proceso", value=proceso_para_editar.nombre if proceso_para_editar else "")
+            opciones_tipo = ["Estratégico", "Misional", "De Apoyo", "De Evaluación"]
+            tipo_p = st.selectbox(
+                "Tipo", opciones_tipo,
+                index=opciones_tipo.index(proceso_para_editar.tipo) if proceso_para_editar and proceso_para_editar.tipo in opciones_tipo else 0,
+            )
+            objetivo_p = st.text_area("Objetivo del proceso", value=proceso_para_editar.objetivo if proceso_para_editar else "")
+            alcance_p = st.text_area("Alcance del proceso", value=proceso_para_editar.alcance if proceso_para_editar else "")
             col3, col4 = st.columns(2)
-            entradas_p = col3.text_area("Entradas / insumos")
-            salidas_p = col4.text_area("Salidas / productos")
-            responsable_p = st.text_input("Responsable (líder de proceso)")
-            indicadores_p = st.text_area("Indicadores de gestión (uno por línea)")
-            guardar_proceso = st.form_submit_button("+ Agregar proceso caracterizado", type="primary")
+            entradas_p = col3.text_area("Entradas / insumos", value=proceso_para_editar.entradas if proceso_para_editar else "")
+            salidas_p = col4.text_area("Salidas / productos", value=proceso_para_editar.salidas if proceso_para_editar else "")
+            responsable_p = st.text_input("Responsable (líder de proceso)", value=proceso_para_editar.responsable if proceso_para_editar else "")
+            indicadores_p = st.text_area(
+                "Indicadores de gestión (uno por línea)",
+                value="\n".join(proceso_para_editar.indicadores) if proceso_para_editar else "",
+            )
+            texto_boton = "💾 Guardar cambios" if proceso_para_editar else "+ Agregar proceso caracterizado"
+            guardar_proceso = st.form_submit_button(texto_boton, type="primary")
             if guardar_proceso and codigo and nombre_p:
-                st.session_state.procesos_caracterizados.append(
-                    ProcesoCaracterizado(
-                        codigo=codigo, nombre=nombre_p, tipo=tipo_p, objetivo=objetivo_p, alcance=alcance_p,
-                        entradas=entradas_p, salidas=salidas_p, responsable=responsable_p,
-                        indicadores=[i.strip() for i in indicadores_p.splitlines() if i.strip()],
-                    )
+                nuevo_proceso = ProcesoCaracterizado(
+                    codigo=codigo, nombre=nombre_p, tipo=tipo_p, objetivo=objetivo_p, alcance=alcance_p,
+                    entradas=entradas_p, salidas=salidas_p, responsable=responsable_p,
+                    indicadores=[i.strip() for i in indicadores_p.splitlines() if i.strip()],
                 )
+                lista = st.session_state.procesos_caracterizados
+                codigos_existentes = [p.codigo for p in lista]
+                if codigo in codigos_existentes:
+                    lista[codigos_existentes.index(codigo)] = nuevo_proceso
+                    st.success(f"Proceso {codigo} actualizado.")
+                else:
+                    lista.append(nuevo_proceso)
+                    st.success(f"Proceso {codigo} agregado.")
+                st.session_state["tabla_procesos_sel"] = None
+                st.rerun()
 
         if st.session_state.procesos_caracterizados:
-            st.write(f"Procesos caracterizados hasta ahora ({len(st.session_state.procesos_caracterizados)}):")
+            st.write(
+                f"Procesos caracterizados hasta ahora ({len(st.session_state.procesos_caracterizados)}). "
+                "Haga clic en una fila para cargarla en el formulario de arriba y editarla:"
+            )
             st.dataframe(
                 pd.DataFrame([{
                     "Código": p.codigo, "Nombre": p.nombre, "Tipo": p.tipo,
                     "Responsable": p.responsable, "N.º indicadores": len(p.indicadores),
                 } for p in st.session_state.procesos_caracterizados]),
                 use_container_width=True,
+                on_select="rerun",
+                selection_mode="single-row",
+                key="tabla_procesos_sel",
             )
-            with st.expander("Ver la ficha completa de un proceso (objetivo, alcance, entradas, salidas)"):
-                nombres_p = [f"{p.codigo} — {p.nombre}" for p in st.session_state.procesos_caracterizados]
-                elegido = st.selectbox("Proceso", nombres_p, key="f_proceso_detalle")
-                p_sel = st.session_state.procesos_caracterizados[nombres_p.index(elegido)]
-                st.markdown(f"**Tipo:** {p_sel.tipo}")
-                st.markdown(f"**Objetivo:** {p_sel.objetivo or '—'}")
-                st.markdown(f"**Alcance:** {p_sel.alcance or '—'}")
-                st.markdown(f"**Entradas:** {p_sel.entradas or '—'}")
-                st.markdown(f"**Salidas:** {p_sel.salidas or '—'}")
-                st.markdown(f"**Responsable:** {p_sel.responsable or '—'}")
-                if p_sel.indicadores:
-                    st.markdown("**Indicadores:** " + "; ".join(p_sel.indicadores))
         else:
             st.info("Todavía no se ha caracterizado ningún proceso con nombre propio. Mientras tanto, la "
                     "identificación de riesgos (pestaña 1) puede usar los 4 tipos generales.")
@@ -232,6 +271,38 @@ def render_modulo_riesgo() -> None:
 
     with tab1:
         st.subheader("Paso 1 — Identificación del riesgo")
+
+        # Banco de riesgos sugeridos (PROPUESTA DE APOYO, no oficial): si ya
+        # hay un proceso y un factor elegidos de una vez anterior, se ofrece
+        # la sugerencia correspondiente con un botón para prellenar el
+        # formulario de abajo (nombre, causa raíz, evento no deseado).
+        proceso_previo = st.session_state.get("f_proceso")
+        factor_previo = st.session_state.get("f_factor")
+        if proceso_previo and factor_previo:
+            codigo_proceso_previo = proceso_previo.split(" — ")[0].strip()
+            codigo_factor_previo = factor_previo.split(" — ")[0].strip()
+            sugerencias = sugerencias_para(codigo_proceso_previo, codigo_factor_previo)
+            if sugerencias:
+                sug = sugerencias[0]
+                with st.expander(
+                    "💡 Sugerencia de riesgo para este proceso y factor (banco de apoyo — NO es catálogo del "
+                    "DAFP, valide y ajuste antes de usarla)",
+                    expanded=False,
+                ):
+                    st.caption(
+                        "Propuesta de apoyo construida cruzando los 19 procesos reales de Carepa con los 6 "
+                        "factores de riesgo de la Tabla 2 (Guía v7). No sustituye el análisis del equipo del "
+                        "proceso."
+                    )
+                    st.markdown(f"**Riesgo sugerido:** {sug['riesgo_sugerido']}")
+                    st.markdown(f"**Posible causa raíz:** {sug['causa_raiz_sugerida']}")
+                    st.markdown(f"**Posible evento no deseado:** {sug['evento_no_deseado_sugerido']}")
+                    if st.button("↳ Usar esta sugerencia para prellenar el formulario", key="btn_usar_sugerencia"):
+                        st.session_state["f_nombre"] = sug["riesgo_sugerido"]
+                        st.session_state["f_causa_raiz"] = sug["causa_raiz_sugerida"]
+                        st.session_state["f_evento"] = sug["evento_no_deseado_sugerido"]
+                        st.rerun()
+
         col1, col2 = st.columns(2)
         with col1:
             proceso = st.selectbox("Proceso institucional (Carepa)", opciones_proceso_combinadas(), key="f_proceso")

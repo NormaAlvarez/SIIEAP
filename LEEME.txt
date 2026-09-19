@@ -1,5 +1,5 @@
-SIIEAP — app.py, SIN riesgos ambientales, ceñido a la Guía v7 (19-sep-2026)
-================================================================================
+SIIEAP — banco de riesgos sugeridos + autocompletado automático (19-sep-2026, tarde)
+=========================================================================================
 
 Instalación (sin parches manuales): copie los 3 archivos de la raíz de
 este paquete (app.py, diagnostico_idi_mipg.py, modulo_riesgo_piloto.py) a
@@ -8,43 +8,66 @@ ejecute:
 
     streamlit run app.py
 
-QUÉ CAMBIÓ EN ESTA ENTREGA
-----------------------------
-Por instrucción de la docente/experta temática (19-sep-2026, en la noche):
-se retiró del módulo piloto la tipología y la Pantalla de riesgos
-AMBIENTALES. Esa tipología se había agregado inicialmente tomando como
-fuente el numeral 4.10 del Manual Operativo MIPG v7 — un documento
-DISTINTO de la Guía para la Gestión Integral del Riesgo v7 (la guía de
-riesgos propiamente dicha). El propio catálogo ya lo reconocía: la
-tipología Ambiental "no tiene capítulo propio en la Guía v7". Para cumplir
-exactamente el alcance pedido, el módulo queda ceñido estrictamente a la
-Guía v7 (DAFP, agosto de 2025) y sus 5 anexos oficiales.
+QUÉ SE AGREGÓ EN ESTA ENTREGA
+--------------------------------
 
-Se eliminó:
-  - La pestaña "9. Ambiental" (antes entre KRI y Madurez ERM).
-  - La tipología "Ambiental" del selector de tipología (Pantalla 1).
-  - Toda la sección politica_ambiental_mipg_v7 del catálogo (objetivo,
-    marco normativo, subanexos, gradualidad) y sus funciones de acceso.
-  - Los campos aspecto_ambiental / instrumento_origen_ambiental del modelo
-    de datos del riesgo (ya no se usan).
+1) BANCO DE RIESGOS SUGERIDOS (propuesta de apoyo, NO un catálogo del DAFP)
+   Como confirmé antes de construirlo: la Función Pública NO publica un
+   catálogo oficial de "posibles riesgos" de gestión (se revisó la Guía
+   v7, la versión 5 de 2020 y la versión de 2018 — las tres delegan la
+   identificación al análisis propio de cada entidad). Por eso este banco
+   se etiqueta en todas partes como PROPUESTA DE APOYO, nunca como
+   catálogo oficial.
 
-Ahora el módulo tiene 9 pantallas (antes 10): Procesos, 1-4 (metodología
-genérica), 5 (fiscal), 6 (seguridad de la información), 7 (SIGRIP), 8
-(KRI) y 9 (madurez ERM, antes numerada como 10) — más el Mapa consolidado.
-Las tipologías de riesgo disponibles quedan en: Gestión, Fiscal, Seguridad
-de la información, Integridad pública (SIGRIP).
+   Se construyó cruzando los 19 procesos reales de Carepa con los 6
+   factores de riesgo de la Tabla 2 de la Guía v7 (Ejecución y
+   administración de procesos, Transacción u Operación, Talento humano,
+   Tecnología, Infraestructura, Evento externo) = 114 sugerencias.
 
-Todo lo demás (los 19 procesos reales de Carepa, el catálogo fiscal de 50
-puntos, la matriz de calor oficial, las dos tablas de valoración de
-controles, el glosario y la madurez ERM) sigue exactamente igual que en la
-entrega anterior.
+   Dónde aparece:
+   - En el módulo piloto, Pantalla 1 (Identificación): al elegir un
+     proceso y un factor de riesgo, se despliega un expansor "💡
+     Sugerencia de riesgo... (banco de apoyo, NO oficial)" con el riesgo,
+     la posible causa raíz y el posible evento no deseado sugeridos, y un
+     botón "Usar esta sugerencia" que llena esos 3 campos automáticamente
+     (usted los puede editar libremente después).
+   - En la matriz Excel (Matriz_Insumos_Mapa_Riesgos_Carepa.xlsx, que
+     también le adjunto), nueva hoja "Banco riesgos sugeridos (NO)" con
+     las 114 filas completas y una columna "Validado (Sí/No)" y
+     "Observaciones del equipo" para que cada proceso las revise y las
+     marque.
+
+2) AUTOCOMPLETADO AL SELECCIONAR UN PROCESO (ya no hay que copiar y pegar)
+   En la pestaña "Procesos": la tabla de procesos caracterizados (la de
+   abajo) ahora es seleccionable — un clic en cualquier fila carga
+   automáticamente TODOS los campos del formulario de arriba (código,
+   nombre, tipo, objetivo, alcance, entradas, salidas, responsable,
+   indicadores), listos para editar y guardar. El botón cambia solo a
+   "💾 Guardar cambios" y actualiza ese mismo proceso en vez de duplicarlo.
+   Para capturar uno nuevo en blanco, hay un botón "🆕 Nuevo proceso en
+   blanco".
+   (Nota técnica: Streamlit no distingue clic sencillo de doble clic en
+   una tabla — la forma confiable de lograr "seleccionar y que se llene
+   todo" es que un solo clic en la fila ya dispare el autocompletado, que
+   es lo que quedó programado. No hace falta doble clic ni ningún paso
+   adicional.)
 
 VERIFICACIÓN REALIZADA
 -----------------------
-- Los 6 archivos de código modificados compilan sin errores (py_compile).
-- Se simuló con streamlit.testing (AppTest) el cambio al módulo de riesgo:
-  las pestañas visibles son exactamente Procesos, 1-4, Fiscal, Seguridad
-  Info, SIGRIP, KRI, Madurez ERM y Mapa consolidado (sin Ambiental), sin
-  ninguna excepción.
-- opciones_tipologia_riesgo() ya no incluye "Ambiental".
-- El JSON del catálogo es válido.
+- Los archivos compilan sin errores (py_compile).
+- Prueba automatizada (streamlit.testing): al seleccionar la fila del
+  proceso "Gestión Financiera y Contable" en la tabla, los 9 campos del
+  formulario de arriba se llenaron solos, sin excepciones.
+- Prueba automatizada: al elegir proceso + factor en la Pantalla 1 y
+  presionar "Usar esta sugerencia", los campos Nombre del riesgo, Causa
+  raíz y Evento no deseado se llenaron con el texto sugerido, sin
+  excepciones.
+- La hoja nueva de Excel recalculó sin errores (0 fórmulas, 0 errores).
+
+PENDIENTE (no incluido en este paquete, por si lo quiere después)
+--------------------------------------------------------------------
+La checklist de validación (Checklist_Validacion_Modulo_Riesgo.docx) y las
+demás hojas de la matriz Excel siguen mencionando la Política de Gestión
+Ambiental MIPG v7, que ya se retiró del módulo. Si quiere que también
+actualice esos dos documentos para quitar esa mención, dígamelo y se los
+regenero.
