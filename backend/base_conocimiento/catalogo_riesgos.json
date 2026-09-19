@@ -1,0 +1,603 @@
+{
+  "_meta": {
+    "descripcion": "Catálogo de referencia del Módulo de Administración y Gestión del Riesgo de SIIEAP. NO reemplaza ni modifica catalogo_idi.json (v6.1). Fuente principal: Guía para la Gestión Integral del Riesgo en Entidades Públicas, Versión 7, DAFP, agosto de 2025.",
+    "fuente_principal": "Guía Gestión Integral del Riesgo v7 (DAFP, ago-2025)",
+    "fuente_ambiental": "Manual Operativo MIPG v7 (DAFP, ago-2026), numeral 4.10 - Política de Gestión Ambiental Institucional",
+    "fecha_construccion": "2026-09-18",
+    "version": "1.1-piloto",
+    "fecha_actualizacion": "2026-09-18",
+    "anexos_incorporados": [
+      "Anexo 1 - Formato mapa de riesgos integral (xlsx oficial DAFP)",
+      "Anexo 3 - Catálogo indicativo de puntos de riesgo fiscal (docx oficial DAFP)",
+      "Anexo 5 - Matriz de riesgos de seguridad de la información (xlsx oficial DAFP)"
+    ],
+    "anexos_disponibles_no_incorporados_aun": [
+      "Anexo 2 - Glosario (pdf, 15 páginas) - disponible pero no transcrito término por término todavía.",
+      "Anexo 4 - Herramienta de diagnóstico del modelo de madurez ERM (xlsx) - estructura identificada (5 componentes COSO-ERM: Gobierno y Cultura, Estrategia y Objetivos, Desempeño, Análisis y Monitorización, Información/Comunicación/Reporting; escala 1-5 Nunca a Siempre) pero no se construyó todavía una pantalla para este autodiagnóstico; queda para una fase posterior del módulo."
+    ]
+  },
+  "factores_riesgo": {
+    "FR01": {
+      "nombre": "Ejecución y administración de procesos",
+      "descripcion": "Fallas en la ejecución de las actividades propias de un proceso, procedimiento o instructivo."
+    },
+    "FR02": {
+      "nombre": "Transacción u Operación",
+      "descripcion": "Fallas asociadas a una transacción u operación específica dentro de un proceso."
+    },
+    "FR03": {
+      "nombre": "Talento humano",
+      "descripcion": "Fallas asociadas a la actuación de los servidores públicos o contratistas de la entidad."
+    },
+    "FR04": {
+      "nombre": "Tecnología",
+      "descripcion": "Fallas de disponibilidad, integridad o desempeño de aplicativos y sistemas de información."
+    },
+    "FR05": {
+      "nombre": "Infraestructura",
+      "descripcion": "Fallas asociadas a la infraestructura física o tecnológica que soporta la operación."
+    },
+    "FR06": {
+      "nombre": "Evento externo",
+      "descripcion": "Situaciones ajenas al control directo de la entidad (desastres naturales, orden público, terceros)."
+    }
+  },
+  "tabla_probabilidad": {
+    "_fuente": "Guía v7, Tabla 4 (numeral 3.5)",
+    "niveles": [
+      {
+        "nivel": "Muy Baja",
+        "valor": 0.2,
+        "frecuencia_anual_min": 0,
+        "frecuencia_anual_max": 2
+      },
+      {
+        "nivel": "Baja",
+        "valor": 0.4,
+        "frecuencia_anual_min": 3,
+        "frecuencia_anual_max": 24
+      },
+      {
+        "nivel": "Media",
+        "valor": 0.6,
+        "frecuencia_anual_min": 25,
+        "frecuencia_anual_max": 500
+      },
+      {
+        "nivel": "Alta",
+        "valor": 0.8,
+        "frecuencia_anual_min": 501,
+        "frecuencia_anual_max": 5000
+      },
+      {
+        "nivel": "Muy Alta",
+        "valor": 1.0,
+        "frecuencia_anual_min": 5001,
+        "frecuencia_anual_max": null
+      }
+    ]
+  },
+  "tabla_impacto": {
+    "_fuente": "Guía v7, Tabla 5 (numeral 3.6)",
+    "niveles": [
+      {
+        "nivel": "Leve",
+        "valor": 0.2,
+        "smlmv_min": 0,
+        "smlmv_max": 10,
+        "afectacion_reputacional": "El riesgo afecta la imagen de algún área de la entidad."
+      },
+      {
+        "nivel": "Menor",
+        "valor": 0.4,
+        "smlmv_min": 10,
+        "smlmv_max": 50,
+        "afectacion_reputacional": "El riesgo afecta la imagen de la entidad a nivel interno, de conocimiento general, de junta directiva y accionistas y/o de proveedores."
+      },
+      {
+        "nivel": "Moderado",
+        "valor": 0.6,
+        "smlmv_min": 50,
+        "smlmv_max": 100,
+        "afectacion_reputacional": "El riesgo afecta la imagen de la entidad con algunos usuarios de relevancia frente al logro de los objetivos."
+      },
+      {
+        "nivel": "Mayor",
+        "valor": 0.8,
+        "smlmv_min": 100,
+        "smlmv_max": 500,
+        "afectacion_reputacional": "El riesgo afecta la imagen de la entidad con efecto publicitario sostenido a nivel de sector administrativo, departamental o municipal."
+      },
+      {
+        "nivel": "Catastrófico",
+        "valor": 1.0,
+        "smlmv_min": 500,
+        "smlmv_max": null,
+        "afectacion_reputacional": "El riesgo afecta la imagen de la entidad a nivel nacional, con efecto publicitario sostenido a nivel país."
+      }
+    ]
+  },
+  "tabla_valoracion_controles": {
+    "_fuente": "Guía v7, Tabla 6 (numeral 3.10), confirmado y precisado con el Anexo 1 oficial (hoja '11 FORMULAS')",
+    "_correccion_v1_1": "La versión 1.0 de este catálogo aplicaba el peso de CUALQUIER control sobre la probabilidad (y opcionalmente sobre el impacto, según un parámetro manual). El Anexo 1 oficial muestra que esto depende del TIPO de control: Preventivo y Detectivo afectan la PROBABILIDAD; Correctivo afecta el IMPACTO. Esta versión corrige esa regla.",
+    "tipo": {
+      "preventivo": {
+        "peso": 0.25,
+        "afecta": "probabilidad"
+      },
+      "detectivo": {
+        "peso": 0.15,
+        "afecta": "probabilidad"
+      },
+      "correctivo": {
+        "peso": 0.1,
+        "afecta": "impacto"
+      }
+    },
+    "implementacion": {
+      "automatico": 0.25,
+      "manual": 0.15
+    },
+    "_nota_discrepancia_fuentes": "El Anexo 5 (Matriz de riesgos de seguridad de la información) trae el peso de 'Manual' como 0.10 en vez de 0.15. Es una diferencia entre dos documentos oficiales del mismo paquete (Guía v7 Tabla 6 vs. Anexo 5). SIIEAP usa 0.15 (el valor de la Guía v7 y del Anexo 1, que coinciden entre sí) como valor por defecto, y deja esta nota para que se confirme con el DAFP o con la docente/experta temática cuál prevalece.",
+    "_nota_no_semiautomaticos": "No existen controles semiautomáticos en esta tabla (Guía v7)."
+  },
+  "tipologias_riesgo": [
+    {
+      "codigo": "TR01",
+      "nombre": "Gestión",
+      "capitulo_guia": "Capítulo III (metodología genérica)"
+    },
+    {
+      "codigo": "TR02",
+      "nombre": "Fiscal",
+      "capitulo_guia": "Capítulo IV"
+    },
+    {
+      "codigo": "TR03",
+      "nombre": "Seguridad de la información",
+      "capitulo_guia": "Capítulo V"
+    },
+    {
+      "codigo": "TR04",
+      "nombre": "Integridad pública (SIGRIP)",
+      "capitulo_guia": "Capítulo VI"
+    },
+    {
+      "codigo": "TR05",
+      "nombre": "Ambiental",
+      "capitulo_guia": "No tiene capítulo propio en la Guía v7 (es de ago-2025, previa a la política ambiental MIPG v7 de ago-2026); se aplica la metodología genérica del Capítulo III con los insumos de la política ambiental."
+    }
+  ],
+  "catalogo_puntos_riesgo_fiscal": {
+    "_estado": "DISPONIBLE — cargado desde el Anexo 3 oficial (Catálogo Indicativo y Enunciativo de Puntos de Riesgo Fiscal y Circunstancias Inmediatas, DAFP, resultado del análisis de más de 130 fallos con responsabilidad fiscal)",
+    "_fuente": "Anexo 3 - Catálogo indicativo de puntos de riesgo fiscal, Dirección de Gestión y Desempeño Institucional, 2022 (vigente, referenciado por la Guía v7 de agosto de 2025)",
+    "_nota_numeracion": "El id '43' aparece duplicado en el documento fuente (dos puntos distintos comparten el número 43 en el original); se conservaron ambos, distinguidos como 43a y 43b, para no perder ninguno de los 50 puntos reales del catálogo.",
+    "puntos": [
+      {
+        "id": 1,
+        "punto_riesgo_fiscal": "Cumplimiento de las normas y obligaciones ante autoridades",
+        "circunstancia_inmediata": "Pago de multas, cláusulas penales o cualquier tipo de sanción"
+      },
+      {
+        "id": 2,
+        "punto_riesgo_fiscal": "Cumplimiento de obligaciones",
+        "circunstancia_inmediata": "Pago de Intereses moratorios"
+      },
+      {
+        "id": 3,
+        "punto_riesgo_fiscal": "Desplazamientos de los funcionarios y de los contratistas a lugares diferentes al domicilio de la entidad",
+        "circunstancia_inmediata": "Pago de viáticos, honorarios o gastos de desplazamiento sin justificación o por encima de los valores establecidos normativamente"
+      },
+      {
+        "id": 4,
+        "punto_riesgo_fiscal": "Liquidación de impuestos",
+        "circunstancia_inmediata": "Mayor valor pagado por concepto de impuestos"
+      },
+      {
+        "id": 5,
+        "punto_riesgo_fiscal": "Operaciones, actas o actos en los que se reconocen saldos a favor de la entidad",
+        "circunstancia_inmediata": "Saldos o recursos a favor no cobrados"
+      },
+      {
+        "id": 6,
+        "punto_riesgo_fiscal": "Custodiar de los bienes muebles de la entidad",
+        "circunstancia_inmediata": "Pérdida, extravío, hurto, robo o declaratoria de bienes faltantes pertenecientes a la Entidad"
+      },
+      {
+        "id": 7,
+        "punto_riesgo_fiscal": "Avalúos a bienes inmuebles de la entidad",
+        "circunstancia_inmediata": "Error en los avalúos, afectando el valor de venta y/o negociación de un bien público"
+      },
+      {
+        "id": 8,
+        "punto_riesgo_fiscal": "Custodiar de los bienes muebles de la entidad",
+        "circunstancia_inmediata": "Daño en bienes muebles de propiedad de la entidad"
+      },
+      {
+        "id": 9,
+        "punto_riesgo_fiscal": "Suscripción de contratos cuyo objeto es o incluye la representación judicial o extrajudicial de la entidad",
+        "circunstancia_inmediata": "Valor pagado por concepto de honorarios de apoderado cuando ocurre vencimiento de términos en los procesos judiciales o cualquier otra omisión del apoderado"
+      },
+      {
+        "id": 10,
+        "punto_riesgo_fiscal": "Pago de sentencias y conciliaciones",
+        "circunstancia_inmediata": "Intereses moratorios por pago tardío de sentencias y conciliaciones"
+      },
+      {
+        "id": 11,
+        "punto_riesgo_fiscal": "Instrucción del Comité de Conciliación para iniciar acción de repetición",
+        "circunstancia_inmediata": "Caducidad de la acción de repetición o falencias en el ejercicio de esta acción, generando la imposibilidad de recuperar los recursos pagados por el Estado"
+      },
+      {
+        "id": 12,
+        "punto_riesgo_fiscal": "Informe que acredite o anuncie la existencia de perjuicios generados a la entidad",
+        "circunstancia_inmediata": "Omisión en la obligación de impulsar acción judicial para cobrar cláusula penal u otros perjuicios"
+      },
+      {
+        "id": 13,
+        "punto_riesgo_fiscal": "Contratación de bienes o servicios",
+        "circunstancia_inmediata": "Contratación de bienes y servicios no relacionados con las funciones de la Entidad y que no generan utilidad"
+      },
+      {
+        "id": 14,
+        "punto_riesgo_fiscal": "Contratación de bienes",
+        "circunstancia_inmediata": "Compra o inversión en bienes innecesarios o suntuosos"
+      },
+      {
+        "id": 15,
+        "punto_riesgo_fiscal": "Contratación de estudios y diseños",
+        "circunstancia_inmediata": "Estudios y diseños recibidos y pagados y que no cumplen condiciones de calidad"
+      },
+      {
+        "id": 16,
+        "punto_riesgo_fiscal": "Suscripción de contratos de estudios y diseños",
+        "circunstancia_inmediata": "Estudios y diseños con amparo de calidad vencido al momento de contratar la obra y/o al momento de la ocurrencia"
+      },
+      {
+        "id": 17,
+        "punto_riesgo_fiscal": "Suscripción de contratos",
+        "circunstancia_inmediata": "Sobrecostos en precios contractuales"
+      },
+      {
+        "id": 18,
+        "punto_riesgo_fiscal": "Suscripción de contratos",
+        "circunstancia_inmediata": "Pagos efectuados a causa de riesgos previsibles que debieron ser asignados al contratista en la matriz de riesgos previsibles y no se le asignaron"
+      },
+      {
+        "id": 19,
+        "punto_riesgo_fiscal": "Suscripción de contratos",
+        "circunstancia_inmediata": "No incluir en el contrato de seguros -amparo de bienes de la entidad- todos los bienes muebles e inmuebles de la entidad"
+      },
+      {
+        "id": 20,
+        "punto_riesgo_fiscal": "Suscripción de contratos",
+        "circunstancia_inmediata": "No exigir garantía única de cumplimiento contractual"
+      },
+      {
+        "id": 21,
+        "punto_riesgo_fiscal": "Suscripción de contratos respecto de los cuales la ley establece un cubrimiento mínimo en los amparos de la garantía única de cumplimiento",
+        "circunstancia_inmediata": "Exigir garantía única de cumplimiento contractual con un cubrimiento inferior al exigido por la ley"
+      },
+      {
+        "id": 22,
+        "punto_riesgo_fiscal": "Pagos efectuados a contratistas",
+        "circunstancia_inmediata": "Pagar bienes, servicios u obras a pesar de no cumplir las condiciones de calidad"
+      },
+      {
+        "id": 23,
+        "punto_riesgo_fiscal": "Constancias de recibo a satisfacción de bienes, servicios u obras, firmadas por supervisor o interventor",
+        "circunstancia_inmediata": "Bienes, servicios u obras inconclusos, infuncionales y/o que no brindan utilidad o beneficio"
+      },
+      {
+        "id": 24,
+        "punto_riesgo_fiscal": "Modificaciones contractuales firmadas",
+        "circunstancia_inmediata": "Modificaciones contractuales cuyas causas son imputables al contratista total o parcialmente y cuyos costos colaterales asume la Entidad contratante"
+      },
+      {
+        "id": 25,
+        "punto_riesgo_fiscal": "Giros efectuados por concepto de anticipo contractual",
+        "circunstancia_inmediata": "Mal manejo o fallas en la legalización de anticipos, no amortización del anticipo"
+      },
+      {
+        "id": 26,
+        "punto_riesgo_fiscal": "Giros efectuados por concepto de anticipo contractual",
+        "circunstancia_inmediata": "Rendimientos financieros de recursos de anticipo o de cualquier recurso público no devueltos al tesoro público"
+      },
+      {
+        "id": 27,
+        "punto_riesgo_fiscal": "Reconocimiento y pago de desequilibrio contractual",
+        "circunstancia_inmediata": "Reconocimiento y pago de desequilibrio contractual por causa imputable a la Entidad"
+      },
+      {
+        "id": 28,
+        "punto_riesgo_fiscal": "Firma de actas contractuales de recibo parcial o final",
+        "circunstancia_inmediata": "Errores o imprecisiones en las actas de recibo parcial o final"
+      },
+      {
+        "id": 29,
+        "punto_riesgo_fiscal": "Firma de adiciones de ítems, actividades o productos no previstos (contratos adicionales)",
+        "circunstancia_inmediata": "Adición de ítem, actividad o producto no previsto sin estudio de mercado y/o con sobrecosto"
+      },
+      {
+        "id": 30,
+        "punto_riesgo_fiscal": "Firma de adiciones de ítems, actividades o productos inicialmente previstos (adiciones)",
+        "circunstancia_inmediata": "Mayores cantidades reconocidas y pagadas con valores unitarios superiores al pactado en el contrato"
+      },
+      {
+        "id": 31,
+        "punto_riesgo_fiscal": "Actos administrativos sancionatorios contractuales emitidos y ejecutoriados",
+        "circunstancia_inmediata": "Cuantificación errada de multa o cláusula penal"
+      },
+      {
+        "id": 32,
+        "punto_riesgo_fiscal": "Obras recibidas a satisfacción",
+        "circunstancia_inmediata": "Colapso o fallas en la estabilidad de la obra"
+      },
+      {
+        "id": 33,
+        "punto_riesgo_fiscal": "Pagos finales efectuados a contratistas",
+        "circunstancia_inmediata": "Ejecución de un alcance inferior al contratado y pago total del contrato"
+      },
+      {
+        "id": 34,
+        "punto_riesgo_fiscal": "Actas de recibo final a satisfacción firmadas",
+        "circunstancia_inmediata": "Infuncionalidad de lo ejecutado"
+      },
+      {
+        "id": 35,
+        "punto_riesgo_fiscal": "Contratos finalizados",
+        "circunstancia_inmediata": "Bienes, servicios u obras inconclusas y/o que no brindan utilidad o beneficio"
+      },
+      {
+        "id": 36,
+        "punto_riesgo_fiscal": "Pagos efectuados a contratistas",
+        "circunstancia_inmediata": "Inadecuada deducción de impuestos, tasas o contribuciones al contratista"
+      },
+      {
+        "id": 37,
+        "punto_riesgo_fiscal": "Pagos por concepto de comisión a éxito",
+        "circunstancia_inmediata": "Pago de comisiones a éxito sin debida justificación"
+      },
+      {
+        "id": 38,
+        "punto_riesgo_fiscal": "Actas de liquidación suscritas",
+        "circunstancia_inmediata": "Suscripción de acta de liquidación con imprecisiones de fondo"
+      },
+      {
+        "id": 39,
+        "punto_riesgo_fiscal": "Actas de liquidación suscritas",
+        "circunstancia_inmediata": "Suscripción de acta de liquidación sin relacionar las sanciones impuestas al contratista"
+      },
+      {
+        "id": 40,
+        "punto_riesgo_fiscal": "Contratos finalizados en los que se contemplaba o requería liquidación",
+        "circunstancia_inmediata": "Pérdida de competencia para liquidar por vencimiento del plazo legal, con saldos a favor de la Entidad"
+      },
+      {
+        "id": 41,
+        "punto_riesgo_fiscal": "Actas de liquidación suscritas",
+        "circunstancia_inmediata": "Liquidación de mutuo acuerdo con recibo a satisfacción, habiendo imprecisiones o falsedades"
+      },
+      {
+        "id": 42,
+        "punto_riesgo_fiscal": "Bienes u obras recibidas a satisfacción",
+        "circunstancia_inmediata": "Deterioro del bien u obra por indebido mantenimiento"
+      },
+      {
+        "id": "43a",
+        "punto_riesgo_fiscal": "Actas de recibo final a satisfacción firmadas",
+        "circunstancia_inmediata": "Suscripción de acta de recibo final con imprecisiones de fondo",
+        "nota": "El documento original numera dos puntos distintos como 43 (duplicado de numeración en la fuente oficial); se distinguen aquí como 43a y 43b."
+      },
+      {
+        "id": "43b",
+        "punto_riesgo_fiscal": "Reintegro de saldos a favor de la entidad o pagos por parte de deudores",
+        "circunstancia_inmediata": "Reintegro de saldos a favor de la entidad sin indexación (reintegro sin actualización del dinero en el tiempo)",
+        "nota": "El documento original numera dos puntos distintos como 43 (duplicado de numeración en la fuente oficial); se distinguen aquí como 43a y 43b."
+      },
+      {
+        "id": 44,
+        "punto_riesgo_fiscal": "Predios adquiridos",
+        "circunstancia_inmediata": "Adquisición de predios sin las especificaciones técnicas requeridas"
+      },
+      {
+        "id": 45,
+        "punto_riesgo_fiscal": "Pérdida de tenencia de bienes de la entidad",
+        "circunstancia_inmediata": "Pérdida de la tenencia de bienes inmuebles de la Entidad"
+      },
+      {
+        "id": 46,
+        "punto_riesgo_fiscal": "Pago de subsidios, transferencias o beneficios a particulares",
+        "circunstancia_inmediata": "Bases de datos con falencias de información que genera pagos de subsidios u otros beneficios sin el cumplimiento de requisitos y condiciones"
+      },
+      {
+        "id": 47,
+        "punto_riesgo_fiscal": "Pago de subsidios, transferencias o beneficios a particulares",
+        "circunstancia_inmediata": "Pago de subsidio u otros beneficios a personas fallecidas"
+      },
+      {
+        "id": 48,
+        "punto_riesgo_fiscal": "Pago de subsidios, transferencias o beneficios a particulares",
+        "circunstancia_inmediata": "Pago de subsidios u otros beneficios a personas que no tienen derecho a los mismos a la luz de requisitos de ley"
+      },
+      {
+        "id": 49,
+        "punto_riesgo_fiscal": "Pago de subsidios, transferencias o beneficios a particulares",
+        "circunstancia_inmediata": "Pago de subsidios por encima del beneficio otorgado"
+      },
+      {
+        "id": 50,
+        "punto_riesgo_fiscal": "Deudas a favor de la entidad",
+        "circunstancia_inmediata": "Vencimiento de plazos para la labor de cobro directo (persuasivo o coactivo) o judicial"
+      }
+    ],
+    "preguntas_orientadoras_tabla_10": [
+      {
+        "pregunta": "¿En qué procesos de la entidad se realiza gestión fiscal?",
+        "identifica": "Puntos de riesgo fiscal"
+      },
+      {
+        "pregunta": "¿Qué puntos de riesgo fiscal y circunstancias inmediatas del Catálogo Indicativo y Enunciativo (Anexo 3) son aplicables a la entidad?",
+        "identifica": "Puntos de riesgo fiscal y circunstancias inmediatas",
+        "nota": "Sin el Anexo 3 disponible, este punto se responde en texto libre por el usuario del módulo."
+      },
+      {
+        "pregunta": "Clasifique por procesos (según el mapa de procesos de la entidad) los hallazgos con presunta incidencia fiscal identificados por el ente de control fiscal y/o los fallos con responsabilidad fiscal en firme y/o las advertencias de la Contraloría General de la República y/o las alertas del Sistema de Alertas de Control Interno (SACI).",
+        "identifica": "Puntos de riesgo fiscal, con soporte documental",
+        "nota_1": "Se recomienda consultar hallazgos y fallos con responsabilidad fiscal de los últimos 5 años.",
+        "nota_2": "Los hallazgos fiscales y advertencias se obtienen de la matriz de plan de mejoramiento institucional y de los históricos de la Oficina de Control Interno."
+      }
+    ],
+    "base_normativa": "Ley 610 de 2000 (15 de agosto de 2000, Diario Oficial No. 44133) — define la gestión fiscal."
+  },
+  "politica_ambiental_mipg_v7": {
+    "_fuente": "Manual Operativo MIPG v7 (DAFP, ago-2026), numeral 4.10",
+    "dimension": 4,
+    "politica_numero": "4.10",
+    "nombre": "Política de Gestión Ambiental Institucional",
+    "subanexos": [
+      "Subanexo 1",
+      "Subanexo 2",
+      "Subanexo 3 (Metodología Conesa simplificada)",
+      "Subanexo 4",
+      "Subanexo 5",
+      "Subanexo 6"
+    ],
+    "_nota_subanexos": "El detalle completo de cada subanexo (2, 4, 5, 6) no se transcribió en el diseño técnico previo; se recomienda completarlo directamente del Manual Operativo MIPG v7 antes de programar el formulario final.",
+    "instrumentos_insumo": [
+      "Plan Institucional de Gestión Ambiental (PIGA)",
+      "Plan de Gestión Integral de Residuos Sólidos (PGIRS) del municipio",
+      "Inventario de aspectos e impactos ambientales institucionales",
+      "Plan Municipal de Gestión del Riesgo de Desastres (Ley 1523 de 2012)",
+      "Reportes/certificaciones ante la Corporación Autónoma Regional competente"
+    ]
+  },
+  "procesos_carepa": {
+    "_fuente": "Sitio de Transparencia, Alcaldía de Carepa (Decreto 092 de 2021); verificado 18-sep-2026",
+    "_estado": "Tipos de proceso CONFIRMADOS; listado nominal de cada proceso individual PENDIENTE de verificar con la Alcaldía",
+    "tipos": [
+      {
+        "codigo": "PC-EST",
+        "nombre": "Estratégicos",
+        "descripcion": "Definición de política, objetivos y asignación de recursos."
+      },
+      {
+        "codigo": "PC-MIS",
+        "nombre": "Misionales",
+        "descripcion": "Prestación del servicio propio de la entidad."
+      },
+      {
+        "codigo": "PC-APO",
+        "nombre": "De Apoyo",
+        "descripcion": "Provisión de recursos a los procesos estratégicos y misionales."
+      },
+      {
+        "codigo": "PC-EVA",
+        "nombre": "De Evaluación",
+        "descripcion": "Medición del desempeño y mejora continua."
+      }
+    ]
+  },
+  "matriz_calor_severidad": {
+    "_fuente": "Anexo 1 de la Guía v7 (Formato mapa de riesgos integral, DAFP), hoja 'MAPA CALOR INHERENTE'. Reemplaza la aproximación por cuartiles usada en la versión 1.0 de este catálogo, que quedaba pendiente de validar.",
+    "_nota": "Filas = nivel de PROBABILIDAD, columnas = nivel de IMPACTO. 4 zonas de severidad: Bajo, Moderado, Alto, Extremo.",
+    "columnas_impacto": [
+      "Leve",
+      "Menor",
+      "Moderado",
+      "Mayor",
+      "Catastrófico"
+    ],
+    "filas": [
+      {
+        "probabilidad": "Muy Alta",
+        "Leve": "Alto",
+        "Menor": "Alto",
+        "Moderado": "Alto",
+        "Mayor": "Alto",
+        "Catastrófico": "Extremo"
+      },
+      {
+        "probabilidad": "Alta",
+        "Leve": "Moderado",
+        "Menor": "Moderado",
+        "Moderado": "Alto",
+        "Mayor": "Alto",
+        "Catastrófico": "Extremo"
+      },
+      {
+        "probabilidad": "Media",
+        "Leve": "Moderado",
+        "Menor": "Moderado",
+        "Moderado": "Moderado",
+        "Mayor": "Alto",
+        "Catastrófico": "Extremo"
+      },
+      {
+        "probabilidad": "Baja",
+        "Leve": "Bajo",
+        "Menor": "Moderado",
+        "Moderado": "Moderado",
+        "Mayor": "Alto",
+        "Catastrófico": "Extremo"
+      },
+      {
+        "probabilidad": "Muy Baja",
+        "Leve": "Bajo",
+        "Menor": "Bajo",
+        "Moderado": "Moderado",
+        "Mayor": "Alto",
+        "Catastrófico": "Extremo"
+      }
+    ]
+  },
+  "tratamiento_riesgo": {
+    "_fuente": "Anexo 5 (Matriz de riesgos de seguridad de la información), sección 'TRATAMIENTO DEL RIESGO'",
+    "opciones": [
+      "Reducir",
+      "Compartir",
+      "Aceptar",
+      "Evitar"
+    ]
+  },
+  "campos_matriz_seguridad_informacion": {
+    "_fuente": "Anexo 5 - Matriz de riesgos de seguridad de la información (DAFP), hoja 'Matriz de Riesgo'",
+    "campos": [
+      "Proceso",
+      "Referencia",
+      "Activo de Información",
+      "Tipo de activo",
+      "Amenazas (Causa Inmediata)",
+      "Vulnerabilidades (Causa raíz)",
+      "Tipo de riesgo",
+      "Descripción del Riesgo",
+      "Clasificación riesgo",
+      "Frecuencia",
+      "Control (referencia Anexo A - ISO 27001)",
+      "Descripción del control",
+      "Responsable",
+      "Fecha de Implementación",
+      "Seguimiento",
+      "Estado"
+    ],
+    "_nota": "Esta lista de campos reemplaza y amplía los 3 campos genéricos que traía la Pantalla 6 en la versión 1.0 del diseño técnico (Activo de información, Clasificación, Descripción del riesgo)."
+  },
+  "modelo_madurez_erm": {
+    "_fuente": "Anexo 4 - Herramienta de diagnóstico del modelo de madurez ERM (DAFP), marco COSO-ERM",
+    "_estado": "Estructura identificada; NO incorporada todavía como pantalla del módulo (fuera del alcance priorizado: Pantallas 1-4 y 9). Queda documentada aquí para una fase posterior.",
+    "componentes": [
+      "1. Gobierno y Cultura",
+      "2. Estrategia y Objetivos",
+      "3. Desempeño",
+      "4. Análisis y Monitorización",
+      "5. Información, Comunicación y Reporting"
+    ],
+    "escala_madurez": [
+      "1.- Nunca",
+      "2.- Raramente",
+      "3.- A veces",
+      "4.- Frecuentemente",
+      "5.- Siempre"
+    ]
+  }
+}

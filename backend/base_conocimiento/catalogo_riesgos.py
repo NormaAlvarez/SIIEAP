@@ -1,0 +1,123 @@
+"""Carga del catálogo de referencia del Módulo de Administración y Gestión del
+Riesgo (SIIEAP).
+
+Este archivo es NUEVO y NO modifica backend/base_conocimiento/catalogo.py ni
+catalogo_idi.json (catálogo IDI-MIPG v6.1). Sigue el mismo patrón: un JSON de
+datos + funciones de acceso de solo lectura.
+
+Fuente principal: Guía para la Gestión Integral del Riesgo en Entidades
+Públicas, Versión 7 (DAFP, agosto de 2025).
+Fuente ambiental: Manual Operativo MIPG, Versión 7 (DAFP, agosto de 2026),
+numeral 4.10 — Política de Gestión Ambiental Institucional.
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from functools import lru_cache
+
+RUTA_CATALOGO_RIESGOS = Path(__file__).resolve().parent / "catalogo_riesgos.json"
+
+
+@lru_cache(maxsize=1)
+def cargar_catalogo_riesgos() -> dict:
+    """Carga (una sola vez, cacheado) el catálogo de riesgos desde JSON."""
+    with open(RUTA_CATALOGO_RIESGOS, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def factores_riesgo() -> dict:
+    """Devuelve el diccionario de factores de riesgo (Tabla 2, Guía v7)."""
+    return cargar_catalogo_riesgos()["factores_riesgo"]
+
+
+def opciones_factor_riesgo() -> list[str]:
+    """Lista lista para poblar un st.selectbox: 'FR01 — Ejecución...'."""
+    return [f'{cod} — {info["nombre"]}' for cod, info in factores_riesgo().items()]
+
+
+def tabla_probabilidad() -> list[dict]:
+    return cargar_catalogo_riesgos()["tabla_probabilidad"]["niveles"]
+
+
+def tabla_impacto() -> list[dict]:
+    return cargar_catalogo_riesgos()["tabla_impacto"]["niveles"]
+
+
+def tabla_valoracion_controles() -> dict:
+    return cargar_catalogo_riesgos()["tabla_valoracion_controles"]
+
+
+def tipologias_riesgo() -> list[dict]:
+    return cargar_catalogo_riesgos()["tipologias_riesgo"]
+
+
+def opciones_tipologia_riesgo() -> list[str]:
+    return [t["nombre"] for t in tipologias_riesgo()]
+
+
+def preguntas_orientadoras_riesgo_fiscal() -> list[dict]:
+    """Tabla 10 de la Guía v7 (preguntas guía, complementarias al catálogo)."""
+    return cargar_catalogo_riesgos()["catalogo_puntos_riesgo_fiscal"][
+        "preguntas_orientadoras_tabla_10"
+    ]
+
+
+def catalogo_puntos_riesgo_fiscal_disponible() -> bool:
+    """True desde que se cargó el Anexo 3 real (Catálogo Indicativo de Puntos
+    de Riesgo Fiscal, 50 puntos)."""
+    estado = cargar_catalogo_riesgos()["catalogo_puntos_riesgo_fiscal"]["_estado"]
+    return estado.startswith("DISPONIBLE")
+
+
+def puntos_riesgo_fiscal() -> list[dict]:
+    """Los 50 puntos de riesgo fiscal del Anexo 3 (DAFP), cada uno con su
+    circunstancia inmediata asociada."""
+    return cargar_catalogo_riesgos()["catalogo_puntos_riesgo_fiscal"]["puntos"]
+
+
+def opciones_punto_riesgo_fiscal() -> list[str]:
+    """Lista para un st.selectbox: 'Id — Punto de riesgo fiscal'."""
+    return [f'{p["id"]} — {p["punto_riesgo_fiscal"]}' for p in puntos_riesgo_fiscal()]
+
+
+def circunstancia_inmediata_de(id_punto) -> str | None:
+    """Devuelve la circunstancia inmediata asociada a un id del catálogo
+    fiscal, para autocompletar el campo una vez el usuario elige el punto."""
+    for p in puntos_riesgo_fiscal():
+        if str(p["id"]) == str(id_punto):
+            return p["circunstancia_inmediata"]
+    return None
+
+
+def matriz_calor_severidad() -> dict:
+    """Matriz de calor oficial (Anexo 1, DAFP): filas = probabilidad,
+    columnas = impacto, valor = severidad (Bajo/Moderado/Alto/Extremo)."""
+    return cargar_catalogo_riesgos()["matriz_calor_severidad"]
+
+
+def tratamiento_riesgo_opciones() -> list[str]:
+    return cargar_catalogo_riesgos()["tratamiento_riesgo"]["opciones"]
+
+
+def campos_matriz_seguridad_informacion() -> list[str]:
+    return cargar_catalogo_riesgos()["campos_matriz_seguridad_informacion"]["campos"]
+
+
+def politica_ambiental_mipg_v7() -> dict:
+    return cargar_catalogo_riesgos()["politica_ambiental_mipg_v7"]
+
+
+def instrumentos_insumo_ambientales() -> list[str]:
+    return politica_ambiental_mipg_v7()["instrumentos_insumo"]
+
+
+def tipos_proceso_carepa() -> list[dict]:
+    """Tipos de proceso CONFIRMADOS para Carepa (Decreto 092/2021). El listado
+    nominal de cada proceso individual sigue pendiente de verificar con la
+    Alcaldía; ver 'procesos_carepa._estado' en el JSON."""
+    return cargar_catalogo_riesgos()["procesos_carepa"]["tipos"]
+
+
+def opciones_proceso_carepa() -> list[str]:
+    return [f'{p["codigo"]} — {p["nombre"]}' for p in tipos_proceso_carepa()]
