@@ -123,17 +123,22 @@ def _eje_del_control(control: Control, tabla: dict) -> str:
     return tabla["tipo"][control.tipo]["afecta"]
 
 
-def aplicar_controles(valor_inicial: float, controles: list[Control], eje: str) -> float:
+def aplicar_controles(valor_inicial: float, controles: list[Control], eje: str, tabla: dict) -> float:
     """Aplica, de forma ACUMULATIVA, solo los controles cuyo tipo afecta el
     eje indicado ('probabilidad' o 'impacto'), tal como lo ejemplifica la
     Tabla 8 de la Guía v7 y lo confirma el Anexo 1 oficial: el resultado de
     aplicar un control se usa como base para aplicar el siguiente.
 
-    Ejemplo de la guía (dos controles que SÍ afectan probabilidad):
-    probabilidad inherente 60%, control preventivo (peso 25%+15%=40%)
-    -> 60% - (60% * 40%) = 36%; luego control detectivo (peso 15%+15%=30%)
-    sobre el 36% -> 36% - (36% * 30%) = 25.2% (probabilidad residual)."""
-    tabla = tabla_valoracion_controles()
+    `tabla` es la tabla de valoración de controles a usar — NO se asume una
+    única tabla: la tipología 'Seguridad de la información' usa el peso del
+    Anexo 5 (Manual=10%), las demás usan el de la Guía v7/Anexo 1
+    (Manual=15%). Ver catalogo_riesgos.tabla_valoracion_controles().
+
+    Ejemplo de la guía (dos controles que SÍ afectan probabilidad, tabla
+    general): probabilidad inherente 60%, control preventivo (peso
+    25%+15%=40%) -> 60% - (60% * 40%) = 36%; luego control detectivo (peso
+    15%+15%=30%) sobre el 36% -> 36% - (36% * 30%) = 25.2% (probabilidad
+    residual)."""
     valor = valor_inicial
     for control in controles:
         if _eje_del_control(control, tabla) != eje:
@@ -151,12 +156,16 @@ def calcular_riesgo_residual(riesgo: Riesgo) -> ValoracionRiesgo:
     controles de un tipo dado, ese eje queda igual al valor inherente
     (mismo comportamiento que el ejemplo de la Tabla 8 de la Guía v7, donde
     el impacto residual queda igual al inherente por falta de controles de
-    impacto)."""
+    impacto).
+
+    La tabla de pesos usada depende de la TIPOLOGÍA del riesgo (instrucción
+    de la docente/experta temática, 19-sep-2026: no unificar los pesos)."""
     if riesgo.inherente is None:
         riesgo.inherente = valorar_riesgo_inherente(riesgo)
 
-    prob_residual = aplicar_controles(riesgo.inherente.probabilidad, riesgo.controles, "probabilidad")
-    imp_residual = aplicar_controles(riesgo.inherente.impacto, riesgo.controles, "impacto")
+    tabla = tabla_valoracion_controles(riesgo.tipologia)
+    prob_residual = aplicar_controles(riesgo.inherente.probabilidad, riesgo.controles, "probabilidad", tabla)
+    imp_residual = aplicar_controles(riesgo.inherente.impacto, riesgo.controles, "impacto", tabla)
 
     severidad = calcular_severidad(prob_residual, imp_residual)
     return ValoracionRiesgo(
