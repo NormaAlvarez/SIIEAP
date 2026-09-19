@@ -15,7 +15,6 @@ TIPOLOGIA_GESTION = "Gestión"
 TIPOLOGIA_FISCAL = "Fiscal"
 TIPOLOGIA_SEGURIDAD_INFORMACION = "Seguridad de la información"
 TIPOLOGIA_INTEGRIDAD_SIGRIP = "Integridad pública (SIGRIP)"
-TIPOLOGIA_AMBIENTAL = "Ambiental"
 
 TIPO_CONTROL_PREVENTIVO = "preventivo"
 TIPO_CONTROL_DETECTIVO = "detectivo"
@@ -91,7 +90,7 @@ class Riesgo:
     evento_no_deseado: str
     impacto_descripcion: str
     factor_riesgo: str  # código del catálogo (FR01..FR06)
-    tipologia: str  # Gestión | Fiscal | Seguridad de la información | Integridad pública (SIGRIP) | Ambiental
+    tipologia: str  # Gestión | Fiscal | Seguridad de la información | Integridad pública (SIGRIP)
 
     frecuencia_anual: Optional[int] = None  # base para la probabilidad inherente
     smlmv_afectacion: Optional[float] = None  # base para el impacto económico
@@ -108,8 +107,6 @@ class Riesgo:
     activo_informacion: Optional[str] = None
     clasificacion_informacion: Optional[str] = None
     amenaza_integridad: Optional[str] = None
-    aspecto_ambiental: Optional[str] = None
-    instrumento_origen_ambiental: Optional[str] = None
 
 
 @dataclass
