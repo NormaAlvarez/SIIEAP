@@ -1518,5 +1518,1150 @@
         ]
       }
     ]
+  },
+  "banco_riesgos_sugeridos": {
+    "_advertencia": "PROPUESTA DE APOYO, NO ES UN CATÁLOGO OFICIAL DEL DAFP. La Función Pública no publica un listado oficial de posibles riesgos de gestión (se verificó expresamente en la Guía v7, en la versión 5 de 2020 y en la versión de 2018: las tres delegan la identificación de riesgos al análisis propio de cada entidad). Este banco cruza los 19 procesos reales de Carepa con los 6 factores de riesgo de la Tabla 2 de la Guía v7, usando redacciones genéricas de plantilla, solo como punto de partida para que el equipo de cada proceso las valide, ajuste o descarte. No reemplaza el análisis de riesgos de la entidad.",
+    "sugerencias": [
+      {
+        "proceso_codigo": "C-ADM-AF-01",
+        "proceso_nombre": "Gestión Financiera y Contable",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión Financiera y Contable",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión Financiera y Contable ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-AF-01",
+        "proceso_nombre": "Gestión Financiera y Contable",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión Financiera y Contable",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión Financiera y Contable con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-AF-01",
+        "proceso_nombre": "Gestión Financiera y Contable",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión Financiera y Contable",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión Financiera y Contable actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-AF-01",
+        "proceso_nombre": "Gestión Financiera y Contable",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión Financiera y Contable",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión Financiera y Contable no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-AF-01",
+        "proceso_nombre": "Gestión Financiera y Contable",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión Financiera y Contable",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión Financiera y Contable no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-AF-01",
+        "proceso_nombre": "Gestión Financiera y Contable",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión Financiera y Contable por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión Financiera y Contable se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-CP-01",
+        "proceso_nombre": "Comunicación Pública",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Comunicación Pública",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Comunicación Pública ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-CP-01",
+        "proceso_nombre": "Comunicación Pública",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Comunicación Pública",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Comunicación Pública con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-CP-01",
+        "proceso_nombre": "Comunicación Pública",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Comunicación Pública",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Comunicación Pública actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-CP-01",
+        "proceso_nombre": "Comunicación Pública",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Comunicación Pública",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Comunicación Pública no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-CP-01",
+        "proceso_nombre": "Comunicación Pública",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Comunicación Pública",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Comunicación Pública no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-CP-01",
+        "proceso_nombre": "Comunicación Pública",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Comunicación Pública por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Comunicación Pública se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-DP-01",
+        "proceso_nombre": "Direccionamiento y Planeación Estratégica",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Direccionamiento y Planeación Estratégica",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Direccionamiento y Planeación Estratégica ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-DP-01",
+        "proceso_nombre": "Direccionamiento y Planeación Estratégica",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Direccionamiento y Planeación Estratégica",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Direccionamiento y Planeación Estratégica con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-DP-01",
+        "proceso_nombre": "Direccionamiento y Planeación Estratégica",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Direccionamiento y Planeación Estratégica",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Direccionamiento y Planeación Estratégica actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-DP-01",
+        "proceso_nombre": "Direccionamiento y Planeación Estratégica",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Direccionamiento y Planeación Estratégica",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Direccionamiento y Planeación Estratégica no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-DP-01",
+        "proceso_nombre": "Direccionamiento y Planeación Estratégica",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Direccionamiento y Planeación Estratégica",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Direccionamiento y Planeación Estratégica no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-DP-01",
+        "proceso_nombre": "Direccionamiento y Planeación Estratégica",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Direccionamiento y Planeación Estratégica por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Direccionamiento y Planeación Estratégica se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-TH-01",
+        "proceso_nombre": "Gestión de Talento Humano",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión de Talento Humano",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión de Talento Humano ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-TH-01",
+        "proceso_nombre": "Gestión de Talento Humano",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión de Talento Humano",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión de Talento Humano con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-TH-01",
+        "proceso_nombre": "Gestión de Talento Humano",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión de Talento Humano",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión de Talento Humano actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-TH-01",
+        "proceso_nombre": "Gestión de Talento Humano",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión de Talento Humano",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión de Talento Humano no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-TH-01",
+        "proceso_nombre": "Gestión de Talento Humano",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión de Talento Humano",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión de Talento Humano no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-TH-01",
+        "proceso_nombre": "Gestión de Talento Humano",
+        "proceso_tipo": "Estratégico",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión de Talento Humano por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión de Talento Humano se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-AC-01",
+        "proceso_nombre": "Atención al Ciudadano",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Atención al Ciudadano",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Atención al Ciudadano ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-AC-01",
+        "proceso_nombre": "Atención al Ciudadano",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Atención al Ciudadano",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Atención al Ciudadano con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-AC-01",
+        "proceso_nombre": "Atención al Ciudadano",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Atención al Ciudadano",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Atención al Ciudadano actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-AC-01",
+        "proceso_nombre": "Atención al Ciudadano",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Atención al Ciudadano",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Atención al Ciudadano no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-AC-01",
+        "proceso_nombre": "Atención al Ciudadano",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Atención al Ciudadano",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Atención al Ciudadano no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-AC-01",
+        "proceso_nombre": "Atención al Ciudadano",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Atención al Ciudadano por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Atención al Ciudadano se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-DE-01",
+        "proceso_nombre": "Gestión del Desarrollo Económico",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión del Desarrollo Económico",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión del Desarrollo Económico ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-DE-01",
+        "proceso_nombre": "Gestión del Desarrollo Económico",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión del Desarrollo Económico",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión del Desarrollo Económico con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-DE-01",
+        "proceso_nombre": "Gestión del Desarrollo Económico",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión del Desarrollo Económico",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión del Desarrollo Económico actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-DE-01",
+        "proceso_nombre": "Gestión del Desarrollo Económico",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión del Desarrollo Económico",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión del Desarrollo Económico no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-DE-01",
+        "proceso_nombre": "Gestión del Desarrollo Económico",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión del Desarrollo Económico",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión del Desarrollo Económico no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-DE-01",
+        "proceso_nombre": "Gestión del Desarrollo Económico",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión del Desarrollo Económico por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión del Desarrollo Económico se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-GA-01",
+        "proceso_nombre": "Gestión Ambiental",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión Ambiental",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión Ambiental ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-GA-01",
+        "proceso_nombre": "Gestión Ambiental",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión Ambiental",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión Ambiental con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-GA-01",
+        "proceso_nombre": "Gestión Ambiental",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión Ambiental",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión Ambiental actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-GA-01",
+        "proceso_nombre": "Gestión Ambiental",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión Ambiental",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión Ambiental no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-GA-01",
+        "proceso_nombre": "Gestión Ambiental",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión Ambiental",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión Ambiental no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-GA-01",
+        "proceso_nombre": "Gestión Ambiental",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión Ambiental por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión Ambiental se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-IP-01",
+        "proceso_nombre": "Infraestructura Pública",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Infraestructura Pública",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Infraestructura Pública ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-IP-01",
+        "proceso_nombre": "Infraestructura Pública",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Infraestructura Pública",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Infraestructura Pública con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-IP-01",
+        "proceso_nombre": "Infraestructura Pública",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Infraestructura Pública",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Infraestructura Pública actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-IP-01",
+        "proceso_nombre": "Infraestructura Pública",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Infraestructura Pública",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Infraestructura Pública no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-IP-01",
+        "proceso_nombre": "Infraestructura Pública",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Infraestructura Pública",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Infraestructura Pública no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-IP-01",
+        "proceso_nombre": "Infraestructura Pública",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Infraestructura Pública por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Infraestructura Pública se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-PC-01",
+        "proceso_nombre": "Participación Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Participación Ciudadana",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Participación Ciudadana ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-PC-01",
+        "proceso_nombre": "Participación Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Participación Ciudadana",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Participación Ciudadana con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-PC-01",
+        "proceso_nombre": "Participación Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Participación Ciudadana",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Participación Ciudadana actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-PC-01",
+        "proceso_nombre": "Participación Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Participación Ciudadana",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Participación Ciudadana no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-PC-01",
+        "proceso_nombre": "Participación Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Participación Ciudadana",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Participación Ciudadana no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-PC-01",
+        "proceso_nombre": "Participación Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Participación Ciudadana por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Participación Ciudadana se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-PS-01",
+        "proceso_nombre": "Gestión de la Provisión de Programas y Servicios Sociales",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión de la Provisión de Programas y Servicios Sociales",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión de la Provisión de Programas y Servicios Sociales ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-PS-01",
+        "proceso_nombre": "Gestión de la Provisión de Programas y Servicios Sociales",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión de la Provisión de Programas y Servicios Sociales",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión de la Provisión de Programas y Servicios Sociales con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-PS-01",
+        "proceso_nombre": "Gestión de la Provisión de Programas y Servicios Sociales",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión de la Provisión de Programas y Servicios Sociales",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión de la Provisión de Programas y Servicios Sociales actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-PS-01",
+        "proceso_nombre": "Gestión de la Provisión de Programas y Servicios Sociales",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión de la Provisión de Programas y Servicios Sociales",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión de la Provisión de Programas y Servicios Sociales no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-PS-01",
+        "proceso_nombre": "Gestión de la Provisión de Programas y Servicios Sociales",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión de la Provisión de Programas y Servicios Sociales",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión de la Provisión de Programas y Servicios Sociales no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-PS-01",
+        "proceso_nombre": "Gestión de la Provisión de Programas y Servicios Sociales",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión de la Provisión de Programas y Servicios Sociales por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión de la Provisión de Programas y Servicios Sociales se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-SC-01",
+        "proceso_nombre": "Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Derechos Humanos, Seguridad y Convivencia Ciudadana ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-SC-01",
+        "proceso_nombre": "Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Derechos Humanos, Seguridad y Convivencia Ciudadana con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-SC-01",
+        "proceso_nombre": "Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Derechos Humanos, Seguridad y Convivencia Ciudadana actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-SC-01",
+        "proceso_nombre": "Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Derechos Humanos, Seguridad y Convivencia Ciudadana no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-SC-01",
+        "proceso_nombre": "Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Derechos Humanos, Seguridad y Convivencia Ciudadana no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-SC-01",
+        "proceso_nombre": "Derechos Humanos, Seguridad y Convivencia Ciudadana",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Derechos Humanos, Seguridad y Convivencia Ciudadana por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Derechos Humanos, Seguridad y Convivencia Ciudadana se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-VC-01",
+        "proceso_nombre": "Inspección, Vigilancia y Control",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Inspección, Vigilancia y Control",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Inspección, Vigilancia y Control ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-VC-01",
+        "proceso_nombre": "Inspección, Vigilancia y Control",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Inspección, Vigilancia y Control",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Inspección, Vigilancia y Control con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-VC-01",
+        "proceso_nombre": "Inspección, Vigilancia y Control",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Inspección, Vigilancia y Control",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Inspección, Vigilancia y Control actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-VC-01",
+        "proceso_nombre": "Inspección, Vigilancia y Control",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Inspección, Vigilancia y Control",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Inspección, Vigilancia y Control no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-VC-01",
+        "proceso_nombre": "Inspección, Vigilancia y Control",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Inspección, Vigilancia y Control",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Inspección, Vigilancia y Control no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-VC-01",
+        "proceso_nombre": "Inspección, Vigilancia y Control",
+        "proceso_tipo": "Misional",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Inspección, Vigilancia y Control por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Inspección, Vigilancia y Control se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-AI-01",
+        "proceso_nombre": "Gestión Tributaria y de Rentas",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión Tributaria y de Rentas",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión Tributaria y de Rentas ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-AI-01",
+        "proceso_nombre": "Gestión Tributaria y de Rentas",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión Tributaria y de Rentas",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión Tributaria y de Rentas con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-AI-01",
+        "proceso_nombre": "Gestión Tributaria y de Rentas",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión Tributaria y de Rentas",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión Tributaria y de Rentas actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-AI-01",
+        "proceso_nombre": "Gestión Tributaria y de Rentas",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión Tributaria y de Rentas",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión Tributaria y de Rentas no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-AI-01",
+        "proceso_nombre": "Gestión Tributaria y de Rentas",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión Tributaria y de Rentas",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión Tributaria y de Rentas no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-AI-01",
+        "proceso_nombre": "Gestión Tributaria y de Rentas",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión Tributaria y de Rentas por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión Tributaria y de Rentas se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-AL-01",
+        "proceso_nombre": "Gestión de Asuntos Legales",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión de Asuntos Legales",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión de Asuntos Legales ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-AL-01",
+        "proceso_nombre": "Gestión de Asuntos Legales",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión de Asuntos Legales",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión de Asuntos Legales con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-AL-01",
+        "proceso_nombre": "Gestión de Asuntos Legales",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión de Asuntos Legales",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión de Asuntos Legales actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-AL-01",
+        "proceso_nombre": "Gestión de Asuntos Legales",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión de Asuntos Legales",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión de Asuntos Legales no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-AL-01",
+        "proceso_nombre": "Gestión de Asuntos Legales",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión de Asuntos Legales",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión de Asuntos Legales no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-AL-01",
+        "proceso_nombre": "Gestión de Asuntos Legales",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión de Asuntos Legales por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión de Asuntos Legales se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-GB-01",
+        "proceso_nombre": "Gestión de Bienes y Servicios",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión de Bienes y Servicios",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión de Bienes y Servicios ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-GB-01",
+        "proceso_nombre": "Gestión de Bienes y Servicios",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión de Bienes y Servicios",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión de Bienes y Servicios con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-GB-01",
+        "proceso_nombre": "Gestión de Bienes y Servicios",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión de Bienes y Servicios",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión de Bienes y Servicios actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-GB-01",
+        "proceso_nombre": "Gestión de Bienes y Servicios",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión de Bienes y Servicios",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión de Bienes y Servicios no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-GB-01",
+        "proceso_nombre": "Gestión de Bienes y Servicios",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión de Bienes y Servicios",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión de Bienes y Servicios no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-GB-01",
+        "proceso_nombre": "Gestión de Bienes y Servicios",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión de Bienes y Servicios por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión de Bienes y Servicios se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-GD-01",
+        "proceso_nombre": "Gestión Documental",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión Documental",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión Documental ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-GD-01",
+        "proceso_nombre": "Gestión Documental",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión Documental",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión Documental con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-GD-01",
+        "proceso_nombre": "Gestión Documental",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión Documental",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión Documental actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-GD-01",
+        "proceso_nombre": "Gestión Documental",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión Documental",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión Documental no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-GD-01",
+        "proceso_nombre": "Gestión Documental",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión Documental",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión Documental no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-GD-01",
+        "proceso_nombre": "Gestión Documental",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión Documental por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión Documental se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-GT-01",
+        "proceso_nombre": "Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC) ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-GT-01",
+        "proceso_nombre": "Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC) con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-GT-01",
+        "proceso_nombre": "Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC) actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-GT-01",
+        "proceso_nombre": "Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC) no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-GT-01",
+        "proceso_nombre": "Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC) no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-GT-01",
+        "proceso_nombre": "Gestión de las Tecnologías de la Información y las Comunicaciones (TIC)",
+        "proceso_tipo": "De Apoyo",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC) por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Gestión de las Tecnologías de la Información y las Comunicaciones (TIC) se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-EC-01",
+        "proceso_nombre": "Evaluación y Control",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Evaluación y Control",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Evaluación y Control ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-EC-01",
+        "proceso_nombre": "Evaluación y Control",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Evaluación y Control",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Evaluación y Control con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-EC-01",
+        "proceso_nombre": "Evaluación y Control",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Evaluación y Control",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Evaluación y Control actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-EC-01",
+        "proceso_nombre": "Evaluación y Control",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Evaluación y Control",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Evaluación y Control no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-EC-01",
+        "proceso_nombre": "Evaluación y Control",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Evaluación y Control",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Evaluación y Control no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-EC-01",
+        "proceso_nombre": "Evaluación y Control",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Evaluación y Control por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Evaluación y Control se ve interrumpido o afectado por un evento externo a la entidad."
+      },
+      {
+        "proceso_codigo": "C-ADM-ED-01",
+        "proceso_nombre": "Evaluación de Desempeño Institucional",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR01",
+        "factor_nombre": "Ejecución y administración de procesos",
+        "riesgo_sugerido": "Incumplimiento de actividades, tiempos o requisitos del proceso Evaluación de Desempeño Institucional",
+        "causa_raiz_sugerida": "Ausencia o desactualización de procedimientos, o falta de puntos de control y seguimiento a las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Actividades del proceso Evaluación de Desempeño Institucional ejecutadas fuera de los tiempos o sin cumplir los requisitos definidos, generando reprocesos o incumplimientos."
+      },
+      {
+        "proceso_codigo": "C-ADM-ED-01",
+        "proceso_nombre": "Evaluación de Desempeño Institucional",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR02",
+        "factor_nombre": "Transacción u Operación",
+        "riesgo_sugerido": "Errores en el registro o trámite de las operaciones propias del proceso Evaluación de Desempeño Institucional",
+        "causa_raiz_sugerida": "Falta de validaciones o de doble verificación en el registro de transacciones o trámites del proceso.",
+        "evento_no_deseado_sugerido": "Registros, trámites u operaciones del proceso Evaluación de Desempeño Institucional con errores, omisiones o inconsistencias."
+      },
+      {
+        "proceso_codigo": "C-ADM-ED-01",
+        "proceso_nombre": "Evaluación de Desempeño Institucional",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR03",
+        "factor_nombre": "Talento humano",
+        "riesgo_sugerido": "Actuación indebida o insuficiente del personal a cargo del proceso Evaluación de Desempeño Institucional",
+        "causa_raiz_sugerida": "Personal insuficiente, o falta de competencias e inducción específica para las actividades del proceso.",
+        "evento_no_deseado_sugerido": "Servidores públicos o contratistas del proceso Evaluación de Desempeño Institucional actúan por fuera de sus funciones o sin la competencia requerida."
+      },
+      {
+        "proceso_codigo": "C-ADM-ED-01",
+        "proceso_nombre": "Evaluación de Desempeño Institucional",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR04",
+        "factor_nombre": "Tecnología",
+        "riesgo_sugerido": "Falla de los sistemas de información que soportan el proceso Evaluación de Desempeño Institucional",
+        "causa_raiz_sugerida": "Indisponibilidad, obsolescencia o falta de mantenimiento de los aplicativos o sistemas de información usados por el proceso.",
+        "evento_no_deseado_sugerido": "Los sistemas de información del proceso Evaluación de Desempeño Institucional no están disponibles, o pierden integridad los datos que manejan."
+      },
+      {
+        "proceso_codigo": "C-ADM-ED-01",
+        "proceso_nombre": "Evaluación de Desempeño Institucional",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR05",
+        "factor_nombre": "Infraestructura",
+        "riesgo_sugerido": "Falla de la infraestructura física o tecnológica que soporta el proceso Evaluación de Desempeño Institucional",
+        "causa_raiz_sugerida": "Deterioro, insuficiencia o falta de mantenimiento de la infraestructura física o tecnológica del proceso.",
+        "evento_no_deseado_sugerido": "La infraestructura que soporta el proceso Evaluación de Desempeño Institucional no permite su operación normal."
+      },
+      {
+        "proceso_codigo": "C-ADM-ED-01",
+        "proceso_nombre": "Evaluación de Desempeño Institucional",
+        "proceso_tipo": "De Evaluación",
+        "factor_codigo": "FR06",
+        "factor_nombre": "Evento externo",
+        "riesgo_sugerido": "Afectación del proceso Evaluación de Desempeño Institucional por un evento externo a la entidad",
+        "causa_raiz_sugerida": "Desastres naturales, orden público, fallas de terceros o proveedores, u otros eventos fuera del control directo de la Alcaldía.",
+        "evento_no_deseado_sugerido": "El proceso Evaluación de Desempeño Institucional se ve interrumpido o afectado por un evento externo a la entidad."
+      }
+    ]
   }
 }

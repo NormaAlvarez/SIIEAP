@@ -115,6 +115,23 @@ def campos_matriz_seguridad_informacion() -> list[str]:
     return cargar_catalogo_riesgos()["campos_matriz_seguridad_informacion"]["campos"]
 
 
+def banco_riesgos_sugeridos() -> list[dict]:
+    """PROPUESTA DE APOYO, NO oficial: cruce de los 19 procesos reales de
+    Carepa con los 6 factores de riesgo de la Tabla 2 (Guía v7). Sirve como
+    punto de partida para que cada equipo de proceso valide, ajuste o
+    descarte la sugerencia — nunca se presenta como catálogo del DAFP."""
+    return cargar_catalogo_riesgos()["banco_riesgos_sugeridos"]["sugerencias"]
+
+
+def sugerencias_para(codigo_proceso: str, codigo_factor: str) -> list[dict]:
+    """Las sugerencias (normalmente 1) del banco de apoyo para una
+    combinación proceso + factor de riesgo específica."""
+    return [
+        s for s in banco_riesgos_sugeridos()
+        if s["proceso_codigo"] == codigo_proceso and s["factor_codigo"] == codigo_factor
+    ]
+
+
 def tipos_proceso_carepa() -> list[dict]:
     """Los 4 tipos generales de proceso (Decreto 092/2021 de Carepa), como
     referencia normativa. Para el listado nominal de los 19 procesos reales
