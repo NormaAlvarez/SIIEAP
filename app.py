@@ -211,17 +211,54 @@ def mostrar_diagnostico(diag, idi_oficial=None, grupo_par=None, cruce_recomendac
     if grupo_par:
         st.caption(f"Grupo par: {grupo_par}")
 
-    st.markdown("#### Resultado por dimensión")
-    tabla = [
-        {
-            "Dimensión": r.nombre,
-            "Promedio": r.promedio,
-            "Nivel de riesgo": r.nivel_riesgo,
-            "Índices/políticas evaluados": f"{r.n_indices_evaluados}/{r.n_indices_esperados}",
-        }
-        for r in diag.resultados_por_dimension
-    ]
-    st.dataframe(tabla, use_container_width=True)
+    # CORRECCIÓN (18 de septiembre de 2026, hallazgo de la verificación de
+    # consistencia código-manuales): esta pantalla nunca había recibido la
+    # misma adaptación por régimen especial que ya tenían, desde agosto de
+    # 2026, los tres informes descargables (ver generador_informe.py y
+    # análogos, sección "Resultado del diagnóstico institucional"). Para
+    # una entidad MECI-only, diag.resultados_por_dimension viene casi todo
+    # en "Sin información" porque Función Pública no publica D1-D7 para
+    # ese régimen — mostrarlo así en pantalla no es un dato incorrecto,
+    # pero es mucho menos informativo que el listado por política. Se usa
+    # aquí el mismo criterio que ya usan los generadores de informe:
+    # diag.aplica_mipg_integral decide cuál tabla mostrar.
+    if diag.aplica_mipg_integral:
+        st.markdown("#### Resultado por dimensión")
+        tabla = [
+            {
+                "Dimensión": r.nombre,
+                "Promedio": r.promedio,
+                "Nivel de riesgo": r.nivel_riesgo,
+                "Índices/políticas evaluados": f"{r.n_indices_evaluados}/{r.n_indices_esperados}",
+            }
+            for r in diag.resultados_por_dimension
+        ]
+        st.dataframe(tabla, use_container_width=True)
+    else:
+        st.markdown("#### Resultado por política (régimen especial)")
+        st.caption(
+            "Esta entidad es de régimen especial (MECI-only): Función Pública no publica las 7 "
+            "dimensiones D1-D7 para este tipo de entidad, así que no se agrupan. Se lista la "
+            "política de Control Interno (única obligatoria) y las demás políticas que la entidad "
+            "reportó voluntariamente con brecha."
+        )
+        tabla_pol = [
+            {
+                "Política / índice": "Control Interno (MECI)",
+                "Puntaje oficial": diag.idi_estimado,
+                "Exigibilidad": "Obligatoria",
+            }
+        ]
+        for b in diag.brechas:
+            if not b.obligatoria:
+                tabla_pol.append(
+                    {
+                        "Política / índice": f"{b.codigo_indice} {b.nombre_indice} ({b.politica})",
+                        "Puntaje oficial": b.puntaje,
+                        "Exigibilidad": "Voluntaria (no exigida a este régimen)",
+                    }
+                )
+        st.dataframe(tabla_pol, use_container_width=True)
 
     st.markdown("#### Brechas priorizadas (menor puntaje primero)")
     if diag.brechas:
@@ -500,11 +537,22 @@ with tab_real:
 
             st.subheader(entidad.nombre)
             if not entidad.aplica_mipg_integral():
+                # CORRECCIÓN (18 de septiembre de 2026): este texto describía el
+                # comportamiento ANTERIOR a la corrección de agosto de 2026
+                # (sección 8.11 del Manual Técnico). Desde esa corrección,
+                # motor_diagnostico.py SÍ registra las políticas voluntarias
+                # como Brecha (con obligatoria=False), y SÍ aparecen en las
+                # tablas de Hallazgos, Riesgos y Plan de Mejoramiento de los
+                # tres informes descargables. El texto anterior contradecía
+                # ese comportamiento real; se corrige aquí para que coincida.
                 st.info(
-                    f"⚠️ Régimen especial: **{etiqueta_regimen_elegida}** — las brechas y el "
-                    "semáforo de este diagnóstico solo consideran la política de Control "
-                    "Interno (MECI) como exigible; las demás se muestran de forma informativa "
-                    "pero no se marcan como brecha."
+                    f"⚠️ Régimen especial: **{etiqueta_regimen_elegida}** — únicamente la política "
+                    "de Control Interno (MECI) es de cumplimiento obligatorio para este régimen. "
+                    "Las demás políticas que la entidad reporte de forma voluntaria (transparencia, "
+                    "gestión documental, etc.) SÍ se registran como brecha cuando su puntaje está "
+                    "por debajo de 60 y SÍ entran a las tablas de riesgos, auditoría y plan de "
+                    "mejoramiento de los tres informes descargables — siempre etiquetadas "
+                    "'voluntaria', nunca como una exigencia normativa incumplida."
                 )
             st.caption(
                 f"Índices/políticas con información: {len(entidad.resultados) + len(entidad.resultados_politica_directa)} de 66"
