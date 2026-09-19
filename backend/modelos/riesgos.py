@@ -26,6 +26,25 @@ IMPLEMENTACION_MANUAL = "manual"
 
 
 @dataclass
+class ProcesoCaracterizado:
+    """Caracterización completa de un proceso institucional, más allá de su
+    tipo general (Estratégico/Misional/Apoyo/Evaluación). Agregado a
+    petición de la docente/experta temática (validación 19-sep-2026) para
+    poder vincular cada riesgo a un proceso caracterizado con su objetivo,
+    alcance, entradas, salidas, responsable e indicadores — no solo a su
+    tipo general, mientras se recibe el listado nominal oficial de Carepa."""
+    codigo: str
+    nombre: str
+    tipo: str  # Estratégico | Misional | De Apoyo | De Evaluación
+    objetivo: str = ""
+    alcance: str = ""
+    entradas: str = ""
+    salidas: str = ""
+    responsable: str = ""
+    indicadores: list[str] = field(default_factory=list)
+
+
+@dataclass
 class Control:
     """Un control de los descritos en la Guía v7, numeral 3.8-3.10."""
     responsable: str
