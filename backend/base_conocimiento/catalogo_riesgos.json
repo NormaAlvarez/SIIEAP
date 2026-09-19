@@ -2,25 +2,24 @@
   "_meta": {
     "descripcion": "Catálogo de referencia del Módulo de Administración y Gestión del Riesgo de SIIEAP. NO reemplaza ni modifica catalogo_idi.json (v6.1). Fuente principal: Guía para la Gestión Integral del Riesgo en Entidades Públicas, Versión 7, DAFP, agosto de 2025.",
     "fuente_principal": "Guía Gestión Integral del Riesgo v7 (DAFP, ago-2025)",
-    "fuente_ambiental": "Manual Operativo MIPG v7 (DAFP, ago-2026), numeral 4.10 - Política de Gestión Ambiental Institucional",
     "fecha_construccion": "2026-09-18",
-    "version": "1.3-piloto",
+    "version": "1.4-piloto",
     "fecha_actualizacion": "2026-09-19",
     "anexos_incorporados": [
       "Anexo 1 - Formato mapa de riesgos integral (xlsx oficial DAFP)",
+      "Anexo 2 - Glosario (pdf oficial DAFP, 46 términos)",
       "Anexo 3 - Catálogo indicativo de puntos de riesgo fiscal (docx oficial DAFP)",
+      "Anexo 4 - Herramienta de diagnóstico del modelo de madurez ERM (xlsx oficial DAFP, 77 puntos)",
       "Anexo 5 - Matriz de riesgos de seguridad de la información (xlsx oficial DAFP)"
     ],
-    "anexos_disponibles_no_incorporados_aun": [
-      "Anexo 2 - Glosario (pdf, 15 páginas) - disponible pero no transcrito término por término todavía.",
-      "Anexo 4 - Herramienta de diagnóstico del modelo de madurez ERM (xlsx) - estructura identificada (5 componentes COSO-ERM: Gobierno y Cultura, Estrategia y Objetivos, Desempeño, Análisis y Monitorización, Información/Comunicación/Reporting; escala 1-5 Nunca a Siempre) pero no se construyó todavía una pantalla para este autodiagnóstico; queda para una fase posterior del módulo."
-    ],
+    "anexos_disponibles_no_incorporados_aun": [],
     "validacion_docente": {
       "validado_por": "Norma Elizabeth Álvarez Grajales",
       "cargo": "Docente / experta temática",
       "fecha": "2026-09-19",
-      "resultado": "Las 9 pantallas (1 a 9) quedaron APROBADAS en la checklist de validación. Se instruyó además: (1) no unificar el peso de controles entre fuentes, dejar el de cada anexo; (2) incluir caracterización completa de cada proceso; (3) transcribir completos los subanexos 2, 4, 5 y 6 de la política ambiental; (4) transcribir el glosario completo (Anexo 2) y construir la pantalla de autodiagnóstico de madurez ERM (Anexo 4); (5) programar completas las Pantallas 6, 7 y 8 (seguridad de la información, SIGRIP, KRI)."
-    }
+      "resultado": "Las 9 pantallas quedaron APROBADAS en la checklist de validación (19-sep-2026). Se instruyó además: (1) no unificar el peso de controles entre fuentes, dejar el de cada anexo; (2) incluir caracterización completa de cada proceso (ya cargados los 19 procesos reales de Carepa); (3) transcribir el glosario completo (Anexo 2) y construir la pantalla de autodiagnóstico de madurez ERM (Anexo 4); (4) programar completas las Pantallas 6, 7 y 8 (seguridad de la información, SIGRIP, KRI); (5) RETIRAR del piloto la tipología y pantalla de riesgos Ambientales, por no pertenecer a la Guía v7 de riesgos sino al Manual Operativo MIPG v7 (numeral 4.10), un documento distinto — instrucción del 19-sep-2026 en la noche: 'dejemos solo lo que tiene la guía 7 de riesgos'."
+    },
+    "nota_alcance": "El módulo queda ceñido estrictamente al alcance de la Guía para la Gestión Integral del Riesgo v7 (DAFP, agosto de 2025) y sus 5 anexos oficiales. No incluye la tipología Ambiental, que se había explorado inicialmente a partir del Manual Operativo MIPG v7 (documento distinto) y fue retirada por instrucción de la docente/experta temática el 19-sep-2026."
   },
   "factores_riesgo": {
     "FR01": {
@@ -143,11 +142,6 @@
       "codigo": "TR04",
       "nombre": "Integridad pública (SIGRIP)",
       "capitulo_guia": "Capítulo VI"
-    },
-    {
-      "codigo": "TR05",
-      "nombre": "Ambiental",
-      "capitulo_guia": "No tiene capítulo propio en la Guía v7 (es de ago-2025, previa a la política ambiental MIPG v7 de ago-2026); se aplica la metodología genérica del Capítulo III con los insumos de la política ambiental."
     }
   ],
   "catalogo_puntos_riesgo_fiscal": {
@@ -431,170 +425,6 @@
       }
     ],
     "base_normativa": "Ley 610 de 2000 (15 de agosto de 2000, Diario Oficial No. 44133) — define la gestión fiscal."
-  },
-  "politica_ambiental_mipg_v7": {
-    "_fuente": "Manual Operativo MIPG v7 (DAFP, ago-2026), numeral 4.10 — transcripción ampliada 19-sep-2026",
-    "dimension": 4,
-    "politica_numero": "4.10",
-    "nombre": "Política de Gestión Ambiental Institucional",
-    "objetivo": "Establecer los lineamientos técnicos, operativos y de gestión para la adopción, implementación, seguimiento y evaluación de la Política de Gestión Ambiental Institucional en las entidades públicas del Estado colombiano, articulada con el MIPG, el sistema de control interno, la planeación institucional, la normatividad ambiental vigente y los instrumentos de gestión ambiental que resulten aplicables en cada jurisdicción.",
-    "objetivos_especificos": [
-      "Integrar la gestión ambiental en la planeación estratégica y operativa de la entidad.",
-      "Mejorar las prácticas de Gestión Ambiental, identificar y controlar aspectos e impactos ambientales asociados a actividades, bienes y servicios.",
-      "Cumplir con los requisitos legales ambientales y otros compromisos aplicables.",
-      "Promover el uso eficiente de recursos como agua, energía, materiales y demás recursos naturales.",
-      "Fortalecer la gestión de residuos y el consumo sostenible.",
-      "Incorporar acciones de mitigación y adaptación al cambio climático, movilidad e infraestructura sostenibles según la capacidad institucional.",
-      "Consolidar la cultura ambiental institucional mediante formación, comunicación y participación de las partes interesadas.",
-      "Implementar mecanismos de seguimiento, evaluación y mejora con base en indicadores, evidencias y reportes periódicos."
-    ],
-    "marco_normativo": {
-      "marco_general_ambiental": [
-        "Constitución Política (Arts. 79 y 80)",
-        "Ley 99 de 1993",
-        "Decreto 1076 de 2015",
-        "NTC-ISO 14001"
-      ],
-      "agua_y_vertimientos": [
-        "Ley 9 de 1979",
-        "Ley 373 de 1997",
-        "Decreto-Ley 2811 de 1974",
-        "Decreto 1575 de 2007",
-        "Resolución 631 de 2015"
-      ],
-      "energia": [
-        "Ley 697 de 2001",
-        "Ley 1715 de 2014",
-        "Ley 2294 de 2023 (Art. 237)",
-        "Ley 2407 de 2024",
-        "Decreto 2501 de 2007",
-        "Decreto 1073 de 2015",
-        "Resolución UPME 16 de 2024",
-        "Resolución 40156 de 2022",
-        "Resolución 40412 de 2024",
-        "RETILAP"
-      ],
-      "residuos_y_suelo": [
-        "Ley 1252 de 2008",
-        "Ley 1259 de 2008",
-        "Ley 1672 de 2013",
-        "Decreto 596 de 2016",
-        "Decreto 284 de 2018",
-        "Decreto 2981 de 2013",
-        "Resoluciones 1326 de 2017, 472 de 2017, 2184 de 2019, 1342 de 2020, 1257 de 2021, 851 de 2022",
-        "Ley 140 de 1994",
-        "Ley 769 de 2002",
-        "Ley 2169 de 2021",
-        "Resoluciones 901 de 2006, 1309 de 2010, 634 de 2022, 762 de 2022"
-      ],
-      "sustancias_quimicas": [
-        "Ley 55 de 1993",
-        "Decreto 1496 de 2018",
-        "Decreto 1630 de 2021",
-        "Decreto 1868 de 2021",
-        "Resolución 773 de 2021"
-      ],
-      "otros": [
-        "Ley 142 de 1994",
-        "Ley 1964 de 2019",
-        "Ley 2155 de 2021 (Art. 19)",
-        "Ley 2232 de 2022",
-        "Resolución 803 de 2024",
-        "Directiva Presidencial 04 de 2012"
-      ]
-    },
-    "ambito_aplicacion": "Ministerios, departamentos administrativos, superintendencias, unidades administrativas especiales, establecimientos públicos, gobernaciones, alcaldías, concejos, asambleas, personerías, contralorías, empresas industriales y comerciales del Estado y demás entidades públicas que, por el desarrollo de sus actividades administrativas, misionales, operativas o de apoyo, generen consumos de recursos, residuos, vertimientos, emisiones, desplazamientos, compras o cualquier otra interacción con el ambiente. Aplica a sedes propias, arrendadas, en comodato, administradas por terceros o compartidas, así como a procesos ejecutados directamente o mediante contratación, mientras la entidad mantenga control operacional o capacidad de influencia sobre los aspectos e impactos ambientales generados.",
-    "fundamentos_secuencia_implementacion": [
-      {
-        "paso": "1. Comprender los requisitos de gestión ambiental (contexto)",
-        "descripcion": "Identificar y analizar circunstancias, factores, actividades, interrelaciones de procesos y condiciones internas y externas que incidan en el desempeño ambiental de la entidad (NTC-ISO 14001)."
-      },
-      {
-        "paso": "2. Estructura de gestión institucional (roles y responsabilidades)",
-        "descripcion": "Asignar, coordinar y dotar de recursos las responsabilidades: alta dirección, instancias de decisión, responsable estratégico y áreas operativas, articulado con el MIPG."
-      },
-      {
-        "paso": "3. Diagnóstico ambiental institucional",
-        "descripcion": "Debe comprender como mínimo: descripción institucional, inventario de sedes, caracterización de procesos, población permanente, parque automotor y equipos relevantes, condiciones del entorno, aspectos e impactos ambientales, requisitos legales, riesgos y condiciones ambientales institucionales por recurso."
-      },
-      {
-        "paso": "4. Línea base (recopilar datos y diagnóstico del desempeño ambiental)",
-        "descripcion": "Consolidar una línea base ambiental con información verificable de al menos los últimos 12 meses sobre consumo de agua, consumo de energía, generación de residuos, uso de combustibles, huella de carbono, infraestructura instalada y demás variables relevantes. Complementable con inventarios, facturación, reportes de servicios públicos, mediciones internas, reportes de contratistas, formatos de mantenimiento y certificaciones de disposición."
-      },
-      {
-        "paso": "5. Priorizar, planificar y comprometerse a la acción",
-        "descripcion": "Transformar los hallazgos en decisiones, metas y acciones medibles: criterios de priorización, programas ambientales operativos, formulación de objetivos/metas/indicadores, compromisos institucionales y formalización."
-      },
-      {
-        "paso": "6. Construir una cultura de toma de conciencia de la gestión ambiental",
-        "descripcion": "Movilizar conocimiento, comportamiento y compromiso de servidores, contratistas y partes interesadas a lo largo de toda la entidad."
-      },
-      {
-        "paso": "7. Seguimiento, medición, análisis y evaluación (indicadores)",
-        "descripcion": "Verificar si la política, los programas y los planes de acción producen los resultados ambientales previstos, en línea con el MIPG y el reporte FURAG."
-      }
-    ],
-    "que_medir_indicadores": [
-      "Cumplimiento de los objetivos y metas ambientales por programa.",
-      "Cumplimiento de los requisitos legales y otros requisitos.",
-      "Desempeño en los aspectos ambientales significativos identificados.",
-      "Eficacia de los controles operacionales adoptados.",
-      "Tratamiento de riesgos y oportunidades.",
-      "Avance del plan de acción anual y la ejecución presupuestal asociada."
-    ],
-    "subanexos": [
-      {
-        "numero": 1,
-        "nombre": "Matriz de análisis de contexto y DOFA"
-      },
-      {
-        "numero": 2,
-        "nombre": "Matriz de roles y responsabilidades"
-      },
-      {
-        "numero": 3,
-        "nombre": "Matriz de aspectos e impactos ambientales (metodología Conesa simplificada)"
-      },
-      {
-        "numero": 4,
-        "nombre": "Matriz de identificación, aplicabilidad y cumplimiento de requisitos legales ambientales"
-      },
-      {
-        "numero": 5,
-        "nombre": "Plantillas de línea base por recurso (agua, energía, residuos, papel)"
-      },
-      {
-        "numero": 6,
-        "nombre": "Fichas con criterios con cláusulas ambientales para contratos y supervisión"
-      }
-    ],
-    "_estado_subanexos": "El Manual Operativo MIPG v7 NOMBRA y describe en una línea cada uno de los 6 subanexos (arriba), pero aclara textualmente que estos son documentos/formatos/guías de apoyo INDEPENDIENTES, puestos a disposición por el Ministerio de Ambiente y Desarrollo Sostenible 'a través de los canales que disponga la entidad líder de la política' — es decir, son archivos aparte (como los anexos de la Guía de riesgo v7), que NO vienen incrustados dentro del texto del manual. Ninguno de los 6 subanexos fue compartido en esta sesión (solo se compartieron los anexos de la Guía de RIESGO v7, que son un paquete distinto). SIIEAP no fabrica el contenido de esas plantillas: si se necesitan completas, hay que solicitarlas al Ministerio de Ambiente y Desarrollo Sostenible o a la entidad líder de la política, igual que se hizo con el Anexo 3 de riesgo fiscal.",
-    "gradualidad": {
-      "_fuente": "Manual Operativo MIPG v7, numeral 4.10 'Criterios diferenciales'",
-      "niveles_cumplimiento": [
-        "Mínimo",
-        "Intermedio",
-        "Avanzado"
-      ],
-      "descripcion_niveles": "Definidos según las capacidades institucionales, los riesgos identificados y las condiciones particulares de cada entidad.",
-      "gradualidad_en_el_tiempo": "Las exigencias aplican a partir de 2027, con incremento progresivo en 2029, 2031 y años siguientes.",
-      "criterio_materialidad": "Se tiene en cuenta la materialidad y el riesgo ambiental (magnitud de los impactos ambientales asociados a la operación de la entidad) para ajustar el nivel de exigencia.",
-      "referencia_adicional": "Anexo 9 del Manual Operativo MIPG v7 — criterios diferenciales para la política de Gestión Ambiental Institucional (tampoco compartido en esta sesión)."
-    },
-    "resultados_favorables_dimension": [
-      "Estructuras organizacionales y modelos de operación alineados con la estrategia y capacidad institucional, orientados a la generación de valor público.",
-      "Mejor calidad técnica y jurídica de la producción normativa.",
-      "Fortalecimiento de la gestión del ciclo de defensa jurídica del Estado.",
-      "Gestión ambiental institucional responsable que previene impactos, optimiza el uso de recursos y contribuye al desarrollo sostenible.",
-      "Protección de activos institucionales en el entorno digital mediante gestión de riesgos de seguridad digital."
-    ],
-    "instrumentos_insumo": [
-      "Plan Institucional de Gestión Ambiental (PIGA)",
-      "Plan de Gestión Integral de Residuos Sólidos (PGIRS) del municipio",
-      "Inventario de aspectos e impactos ambientales institucionales",
-      "Plan Municipal de Gestión del Riesgo de Desastres (Ley 1523 de 2012)",
-      "Reportes/certificaciones ante la Corporación Autónoma Regional competente"
-    ]
   },
   "procesos_carepa": {
     "_fuente": "Sitio de Transparencia, Alcaldía de Carepa (Decreto 092 de 2021); verificado 18-sep-2026",

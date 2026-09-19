@@ -5,10 +5,12 @@ Este archivo es NUEVO y NO modifica backend/base_conocimiento/catalogo.py ni
 catalogo_idi.json (catálogo IDI-MIPG v6.1). Sigue el mismo patrón: un JSON de
 datos + funciones de acceso de solo lectura.
 
-Fuente principal: Guía para la Gestión Integral del Riesgo en Entidades
-Públicas, Versión 7 (DAFP, agosto de 2025).
-Fuente ambiental: Manual Operativo MIPG, Versión 7 (DAFP, agosto de 2026),
-numeral 4.10 — Política de Gestión Ambiental Institucional.
+Fuente: Guía para la Gestión Integral del Riesgo en Entidades Públicas,
+Versión 7 (DAFP, agosto de 2025), y sus 5 anexos oficiales. El módulo queda
+ceñido estrictamente a esta guía (instrucción de la docente/experta
+temática, 19-sep-2026); no incluye la tipología Ambiental, que se había
+explorado a partir del Manual Operativo MIPG v7 (un documento distinto) y
+fue retirada.
 """
 from __future__ import annotations
 
@@ -111,14 +113,6 @@ def tratamiento_riesgo_opciones() -> list[str]:
 
 def campos_matriz_seguridad_informacion() -> list[str]:
     return cargar_catalogo_riesgos()["campos_matriz_seguridad_informacion"]["campos"]
-
-
-def politica_ambiental_mipg_v7() -> dict:
-    return cargar_catalogo_riesgos()["politica_ambiental_mipg_v7"]
-
-
-def instrumentos_insumo_ambientales() -> list[str]:
-    return politica_ambiental_mipg_v7()["instrumentos_insumo"]
 
 
 def tipos_proceso_carepa() -> list[dict]:
