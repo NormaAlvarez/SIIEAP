@@ -122,14 +122,28 @@ def instrumentos_insumo_ambientales() -> list[str]:
 
 
 def tipos_proceso_carepa() -> list[dict]:
-    """Tipos de proceso CONFIRMADOS para Carepa (Decreto 092/2021). El listado
-    nominal de cada proceso individual sigue pendiente de verificar con la
-    Alcaldía; ver 'procesos_carepa._estado' en el JSON."""
+    """Los 4 tipos generales de proceso (Decreto 092/2021 de Carepa), como
+    referencia normativa. Para el listado nominal de los 19 procesos reales
+    ya caracterizados, ver procesos_confirmados_carepa()."""
     return cargar_catalogo_riesgos()["procesos_carepa"]["tipos"]
 
 
 def opciones_proceso_carepa() -> list[str]:
     return [f'{p["codigo"]} — {p["nombre"]}' for p in tipos_proceso_carepa()]
+
+
+def procesos_confirmados_carepa() -> list[dict]:
+    """Los 19 procesos institucionales de la Alcaldía de Carepa, con su
+    caracterización completa (objetivo, alcance, entradas, salidas,
+    responsable), tomados del Mapa de Procesos oficial (código C-ADM-xx-01)
+    entregado por la docente/experta temática el 19-sep-2026. Reemplaza el
+    marcador temporal de los 4 tipos generales para la identificación de
+    riesgos por proceso."""
+    return cargar_catalogo_riesgos()["procesos_carepa"].get("procesos_confirmados", [])
+
+
+def procesos_confirmados_disponibles() -> bool:
+    return len(procesos_confirmados_carepa()) > 0
 
 
 def esquema_caracterizacion_proceso() -> dict:
