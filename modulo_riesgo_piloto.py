@@ -11,10 +11,10 @@ otro archivo del SIIEAP v6.1. Se ejecuta por separado:
 
     streamlit run modulo_riesgo_piloto.py
 
-Implementa las 10 pantallas completas: Procesos (caracterización), 1-4
-(metodología genérica), 5 (fiscal, 50 puntos oficiales del Anexo 3), 6
-(seguridad de la información, campos del Anexo 5), 7 (SIGRIP), 8 (KRI), 9
-(ambiental) y 10 (autodiagnóstico de madurez ERM, 77 puntos del Anexo 4).
+Implementa las 9 pantallas: Procesos (caracterización), 1-4 (metodología
+genérica), 5 (fiscal, 50 puntos oficiales del Anexo 3), 6 (seguridad de la
+información, campos del Anexo 5), 7 (SIGRIP), 8 (KRI) y 9 (autodiagnóstico
+de madurez ERM, 77 puntos del Anexo 4).
 
 Validado por la docente/experta temática (Norma Elizabeth Álvarez Grajales)
 el 19-sep-2026: las 9 pantallas del diseño original quedaron APROBADAS.
@@ -25,12 +25,8 @@ Instrucciones adicionales ya incorporadas:
   - Se agregó la pestaña "Procesos" para capturar la caracterización
     completa de cada proceso (objetivo, alcance, entradas, salidas,
     responsable, indicadores), más allá de los 4 tipos generales.
-  - Se transcribió completo el numeral 4.10 del Manual MIPG v7 (objetivos,
-    marco normativo, fundamentos, gradualidad); los 6 Subanexos de la
-    política ambiental siguen siendo documentos aparte no recibidos aún
-    (igual que pasaba con el Anexo 3 de riesgo fiscal antes de recibirlo).
   - Se transcribió completo el Glosario oficial (Anexo 2, 46 términos, 5
-    secciones) y se construyó la Pantalla 10 de autodiagnóstico de madurez
+    secciones) y se construyó la Pantalla de autodiagnóstico de madurez
     ERM con los 77 puntos de reflexión oficiales del Anexo 4.
   - Se programaron completas las Pantallas 6, 7 y 8.
 
@@ -41,6 +37,15 @@ con su caracterización completa (objetivo, alcance, entradas, salidas,
 responsable) en la pestaña "Procesos" y disponibles para identificar
 riesgos desde la Pantalla 1 — el listado nominal que antes estaba
 pendiente de la Alcaldía ya no lo está.
+
+ACTUALIZACIÓN (19-sep-2026, noche): por instrucción de la docente/experta
+temática, se RETIRÓ del piloto la tipología y la pantalla de riesgos
+Ambientales (que se habían agregado tomando como fuente el numeral 4.10
+del Manual Operativo MIPG v7, un documento distinto de la Guía para la
+Gestión Integral del Riesgo v7). El módulo queda ceñido estrictamente al
+alcance de la Guía v7 de riesgos (DAFP, agosto de 2025) y sus 5 anexos:
+Gestión, Fiscal, Seguridad de la Información, Integridad Pública (SIGRIP)
+y KRI — sin la tipología Ambiental.
 """
 from __future__ import annotations
 
@@ -53,7 +58,6 @@ from backend.base_conocimiento.catalogo_riesgos import (
     opciones_proceso_carepa,
     procesos_confirmados_carepa,
     procesos_confirmados_disponibles,
-    instrumentos_insumo_ambientales,
     catalogo_puntos_riesgo_fiscal_disponible,
     opciones_punto_riesgo_fiscal,
     circunstancia_inmediata_de,
@@ -62,9 +66,8 @@ from backend.base_conocimiento.catalogo_riesgos import (
     esquema_caracterizacion_proceso,
     modelo_madurez_componentes,
     escala_madurez_erm,
-    politica_ambiental_mipg_v7,
 )
-from backend.modelos.riesgos import Riesgo, Control, KRI, ProcesoCaracterizado, TIPOLOGIA_AMBIENTAL
+from backend.modelos.riesgos import Riesgo, Control, KRI, ProcesoCaracterizado
 from backend.motores.motor_riesgos import (
     valorar_riesgo_inherente,
     calcular_riesgo_residual,
@@ -138,7 +141,7 @@ def render_modulo_riesgo() -> None:
             icon="⚠️",
         )
 
-    tab_procesos, tab1, tab2, tab3, tab4, tab_fiscal, tab_seg, tab_sigrip, tab_kri, tab_amb, tab_madurez, tab_mapa = st.tabs([
+    tab_procesos, tab1, tab2, tab3, tab4, tab_fiscal, tab_seg, tab_sigrip, tab_kri, tab_madurez, tab_mapa = st.tabs([
         "Procesos",
         "1. Identificación",
         "2. Análisis inherente",
@@ -148,8 +151,7 @@ def render_modulo_riesgo() -> None:
         "6. Seguridad Info",
         "7. SIGRIP",
         "8. KRI",
-        "9. Ambiental",
-        "10. Madurez ERM",
+        "9. Madurez ERM",
         "Mapa consolidado",
     ])
 
@@ -241,12 +243,6 @@ def render_modulo_riesgo() -> None:
             causa_inmediata = st.text_area("Causa inmediata", key="f_causa_inmediata")
             evento = st.text_area("Evento no deseado", key="f_evento")
             impacto_desc = st.text_area("Impacto (descripción cualitativa)", key="f_impacto_desc")
-
-        if tipologia == "Ambiental":
-            st.info(
-                "Tipología Ambiental: complete también los campos específicos en la pestaña "
-                "'9. Ambiental' antes de guardar."
-            )
 
         if st.button("Guardar identificación y continuar al Paso 2 →", type="primary"):
             if not nombre or not causa_raiz or not evento:
@@ -457,46 +453,8 @@ def render_modulo_riesgo() -> None:
                     })
                 st.dataframe(pd.DataFrame(filas_kri), use_container_width=True)
 
-    with tab_amb:
-        st.subheader("Pantalla 9 — Riesgos ambientales (Política de Gestión Ambiental Institucional, MIPG v7, 4.10)")
-        st.caption(
-            "Use estos campos ANTES del Paso 1 si la tipología del riesgo es 'Ambiental': "
-            "seleccione el aspecto y el instrumento de origen, y luego complete la identificación "
-            "en la pestaña 1 con Tipología = Ambiental."
-        )
-        aspecto = st.selectbox(
-            "Aspecto ambiental",
-            ["Consumo de agua", "Consumo de energía", "Consumo de papel", "Generación de residuos", "Otro (especificar en el nombre del riesgo)"],
-        )
-        instrumento = st.selectbox("Instrumento de origen", instrumentos_insumo_ambientales())
-        riesgo_climatico = st.checkbox("¿Incluye riesgo climático asociado (Ley 1523 de 2012)?")
-        if riesgo_climatico:
-            st.text_area("Descripción del riesgo climático")
-
-        with st.expander("Ver marco normativo, objetivos y gradualidad de la Política de Gestión Ambiental Institucional (MIPG v7, 4.10)"):
-            pol = politica_ambiental_mipg_v7()
-            st.markdown(f"**Objetivo:** {pol['objetivo']}")
-            st.markdown("**Objetivos específicos:**")
-            for o in pol["objetivos_especificos"]:
-                st.write(f"- {o}")
-            st.markdown("**Subanexos (6):**")
-            for s in pol["subanexos"]:
-                st.write(f"- Subanexo {s['numero']}: {s['nombre']}")
-            st.caption(pol["_estado_subanexos"])
-            st.markdown("**Gradualidad:**")
-            st.write(f"Niveles de cumplimiento: {', '.join(pol['gradualidad']['niveles_cumplimiento'])}")
-            st.write(pol["gradualidad"]["gradualidad_en_el_tiempo"])
-
-        st.info(
-            "La valoración de impactos ambientales con la Metodología Conesa simplificada "
-            "(Subanexo 3 de la política) requiere campos adicionales (naturaleza, intensidad, "
-            "extensión, momento, persistencia, reversibilidad, entre otros). El Subanexo 3 es un documento "
-            "aparte del Ministerio de Ambiente que no se ha recibido todavía (ver nota arriba); mientras tanto, "
-            "el módulo aplica la metodología genérica de 4 pasos (pestañas 1-4) a los riesgos ambientales."
-        )
-
     with tab_madurez:
-        st.subheader("Pantalla 10 — Autodiagnóstico de madurez de la gestión del riesgo (Anexo 4, marco COSO-ERM)")
+        st.subheader("Pantalla 9 — Autodiagnóstico de madurez de la gestión del riesgo (Anexo 4, marco COSO-ERM)")
         st.caption(
             "77 puntos de reflexión oficiales, agrupados en 5 componentes COSO-ERM. Para cada punto, seleccione "
             "qué tanto se cumple en la entidad. Al final se calcula el promedio de madurez por componente."

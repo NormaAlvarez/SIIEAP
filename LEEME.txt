@@ -1,87 +1,50 @@
-SIIEAP — app.py YA INTEGRADO, con los 19 procesos reales de Carepa (19-sep-2026)
-====================================================================================
+SIIEAP — app.py, SIN riesgos ambientales, ceñido a la Guía v7 (19-sep-2026)
+================================================================================
 
-Esto NO es una guía para parchar nada a mano. Es el sistema completo, listo
-para correr con un solo comando:
+Instalación (sin parches manuales): copie los 3 archivos de la raíz de
+este paquete (app.py, diagnostico_idi_mipg.py, modulo_riesgo_piloto.py) a
+la raíz de su proyecto SIIEAP, copie backend/ sobre su carpeta backend/, y
+ejecute:
 
     streamlit run app.py
 
-QUÉ HAY EN ESTE PAQUETE
-------------------------
-  app.py
-    -> ROUTER principal. En la barra lateral aparece un menú "Módulo" con
-       dos opciones: 📊 Diagnóstico IDI-MIPG (v6.1) y 🛡️ Administración y
-       Gestión del Riesgo (piloto). No contiene pantallas propias.
+QUÉ CAMBIÓ EN ESTA ENTREGA
+----------------------------
+Por instrucción de la docente/experta temática (19-sep-2026, en la noche):
+se retiró del módulo piloto la tipología y la Pantalla de riesgos
+AMBIENTALES. Esa tipología se había agregado inicialmente tomando como
+fuente el numeral 4.10 del Manual Operativo MIPG v7 — un documento
+DISTINTO de la Guía para la Gestión Integral del Riesgo v7 (la guía de
+riesgos propiamente dicha). El propio catálogo ya lo reconocía: la
+tipología Ambiental "no tiene capítulo propio en la Guía v7". Para cumplir
+exactamente el alcance pedido, el módulo queda ceñido estrictamente a la
+Guía v7 (DAFP, agosto de 2025) y sus 5 anexos oficiales.
 
-  diagnostico_idi_mipg.py
-    -> El contenido íntegro de su app.py anterior (v6.1), sin cambios,
-       envuelto en render_diagnostico_idi_mipg() para que el router lo
-       pueda invocar. Sigue funcionando también solo:
-           streamlit run diagnostico_idi_mipg.py
+Se eliminó:
+  - La pestaña "9. Ambiental" (antes entre KRI y Madurez ERM).
+  - La tipología "Ambiental" del selector de tipología (Pantalla 1).
+  - Toda la sección politica_ambiental_mipg_v7 del catálogo (objetivo,
+    marco normativo, subanexos, gradualidad) y sus funciones de acceso.
+  - Los campos aspecto_ambiental / instrumento_origen_ambiental del modelo
+    de datos del riesgo (ya no se usan).
 
-  modulo_riesgo_piloto.py
-    -> El módulo de riesgo (10 pantallas + mapa consolidado), envuelto en
-       render_modulo_riesgo(). NOVEDAD de esta entrega: la pestaña
-       "Procesos" ya NO empieza vacía — carga automáticamente los 19
-       procesos institucionales reales de la Alcaldía de Carepa, tomados
-       del Mapa de Procesos oficial que usted compartió (código
-       C-ADM-xx-01), cada uno con su objetivo, alcance, entradas, salidas
-       y responsable transcritos literalmente del documento. Ya se pueden
-       usar de inmediato para identificar riesgos en la Pantalla 1, sin
-       tener que volver a escribirlos a mano. También sigue funcionando
-       solo:
-           streamlit run modulo_riesgo_piloto.py
+Ahora el módulo tiene 9 pantallas (antes 10): Procesos, 1-4 (metodología
+genérica), 5 (fiscal), 6 (seguridad de la información), 7 (SIGRIP), 8
+(KRI) y 9 (madurez ERM, antes numerada como 10) — más el Mapa consolidado.
+Las tipologías de riesgo disponibles quedan en: Gestión, Fiscal, Seguridad
+de la información, Integridad pública (SIGRIP).
 
-  backend/
-    -> Incluye el catálogo actualizado (catalogo_riesgos.json) con los 19
-       procesos confirmados agregados bajo procesos_carepa.procesos_confirmados,
-       y el accesor procesos_confirmados_carepa() en catalogo_riesgos.py.
-
-LOS 19 PROCESOS CARGADOS
---------------------------
-Estratégicos (4): Gestión Financiera y Contable, Comunicación Pública,
-Direccionamiento y Planeación Estratégica, Gestión de Talento Humano.
-
-Misionales (8): Atención al Ciudadano, Gestión del Desarrollo Económico,
-Gestión Ambiental, Infraestructura Pública, Participación Ciudadana,
-Gestión de la Provisión de Programas y Servicios Sociales, Derechos
-Humanos-Seguridad y Convivencia Ciudadana, Inspección Vigilancia y Control.
-
-De Apoyo (5): Gestión Tributaria y de Rentas, Gestión de Asuntos Legales,
-Gestión de Bienes y Servicios, Gestión Documental, Gestión de TIC.
-
-De Evaluación (2): Evaluación y Control, Evaluación de Desempeño
-Institucional.
-
-Cómo se extrajo cada campo (para que quede trazable, sin inventar nada):
-  - Objetivo y Alcance: se tomaron literalmente de la celda "Objetivo:" /
-    "Alcance:" de cada documento de caracterización.
-  - Entradas y Salidas: se tomaron de la tabla PHVA (Planear/Hacer/
-    Verificar/Actuar) de cada documento, columnas "Entradas" y "Salidas".
-  - Responsable: se tomó de la fila "Talento Humano" de cada documento.
-  - Indicadores: los 19 documentos remiten a un "Tablero de Indicadores"
-    institucional externo, sin enumerar indicadores por proceso dentro del
-    documento mismo — por eso el campo queda vacío en vez de inventarse; el
-    formulario de la pestaña "Procesos" permite agregarlos manualmente si
-    usted los tiene disponibles en otro lado.
-
-CÓMO INSTALARLO
-----------------
-1. Copie los 3 archivos de la raíz de este paquete (app.py,
-   diagnostico_idi_mipg.py, modulo_riesgo_piloto.py) a la raíz de su
-   proyecto SIIEAP, reemplazando lo que tenía antes.
-2. Copie la carpeta backend/ de este paquete sobre la carpeta backend/ de
-   su proyecto.
-3. Ejecute:
-       streamlit run app.py
-   Elija "Administración y Gestión del Riesgo (piloto)" en el menú lateral,
-   abra la pestaña "Procesos" y verá los 19 ya cargados.
+Todo lo demás (los 19 procesos reales de Carepa, el catálogo fiscal de 50
+puntos, la matriz de calor oficial, las dos tablas de valoración de
+controles, el glosario y la madurez ERM) sigue exactamente igual que en la
+entrega anterior.
 
 VERIFICACIÓN REALIZADA
 -----------------------
-- Los 4 archivos de código compilan sin errores (py_compile).
-- Se simuló con streamlit.testing (AppTest) la carga del módulo de riesgo:
-  la pestaña "Procesos" muestra una tabla de 19 filas, sin excepciones.
-- El JSON del catálogo es válido (json.load sin errores).
-- No se modificó backend/base_conocimiento/catalogo.py ni catalogo_idi.json
-  (catálogo v6.1 original).
+- Los 6 archivos de código modificados compilan sin errores (py_compile).
+- Se simuló con streamlit.testing (AppTest) el cambio al módulo de riesgo:
+  las pestañas visibles son exactamente Procesos, 1-4, Fiscal, Seguridad
+  Info, SIGRIP, KRI, Madurez ERM y Mapa consolidado (sin Ambiental), sin
+  ninguna excepción.
+- opciones_tipologia_riesgo() ya no incluye "Ambiental".
+- El JSON del catálogo es válido.
